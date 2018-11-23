@@ -1,6 +1,6 @@
 {
-  "name": "topthink/think",
   "type": "project",
+  "name": "topthink/think",
   "license": "Apache-2.0",
   "homepage": "http://thinkphp.cn/",
   "description": "the new thinkphp framework",
