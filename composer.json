@@ -1,0 +1,26 @@
+{
+  "name": "topthink/think",
+  "type": "project",
+  "license": "Apache-2.0",
+  "homepage": "http://thinkphp.cn/",
+  "description": "the new thinkphp framework",
+  "require": {
+    "php": ">=7.1.0",
+    "topthink/framework": "5.2.*-dev",
+    "zoujingli/think-library": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "app\\": "app"
+    },
+    "psr-0": {
+      "": "extend/"
+    }
+  },
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://packagist.laravel-china.org"
+    }
+  }
+}
