@@ -15,7 +15,6 @@
 namespace library\logic;
 
 use library\Controller;
-use think\db\Query;
 
 /**
  * 基础视图管理器
@@ -28,35 +27,19 @@ abstract class Logic
      * 数据库操作对象
      * @var \think\db\Query
      */
-    protected $db;
+    protected $query;
 
     /**
      * 当前请求对象
      * @var \think\Request
      */
-    protected $request;
+    public $request;
 
     /**
      * 当前操作控制器引用
      * @var \library\Controller
      */
-    protected $controller;
-
-    /**
-     * View constructor.
-     * @param string|Query $dbQuery
-     */
-    public function __construct($dbQuery)
-    {
-        $this->request = app('request');
-        if (is_string($this->db)) {
-            if (class_exists('think\facade\Db')) {
-                $this->db = \think\facade\Db::name($this->db);
-            } else {
-                $this->db = \think\Db::name($this->db);
-            }
-        }
-    }
+    public $controller;
 
     /**
      * 逻辑器初始化

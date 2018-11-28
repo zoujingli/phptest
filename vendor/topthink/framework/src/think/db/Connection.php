@@ -576,10 +576,9 @@ abstract class Connection
      * @param  bool      $master 是否在主服务器读操作
      * @param  Model     $model 模型对象实例
      * @param  array     $condition 查询条件
-     * @param  mixed     $relation 关联查询
      * @return \Generator
      */
-    public function getCursor(string $sql, array $bind = [], bool $master = false, $model = null, $condition = null, $relation = null)
+    public function getCursor(string $sql, array $bind = [], bool $master = false, $model = null, $condition = null)
     {
         $this->initConnect($master);
 
@@ -615,13 +614,7 @@ abstract class Connection
         // 返回结果集
         while ($result = $this->PDOStatement->fetch($this->fetchType)) {
             if ($model) {
-                $instance = $model->newInstance($result, $condition);
-
-                if ($relation) {
-                    $instance->relationQuery($relation);
-                }
-
-                yield $instance;
+                yield $model->newInstance($result, $condition);
             } else {
                 yield $result;
             }
@@ -675,25 +668,22 @@ abstract class Connection
             // 调试结束
             $this->debug(false, '', $master);
 
-            // 返回结果集
             if ($pdo) {
                 // 返回PDOStatement对象处理
                 return $this->PDOStatement;
             }
 
             return $this->getResult($procedure);
-        } catch (\PDOException $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->query($sql, $bind, $master, $pdo);
-            }
-
-            throw new PDOException($e, $this->config, $this->getLastsql());
         } catch (\Throwable | \Exception $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->query($sql, $bind, $master, $pdo);
             }
 
-            throw $e;
+            if ($e instanceof \PDOException) {
+                throw new PDOException($e, $this->config, $this->getLastsql());
+            } else {
+                throw $e;
+            }
         }
     }
 
@@ -745,18 +735,16 @@ abstract class Connection
             $this->numRows = $this->PDOStatement->rowCount();
 
             return $this->numRows;
-        } catch (\PDOException $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind, $query);
-            }
-
-            throw new PDOException($e, $this->config, $this->getLastsql());
         } catch (\Throwable | \Exception $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind, $query);
             }
 
-            throw $e;
+            if ($e instanceof \PDOException) {
+                throw new PDOException($e, $this->config, $this->getLastsql());
+            } else {
+                throw $e;
+            }
         }
     }
 
@@ -848,10 +836,9 @@ abstract class Connection
         $bind = $query->getBind();
 
         $condition = $options['where']['AND'] ?? null;
-        $relation  = $options['relaltion'] ?? null;
 
         // 执行查询操作
-        return $this->getCursor($sql, $bind, $options['master'], $query->getModel(), $condition, $relation);
+        return $this->getCursor($sql, $bind, $options['master'], $query->getModel(), $condition);
     }
 
     /**
@@ -886,7 +873,6 @@ abstract class Connection
         if (!$resultSet) {
             // 执行查询操作
             $resultSet = $this->query($sql, $bind, $options['master'], false);
-
         }
 
         if (!empty($options['cache']) && false !== $resultSet) {
@@ -974,7 +960,6 @@ abstract class Connection
                 foreach ($array as $item) {
                     $sql  = $this->builder->insertAll($query, $item, $replace);
                     $bind = $query->getBind();
-
                     $count += $this->execute($sql, $bind, $query);
                 }
 
@@ -1006,10 +991,7 @@ abstract class Connection
     public function selectInsert(Query $query, array $fields, string $table): int
     {
         // 分析查询表达式
-        $options = $query->parseOptions();
-
-        $sql = $this->builder->selectInsert($query, $fields, $table);
-
+        $sql  = $this->builder->selectInsert($query, $fields, $table);
         $bind = $query->getBind();
 
         return $this->execute($sql, $bind, $query);
@@ -1358,10 +1340,12 @@ abstract class Connection
             $value = is_array($val) ? $val[0] : $val;
             $type  = is_array($val) ? $val[1] : PDO::PARAM_STR;
 
-            if (PDO::PARAM_INT == $type || self::PARAM_FLOAT == $type) {
+            if (self::PARAM_FLOAT == $type) {
                 $value = (float) $value;
             } elseif (PDO::PARAM_STR == $type) {
-                $value = '\'' . (is_string($value) ? addslashes($value) : $value) . '\'';
+                $value = '\'' . addslashes($value) . '\'';
+            } elseif (PDO::PARAM_INT == $type && '' === $value) {
+                $value = 0;
             }
 
             // 判断占位符

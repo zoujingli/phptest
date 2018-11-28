@@ -24,14 +24,14 @@ use think\exception\HttpResponseException;
  * @package library
  * --------------------------------
  * @method logic\Query _query($dbQuery)
- * @method array _input($data, $rule = [], $message = [])
+ * @method array _input($data, $rule = [], $info = [])
  * @method mixed _delete($dbQuery, $pkField = '', $where = [])
  * @method mixed _save($dbQuery, $data = [], $pkField = '', $where = [])
+ * @method mixed _form($dbQuery, $tplFile = '', $pkField = '', $where = [], $data = [])
  * @method array _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
- * @method mixed _form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
  * --------------------------------
  * @author Anyon <zoujingli@qq.com>
- * @date 2018/11/10 11:31
+ * @date 2018/08/10 11:31
  */
 class Controller extends \stdClass
 {
@@ -56,15 +56,13 @@ class Controller extends \stdClass
      * @param string $method 函数名称
      * @param array $arguments 调用参数
      * @return mixed
-     * @throws \think\Exception
      * @throws \ReflectionException
+     * @throws \think\Exception
      */
     public function __call($method, $arguments = [])
     {
-        $name = "library\\logic\\" . ucfirst(ltrim($method, '_'));
-        if (class_exists($name)) {
-            $reflect = new \ReflectionClass($name);
-            return $reflect->newInstanceArgs($arguments)->init($this);
+        if (class_exists($name = "library\\logic\\" . ucfirst(ltrim($method, '_')))) {
+            return (new \ReflectionClass($name))->newInstanceArgs($arguments)->init($this);
         }
         if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], $arguments);

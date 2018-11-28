@@ -8,8 +8,8 @@ class Index extends Controller
 {
     public function index()
     {
-        return $this->_page('test');
-
+        url();
+        dump($this->_page('SystemUser', false, false));
     }
 
     public function hello($name = 'ThinkPHP5')

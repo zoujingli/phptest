@@ -279,12 +279,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/framework.git",
-            "reference": "8dfe8eb9ef5e5e5aa58fdf59b31a5713d27a285a"
+            "reference": "8591ed571193a25213cded924706d1530740425a"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/framework/zipball/8dfe8eb9ef5e5e5aa58fdf59b31a5713d27a285a",
-            "reference": "8dfe8eb9ef5e5e5aa58fdf59b31a5713d27a285a",
+            "url": "https://api.github.com/repos/top-think/framework/zipball/8591ed571193a25213cded924706d1530740425a",
+            "reference": "8591ed571193a25213cded924706d1530740425a",
             "shasum": "",
             "mirrors": [
                 {
@@ -308,7 +308,7 @@
             "sebastian/phpcpd": "2.*",
             "squizlabs/php_codesniffer": "2.*"
         },
-        "time": "2018-11-23T08:00:48+00:00",
+        "time": "2018-11-28T03:23:03+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -346,12 +346,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/zoujingli/ThinkLibrary.git",
-            "reference": "282d71cfb3427e1c4e2b6763da16678080245184"
+            "reference": "d6d7134d358c6998481f4f9b1e30c63e8466dc45"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/282d71cfb3427e1c4e2b6763da16678080245184",
-            "reference": "282d71cfb3427e1c4e2b6763da16678080245184",
+            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/d6d7134d358c6998481f4f9b1e30c63e8466dc45",
+            "reference": "d6d7134d358c6998481f4f9b1e30c63e8466dc45",
             "shasum": "",
             "mirrors": [
                 {
@@ -369,7 +369,7 @@
             "php": ">=5.4",
             "qiniu/php-sdk": "^7.2"
         },
-        "time": "2018-11-23T09:56:40+00:00",
+        "time": "2018-11-27T07:12:13+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

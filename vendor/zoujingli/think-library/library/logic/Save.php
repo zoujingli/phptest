@@ -51,16 +51,18 @@ class Save extends Logic
     /**
      * ViewForm constructor.
      * @param string|Query $dbQuery
+     * @param array $data 表单扩展数据
      * @param string $pkField 指定数据对象主键
      * @param array $where 额外更新条件
-     * @param array $data 表单扩展数据
+     * @throws \think\Exception
      */
     public function __construct($dbQuery, $data = [], $pkField = '', $where = [])
     {
-        parent::__construct($dbQuery);
         $this->where = $where;
+        $this->request = request();
+        $this->query = scheme_db($dbQuery);
         $this->data = empty($data) ? $this->request->post() : $data;
-        $this->pkField = empty($pkField) ? $this->db->getPk() : $pkField;
+        $this->pkField = empty($pkField) ? $this->query->getPk() : $pkField;
         $this->pkValue = $this->request->post($this->pkField, null);
     }
 
@@ -76,15 +78,15 @@ class Save extends Logic
         $this->controller = $controller;
         // 主键限制处理
         if (!isset($this->where[$this->pkField]) && is_string($this->pkValue)) {
-            $this->db->whereIn($this->pkField, explode(',', $this->pkValue));
+            $this->query->whereIn($this->pkField, explode(',', $this->pkValue));
             if (isset($this->data)) unset($this->data[$this->pkField]);
         }
         // 前置回调处理
-        if (false === $this->controller->_callback('_save_filter', $this->db, $this->data)) {
+        if (false === $this->controller->_callback('_save_filter', $this->query, $this->data)) {
             return false;
         }
         // 执行更新操作
-        $result = $this->db->where($this->where)->update($this->data) !== false;
+        $result = $this->query->where($this->where)->update($this->data) !== false;
         // 结果回调处理
         if (false === $this->controller->_callback('_save_result', $result)) {
             return $result;

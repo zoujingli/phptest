@@ -841,14 +841,24 @@ class Query
         if (false !== strpos($join, '(')) {
             // 使用子查询
             $table = $join;
-        } elseif (strpos($join, ' ')) {
-            // 使用别名
-            list($table, $alias) = explode(' ', $join);
         } else {
-            $table = $join;
+            // 使用别名
+            if (strpos($join, ' ')) {
+                // 使用别名
+                list($table, $alias) = explode(' ', $join);
+            } else {
+                $table = $join;
+                if (false === strpos($join, '.')) {
+                    $alias = $join;
+                }
+            }
+
+            if ($this->prefix && false === strpos($table, '.') && 0 !== strpos($table, $this->prefix)) {
+                $table = $this->getTable($table);
+            }
         }
 
-        if (isset($alias) && $table != $alias) {
+        if (!empty($alias) && $table != $alias) {
             $table = [$table => $alias];
         }
 
@@ -2255,6 +2265,17 @@ class Query
     }
 
     /**
+     * 检测参数是否已经绑定
+     * @access public
+     * @param  string $key 参数名
+     * @return bool
+     */
+    public function isBind($key)
+    {
+        return isset($this->bind[$key]);
+    }
+
+    /**
      * 参数绑定
      * @access public
      * @param  string $sql    绑定的sql表达式
@@ -2585,23 +2606,6 @@ class Query
     }
 
     /**
-     * 设置关联查询
-     * @access public
-     * @param  string|array $relation 关联名称
-     * @return $this
-     */
-    public function relation(array $relation)
-    {
-        if (empty($relation)) {
-            return $this;
-        }
-
-        $this->options['relation'] = $relation;
-
-        return $this;
-    }
-
-    /**
      * 插入记录
      * @access public
      * @param  array   $data         数据
@@ -2728,11 +2732,6 @@ class Query
      */
     public function cursor($data = null)
     {
-        if ($data instanceof Closure) {
-            $data($this);
-            $data = null;
-        }
-
         if (!is_null($data)) {
             // 主键条件分析
             $this->parsePkWhere($data);
@@ -2756,11 +2755,6 @@ class Query
      */
     public function select($data = null)
     {
-        if ($data instanceof Closure) {
-            $data($this);
-            $data = null;
-        }
-
         if (!is_null($data)) {
             // 主键条件分析
             $this->parsePkWhere($data);
@@ -2878,11 +2872,6 @@ class Query
      */
     public function find($data = null)
     {
-        if ($data instanceof Closure) {
-            $data($this);
-            $data = null;
-        }
-
         if (!is_null($data)) {
             // AR模式分析主键条件
             $this->parsePkWhere($data);
@@ -2917,11 +2906,11 @@ class Query
      */
     protected function resultToEmpty()
     {
-        if (!empty($this->options['allow_empty'])) {
-            return !empty($this->model) ? $this->model->newInstance([], true, $this->getModelUpdateCondition($this->options)) : [];
-        } elseif (!empty($this->options['fail'])) {
+        if (!empty($this->options['fail'])) {
             $this->throwNotFound($this->options);
         }
+
+        return !empty($this->model) ? $this->model->newInstance([], true) : [];
     }
 
     /**
@@ -3075,11 +3064,6 @@ class Query
             $result->append($options['append']);
         }
 
-        // 关联查询
-        if (!empty($options['relation'])) {
-            $result->relationQuery($options['relation'], $withRelationAttr);
-        }
-
         // 预载入查询
         if (!$resultSet && !empty($options['with'])) {
             $result->eagerlyResult($result, $options['with'], $withRelationAttr);
@@ -3143,20 +3127,6 @@ class Query
     public function findOrFail($data = null)
     {
         return $this->failException(true)->find($data);
-    }
-
-    /**
-     * 查找单条记录 如果不存在则返回空
-     * @access public
-     * @param  array|string|Query|Closure $data
-     * @return array|PDOStatement|string|Model
-     * @throws DbException
-     * @throws ModelNotFoundException
-     * @throws DataNotFoundException
-     */
-    public function findOrEmpty($data = null)
-    {
-        return $this->allowEmpty(true)->find($data);
     }
 
     /**
@@ -3277,7 +3247,7 @@ class Query
         if (isset($options['order'])) {
             // 视图查询排序处理
             foreach ($options['order'] as $key => $val) {
-                if (is_numeric($key)) {
+                if (is_numeric($key) && is_string($val)) {
                     if (strpos($val, ' ')) {
                         list($field, $sort) = explode(' ', $val);
                         if (array_key_exists($field, $options['map'])) {
@@ -3321,14 +3291,8 @@ class Query
 
             $key = isset($alias) ? $alias . '.' . $pk : $pk;
             // 根据主键查询
-            if (is_array($data)) {
-                $where[$pk] = isset($data[$pk]) ? [$key, '=', $data[$pk]] : [$key, 'in', $data];
-            } else {
-                $where[$pk] = is_string($data) && strpos($data, ',') ? [$key, 'IN', $data] : [$key, '=', $data];
-            }
-        }
+            $where[$pk] = is_array($data) ? [$key, 'in', $data] : [$key, '=', $data];
 
-        if (!empty($where)) {
             if (isset($this->options['where']['AND'])) {
                 $this->options['where']['AND'] = array_merge($this->options['where']['AND'], $where);
             } else {

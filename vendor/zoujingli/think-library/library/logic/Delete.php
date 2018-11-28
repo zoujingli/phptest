@@ -48,12 +48,14 @@ class Delete extends Logic
      * @param string|Query $dbQuery
      * @param string $pkField 指定数据对象主键
      * @param array $where 额外更新条件
+     * @throws \think\Exception
      */
     public function __construct($dbQuery, $pkField = '', $where = [])
     {
-        parent::__construct($dbQuery);
         $this->where = $where;
-        $this->pkField = empty($pkField) ? $this->db->getPk() : $pkField;
+        $this->request = request();
+        $this->query = scheme_db($dbQuery);
+        $this->pkField = empty($pkField) ? $this->query->getPk() : $pkField;
         $this->pkValue = $this->request->post($this->pkField, null);
     }
 
@@ -69,17 +71,17 @@ class Delete extends Logic
         $this->controller = $controller;
         // 主键限制处理
         if (!isset($this->where[$this->pkField]) && is_string($this->pkValue)) {
-            $this->db->whereIn($this->pkField, explode(',', $this->pkValue));
+            $this->query->whereIn($this->pkField, explode(',', $this->pkValue));
         }
         // 前置回调处理
-        if (false === $this->controller->_callback('_delete_filter', $this->db, $where)) {
+        if (false === $this->controller->_callback('_delete_filter', $this->query, $where)) {
             return null;
         }
         // 执行删除操作
-        if (method_exists($this->db, 'getTableFields') && in_array('is_deleted', $this->db->getTableFields())) {
-            $result = $this->db->where($this->where)->update(['is_deleted' => '1']);
+        if (method_exists($this->query, 'getTableFields') && in_array('is_deleted', $this->query->getTableFields())) {
+            $result = $this->query->where($this->where)->update(['is_deleted' => '1']);
         } else {
-            $result = $this->db->where($this->where)->delete();
+            $result = $this->query->where($this->where)->delete();
         }
         // 结果回调处理
         if (false === $this->controller->_callback('_delete_result', $result)) {

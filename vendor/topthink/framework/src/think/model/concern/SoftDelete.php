@@ -92,7 +92,7 @@ trait SoftDelete
      */
     public function delete(): bool
     {
-        if (!$this->isExists() || false === $this->trigger('before_delete', $this)) {
+        if (!$this->isExists() || $this->isEmpty() || false === $this->trigger('before_delete', $this)) {
             return false;
         }
 
@@ -138,7 +138,7 @@ trait SoftDelete
     public static function destroy($data, bool $force = false): bool
     {
         // 包含软删除数据
-        $query = self::withTrashed();
+        $query = (new static())->db(false);
 
         if (is_array($data) && key($data) !== 0) {
             $query->where($data);
