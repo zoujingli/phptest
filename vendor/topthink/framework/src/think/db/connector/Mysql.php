@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -14,37 +14,17 @@ namespace think\db\connector;
 
 use PDO;
 use think\db\Connection;
-use think\db\Query;
 
 /**
  * mysql数据库驱动
  */
 class Mysql extends Connection
 {
-
-    protected $builder = '\\think\\db\\builder\\Mysql';
-
     /**
-     * 初始化
-     * @access protected
-     * @return void
+     * Builder类
+     * @var string
      */
-    protected function initialize(): void
-    {
-        // Point类型支持
-        Query::extend('point', function ($query, $field, $value = null, $fun = 'GeomFromText', $type = 'POINT') {
-            if (!is_null($value)) {
-                $query->data($field, ['point', $value, $fun, $type]);
-            } else {
-                if (is_string($field)) {
-                    $field = explode(',', $field);
-                }
-                $query->setOption('point', $field);
-            }
-
-            return $query;
-        });
-    }
+    protected $builder = '\\think\\db\\builder\\Mysql';
 
     /**
      * 解析pdo连接的dsn信息
@@ -88,13 +68,14 @@ class Mysql extends Connection
         }
 
         $sql    = 'SHOW COLUMNS FROM ' . $tableName;
-        $pdo    = $this->query($sql, [], false, true);
+        $pdo    = $this->getPDOStatement($sql);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
 
         if ($result) {
             foreach ($result as $key => $val) {
-                $val                 = array_change_key_case($val);
+                $val = array_change_key_case($val);
+
                 $info[$val['field']] = [
                     'name'    => $val['field'],
                     'type'    => $val['type'],
@@ -118,7 +99,7 @@ class Mysql extends Connection
     public function getTables(string $dbName = ''): array
     {
         $sql    = !empty($dbName) ? 'SHOW TABLES FROM ' . $dbName : 'SHOW TABLES ';
-        $pdo    = $this->query($sql, [], false, true);
+        $pdo    = $this->getPDOStatement($sql);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
 

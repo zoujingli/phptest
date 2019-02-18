@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -21,9 +21,16 @@ use think\model\Relation;
 
 class HasManyThrough extends Relation
 {
-    // 中间关联表外键
+    /**
+     * 中间关联表外键
+     * @var string
+     */
     protected $throughKey;
-    // 中间表模型
+
+    /**
+     * 中间表模型
+     * @var string
+     */
     protected $through;
 
     /**

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -55,25 +55,19 @@ class RuleGroup extends Rule
      * @param  RuleGroup   $parent   上级对象
      * @param  string      $name     分组名称
      * @param  mixed       $rule     分组路由
-     * @param  array       $option   路由参数
      */
-    public function __construct(Route $router, RuleGroup $parent = null, string $name = '', $rule = [], array $option = [])
+    public function __construct(Route $router, RuleGroup $parent = null, string $name = '', $rule = null)
     {
         $this->router = $router;
         $this->parent = $parent;
         $this->rule   = $rule;
         $this->name   = trim($name, '/');
-        $this->option = $option;
 
         $this->setFullName();
 
         if ($this->parent) {
             $this->domain = $this->parent->getDomain();
             $this->parent->addRuleItem($this);
-        }
-
-        if (!empty($option['cross_domain'])) {
-            $this->router->setCrossDomainRule($this);
         }
 
         if ($router->isTest()) {
@@ -179,7 +173,7 @@ class RuleGroup extends Rule
 
         if ($this->auto) {
             // 自动解析URL地址
-            $result = new UrlDispatch($request, $this, $this->auto . '/' . $url, ['depr' => $depr, 'auto_search' => false]);
+            $result = new UrlDispatch($request, $this, $this->auto . '/' . $url);
         } elseif ($this->miss && in_array($this->miss->getMethod(), ['*', $method])) {
             // 未匹配所有路由的路由规则处理
             $result = $this->parseRule($request, '', $this->miss->getRoute(), $url, $this->miss->mergeGroupOptions());
@@ -255,8 +249,6 @@ class RuleGroup extends Rule
 
         if ($rule instanceof \Closure) {
             Container::getInstance()->invokeFunction($rule);
-        } elseif (is_array($rule)) {
-            $this->addRules($rule);
         } elseif (is_string($rule) && $rule) {
             $this->router->bind($rule, $this->domain);
         }
@@ -368,7 +360,7 @@ class RuleGroup extends Rule
      * @access public
      * @return RuleItem|null
      */
-    public function getMissRule(): ?RuleItem
+    public function getMissRule():  ? RuleItem
     {
         return $this->miss;
     }
@@ -378,7 +370,7 @@ class RuleGroup extends Rule
      * @access public
      * @return string
      */
-    public function getAutoRule(): string
+    public function getAutoRule() : string
     {
         return $this->auto;
     }
@@ -399,13 +391,12 @@ class RuleGroup extends Rule
      * @access public
      * @param  string    $route      路由地址
      * @param  string    $method     请求类型
-     * @param  array     $option     路由参数
      * @return RuleItem
      */
-    public function addMissRule(string $route, string $method = '*', array $option = []): RuleItem
+    public function miss(string $route, string $method = '*'): RuleItem
     {
         // 创建路由规则实例
-        $ruleItem = new RuleItem($this->router, $this, null, '', $route, strtolower($method), $option);
+        $ruleItem = new RuleItem($this->router, $this, null, '', $route, strtolower($method));
 
         $this->miss = $ruleItem;
 
@@ -416,11 +407,11 @@ class RuleGroup extends Rule
      * 添加分组下的路由规则或者子分组
      * @access public
      * @param  string    $rule       路由规则
-     * @param  string    $route      路由地址
+     * @param  mixed     $route      路由地址
      * @param  string    $method     请求类型
      * @return RuleItem
      */
-    public function addRule(string $rule, $route, string $method = '*'): RuleItem
+    public function addRule(string $rule, $route = null, string $method = '*'): RuleItem
     {
         // 读取路由标识
         if (is_array($rule)) {
@@ -441,41 +432,9 @@ class RuleGroup extends Rule
         // 创建路由规则实例
         $ruleItem = new RuleItem($this->router, $this, $name, $rule, $route, $method);
 
-        if (!empty($option['cross_domain'])) {
-            $this->router->setCrossDomainRule($ruleItem, $method);
-        }
-
         $this->addRuleItem($ruleItem, $method);
 
         return $ruleItem;
-    }
-
-    /**
-     * 批量注册路由规则
-     * @access public
-     * @param  array     $rules      路由规则
-     * @param  string    $method     请求类型
-     * @param  array     $option     路由参数
-     * @param  array     $pattern    变量规则
-     * @return void
-     */
-    public function addRules(array $rules, string $method = '*', array $option = [], array $pattern = []): void
-    {
-        foreach ($rules as $key => $val) {
-            if (is_numeric($key)) {
-                $key = array_shift($val);
-            }
-
-            if (is_array($val)) {
-                $route   = array_shift($val);
-                $option  = $val ? array_shift($val) : [];
-                $pattern = $val ? array_shift($val) : [];
-            } else {
-                $route = $val;
-            }
-
-            $this->addRule($key, $route, $method, $option, $pattern);
-        }
     }
 
     public function addRuleItem(Rule $rule, string $method = '*')
@@ -554,7 +513,7 @@ class RuleGroup extends Rule
      * @access public
      * @return string
      */
-    public function getFullName(): ?string
+    public function getFullName():  ? string
     {
         return $this->fullName;
     }
@@ -565,7 +524,7 @@ class RuleGroup extends Rule
      * @param  string     $method
      * @return array
      */
-    public function getRules(string $method = ''): array
+    public function getRules(string $method = '') : array
     {
         if ('' === $method) {
             return $this->rules;

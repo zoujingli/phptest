@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -19,12 +19,28 @@ use think\model\Relation;
 
 class MorphTo extends Relation
 {
-    // 多态字段
+    /**
+     * 多态关联外键
+     * @var string
+     */
     protected $morphKey;
+
+    /**
+     * 多态字段
+     * @var string
+     */
     protected $morphType;
-    // 多态别名
-    protected $alias;
-    // 关联名
+
+    /**
+     * 多态别名
+     * @var array
+     */
+    protected $alias = [];
+
+    /**
+     * 关联名
+     * @var string
+     */
     protected $relation;
 
     /**

@@ -23,12 +23,12 @@ class Event extends Make
             ->setDescription('Create a new event class');
     }
 
-    protected function getStub()
+    protected function getStub(): string
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'event.stub';
     }
 
-    protected function getNamespace(string $app)
+    protected function getNamespace(string $app): string
     {
         return parent::getNamespace($app) . '\\event';
     }

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -345,17 +345,12 @@ abstract class Rule
     /**
      * 设置参数过滤检查
      * @access public
-     * @param  string|array     $name
-     * @param  mixed            $value
+     * @param  array     $filter
      * @return $this
      */
-    public function filter($name, $value = null)
+    public function filter(array $filter)
     {
-        if (is_array($name)) {
-            $this->option['filter'] = $name;
-        } else {
-            $this->option['filter'][$name] = $value;
-        }
+        $this->option['filter'] = $name;
 
         return $this;
     }
@@ -391,11 +386,7 @@ abstract class Rule
      */
     public function append(array $append = [])
     {
-        if (isset($this->option['append'])) {
-            $this->option['append'] = array_merge($this->option['append'], $append);
-        } else {
-            $this->option['append'] = $append;
-        }
+        $this->option['append'] = $append;
 
         return $this;
     }
@@ -431,17 +422,12 @@ abstract class Rule
     /**
      * 设置Response Header信息
      * @access public
-     * @param  string|array $name  参数名
-     * @param  string       $value 参数值
+     * @param  array $header  头信息
      * @return $this
      */
-    public function header($header, $value = null)
+    public function header(array $header)
     {
-        if (is_array($header)) {
-            $this->option['header'] = $header;
-        } else {
-            $this->option['header'][$header] = $value;
-        }
+        $this->option['header'] = $header;
 
         return $this;
     }
@@ -486,17 +472,6 @@ abstract class Rule
     public function depr(string $depr)
     {
         return $this->setOption('param_depr', $depr);
-    }
-
-    /**
-     * 是否合并额外参数
-     * @access public
-     * @param  bool     $merge
-     * @return $this
-     */
-    public function mergeExtraVars(bool $merge = true)
-    {
-        return $this->setOption('merge_extra_vars', $merge);
     }
 
     /**
@@ -694,13 +669,17 @@ abstract class Rule
 
         // 替换路由地址中的变量
         if (is_string($route) && !empty($matches)) {
-            foreach ($matches as $key => $val) {
-                if (false !== strpos($route, '<' . $key . '>')) {
-                    $route = str_replace('<' . $key . '>', $val, $route);
-                } elseif (false !== strpos($route, ':' . $key)) {
-                    $route = str_replace(':' . $key, $val, $route);
-                }
+            $search = $replace = [];
+
+            foreach ($matches as $key => $value) {
+                $search[]  = '<' . $key . '>';
+                $replace[] = $value;
+
+                $search[]  = ':' . $key;
+                $replace[] = $value;
             }
+
+            $route = str_replace($search, $replace, $route);
         }
 
         // 解析额外参数
@@ -727,21 +706,23 @@ abstract class Rule
      */
     protected function dispatch(Request $request, $route, array $option): Dispatch
     {
-        if ($route instanceof \Closure) {
+        if ($route instanceof Dispatch) {
+            $result = $route;
+        } elseif ($route instanceof \Closure) {
             // 执行闭包
             $result = new CallbackDispatch($request, $this, $route);
         } elseif ($route instanceof Response) {
             $result = new ResponseDispatch($request, $this, $route);
         } elseif (isset($option['view']) && false !== $option['view']) {
-            $result = new ViewDispatch($route, is_array($option['view']) ? $option['view'] : []);
+            $result = new ViewDispatch($request, $this, $route, is_array($option['view']) ? $option['view'] : []);
         } elseif (!empty($option['redirect']) || 0 === strpos($route, '/') || strpos($route, '://')) {
             // 路由到重定向地址
-            $result = new RedirectDispatch($request, $this, $route, [], isset($option['status']) ? $option['status'] : 301);
+            $result = new RedirectDispatch($request, $this, $route, [], $option['status'] ?? 301);
         } elseif (false !== strpos($route, '\\')) {
-            // 路由到方法
+            // 路由到类的方法
             $result = $this->dispatchMethod($request, $route);
         } else {
-            // 路由到模块/控制器/操作
+            // 路由到控制器/操作
             $result = $this->dispatchController($request, $route);
         }
 
@@ -778,13 +759,9 @@ abstract class Rule
 
         $action     = array_pop($path);
         $controller = !empty($path) ? array_pop($path) : null;
-        $method     = $request->method();
-
-        // 设置当前请求的路由变量
-        $request->setRoute($var);
 
         // 路由到模块/控制器/操作
-        return new ControllerDispatch($request, $this, [$controller, $action], [], false);
+        return new ControllerDispatch($request, $this, [$controller, $action], $var);
     }
 
     /**
@@ -852,13 +829,9 @@ abstract class Rule
     protected function parseUrlParams(string $url, array &$var = []): void
     {
         if ($url) {
-            if ($this->getConfig('url_param_type')) {
-                $var += explode('|', $url);
-            } else {
-                preg_replace_callback('/(\w+)\|([^\|]+)/', function ($match) use (&$var) {
-                    $var[$match[1]] = strip_tags($match[2]);
-                }, $url);
-            }
+            preg_replace_callback('/(\w+)\|([^\|]+)/', function ($match) use (&$var) {
+                $var[$match[1]] = strip_tags($match[2]);
+            }, $url);
         }
     }
 
@@ -921,7 +894,7 @@ abstract class Rule
             }
         }
 
-        $regex = str_replace($match, $replace, $rule);
+        $regex = str_replace(array_unique($match), array_unique($replace), $rule);
         $regex = str_replace([')?/', ')/', ')?-', ')-', '\\\\/'], [')\/', ')\/', ')\-', ')\-', '\/'], $regex);
 
         if (isset($hasSlash)) {
@@ -1028,6 +1001,6 @@ abstract class Rule
 
     public function __wakeup()
     {
-        $this->router = Container::get('route');
+        $this->router = Container::pull('route');
     }
 }

@@ -16,7 +16,7 @@ use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
 use think\facade\App;
-use think\facade\Config;
+use think\facade\Route;
 
 abstract class Make extends Command
 {
@@ -38,7 +38,7 @@ abstract class Make extends Command
         $pathname = $this->getPathName($classname);
 
         if (is_file($pathname)) {
-            $output->writeln('<error>' . $this->type . ' already exists!</error>');
+            $output->writeln('<error>' . $this->type . ':' . $classname . ' already exists!</error>');
             return false;
         }
 
@@ -48,7 +48,7 @@ abstract class Make extends Command
 
         file_put_contents($pathname, $this->buildClass($classname));
 
-        $output->writeln('<info>' . $this->type . ' created successfully.</info>');
+        $output->writeln('<info>' . $this->type . ':' . $classname . ' created successfully.</info>');
     }
 
     protected function buildClass(string $name)
@@ -61,20 +61,20 @@ abstract class Make extends Command
 
         return str_replace(['{%className%}', '{%actionSuffix%}', '{%namespace%}', '{%app_namespace%}'], [
             $class,
-            Config::get('action_suffix'),
+            Route::config('action_suffix'),
             $namespace,
             App::getNamespace(),
         ], $stub);
     }
 
-    protected function getPathName(string $name)
+    protected function getPathName(string $name): string
     {
         $name = str_replace(App::getRootNamespace() . '\\', '', $name);
 
         return App::getBasePath() . ltrim(str_replace('\\', '/', $name), '/') . '.php';
     }
 
-    protected function getClassName(string $name)
+    protected function getClassName(string $name): string
     {
         if (strpos($name, '\\') !== false) {
             return $name;
@@ -93,7 +93,7 @@ abstract class Make extends Command
         return $this->getNamespace($app) . '\\' . $name;
     }
 
-    protected function getNamespace(string $app)
+    protected function getNamespace(string $app): string
     {
         $namespace = App::getRootNamespace();
 

@@ -51,6 +51,7 @@ class Console
         'optimize:config' => "think\\console\\command\\optimize\\Config",
         'optimize:schema' => "think\\console\\command\\optimize\\Schema",
         'optimize:route'  => "think\\console\\command\\optimize\\Route",
+        'optimize:facade' => "think\\console\\command\\optimize\\Facade",
         'run'             => "think\\console\\command\\RunServer",
         'version'         => "think\\console\\command\\Version",
         'route:list'      => "think\\console\\command\\RouteList",
@@ -105,7 +106,7 @@ class Console
         static $console;
 
         if (!$console) {
-            $config  = Container::get('config')->pull('console');
+            $config  = Container::pull('config')->pull('console');
             $console = new self($config['name'], $config['version'], $config['user']);
 
             $commands = $console->getDefinedCommands($config);
@@ -131,7 +132,7 @@ class Console
     {
         $commands = self::$defaultCommands;
 
-        $path = Container::get('env')->get('app_path');
+        $path = Container::pull('env')->get('app_path');
 
         if (is_dir($path . 'command')) {
             // 自动加载指令类

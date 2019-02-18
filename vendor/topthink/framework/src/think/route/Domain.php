@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -27,13 +27,11 @@ class Domain extends RuleGroup
      * @param  Route       $router   路由对象
      * @param  string      $name     路由域名
      * @param  mixed       $rule     域名路由
-     * @param  array       $option   路由参数
      */
-    public function __construct(Route $router, string $name = '', $rule = null, array $option = [])
+    public function __construct(Route $router, string $name = '', $rule = null)
     {
         $this->router = $router;
         $this->domain = $name;
-        $this->option = $option;
         $this->rule   = $rule;
     }
 
@@ -42,19 +40,11 @@ class Domain extends RuleGroup
      * @access public
      * @param  Request      $request  请求对象
      * @param  string       $url      访问地址
-     * @param  string       $depr     路径分隔符
      * @param  bool         $completeMatch   路由是否完全匹配
      * @return Dispatch|false
      */
     public function check(Request $request, string $url, bool $completeMatch = false)
     {
-        // 检测别名路由
-        $result = $this->checkRouteAlias($request, $url);
-
-        if (false !== $result) {
-            return $result;
-        }
-
         // 检测URL绑定
         $result = $this->checkUrlBind($request, $url);
 
@@ -69,7 +59,7 @@ class Domain extends RuleGroup
 
         // 添加域名中间件
         if (!empty($this->option['middleware'])) {
-            Container::get('middleware')->import($this->option['middleware']);
+            Container::pull('middleware')->import($this->option['middleware']);
             unset($this->option['middleware']);
         }
 
@@ -90,22 +80,6 @@ class Domain extends RuleGroup
     }
 
     /**
-     * 检测路由别名
-     * @access private
-     * @param  Request   $request
-     * @param  string    $url URL地址
-     * @return Dispatch|false
-     */
-    private function checkRouteAlias(Request $request, string $url)
-    {
-        $alias = strpos($url, '|') ? strstr($url, '|', true) : $url;
-
-        $item = $this->router->getAlias($alias);
-
-        return $item ? $item->check($request, $url) : false;
-    }
-
-    /**
      * 检测URL绑定
      * @access private
      * @param  Request   $request
@@ -120,7 +94,7 @@ class Domain extends RuleGroup
             $this->parseBindAppendParam($bind);
 
             // 记录绑定信息
-            Container::get('app')->log('[ BIND ] ' . var_export($bind, true));
+            Container::pull('log')->record('[ BIND ] ' . var_export($bind, true));
 
             // 如果有URL绑定 则进行绑定检测
             $type = substr($bind, 0, 1);

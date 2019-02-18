@@ -6,7 +6,7 @@
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
-// | Author: 刘志淳 <chun@engineer.com>
+// | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
 namespace think\console\command\make;
@@ -27,7 +27,7 @@ class Command extends Make
             ->setDescription('Create a new command class');
     }
 
-    protected function buildClass(string $name)
+    protected function buildClass(string $name): string
     {
         $commandName = $this->input->getArgument('commandName') ?: strtolower(basename($name));
         $namespace   = trim(implode('\\', array_slice(explode('\\', $name), 0, -1)), '\\');
@@ -43,12 +43,12 @@ class Command extends Make
         ], $stub);
     }
 
-    protected function getStub()
+    protected function getStub(): string
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'command.stub';
     }
 
-    protected function getNamespace(string $app)
+    protected function getNamespace(string $app): string
     {
         return parent::getNamespace($app) . '\\command';
     }

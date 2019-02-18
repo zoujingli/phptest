@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -20,6 +20,7 @@ use think\exception\HttpResponseException;
 use think\facade\Cache;
 use think\facade\Config;
 use think\facade\Cookie;
+use think\facade\Db;
 use think\facade\Debug;
 use think\facade\Env;
 use think\facade\Event;
@@ -59,7 +60,7 @@ if (!function_exists('app')) {
      */
     function app(string $name = 'think\App', $args = [], bool $newInstance = false)
     {
-        return Container::get($name, $args, $newInstance);
+        return Container::pull($name, $args, $newInstance);
     }
 }
 
@@ -106,7 +107,7 @@ if (!function_exists('cache')) {
 
         // 缓存数据
         if (is_array($options)) {
-            $expire = isset($options['expire']) ? $options['expire'] : null; //修复查询缓存无法设置过期时间
+            $expire = $options['expire'] ?? null; //修复查询缓存无法设置过期时间
         } else {
             $expire = is_numeric($options) ? $options : null; //默认快捷缓存设置过期时间
         }
@@ -243,7 +244,7 @@ if (!function_exists('download')) {
      * @param string  $filename 要下载的文件
      * @param string  $name 显示文件名
      * @param bool    $content 是否为内容
-     * @param integer $expire 有效期（秒）
+     * @param int        $expire 有效期（秒）
      * @return \think\response\Download
      */
     function download(string $filename, string $name = '', bool $content = false, int $expire = 180)
@@ -256,7 +257,7 @@ if (!function_exists('dump')) {
     /**
      * 浏览器友好的变量输出
      * @param mixed     $var 变量
-     * @param boolean   $echo 是否输出 默认为true 如果为false 则返回输出字符串
+     * @param bool      $echo 是否输出 默认为true 如果为false 则返回输出字符串
      * @param string    $label 标签 默认为空
      * @return void|string
      */
@@ -298,7 +299,7 @@ if (!function_exists('exception')) {
      * 抛出异常处理
      *
      * @param string    $msg  异常消息
-     * @param integer   $code 异常代码 默认为0
+     * @param int      $code 异常代码 默认为0
      * @param string    $exception 异常类
      *
      * @throws Exception
@@ -363,7 +364,7 @@ if (!function_exists('json')) {
     /**
      * 获取\think\response\Json对象实例
      * @param mixed   $data 返回的数据
-     * @param integer $code 状态码
+     * @param int     $code 状态码
      * @param array   $header 头部
      * @param array   $options 参数
      * @return \think\response\Json
@@ -378,7 +379,7 @@ if (!function_exists('jsonp')) {
     /**
      * 获取\think\response\Jsonp对象实例
      * @param mixed   $data    返回的数据
-     * @param integer $code    状态码
+     * @param int     $code    状态码
      * @param array   $header 头部
      * @param array   $options 参数
      * @return \think\response\Jsonp
@@ -408,7 +409,7 @@ if (!function_exists('parse_name')) {
      * 字符串命名风格转换
      * type 0 将Java风格转换为C的风格 1 将C风格转换为Java的风格
      * @param string  $name 字符串
-     * @param integer $type 转换类型
+     * @param int     $type 转换类型
      * @param bool    $ucfirst 首字母是否大写（驼峰规则）
      * @return string
      */
@@ -426,12 +427,24 @@ if (!function_exists('parse_name')) {
     }
 }
 
+if (!function_exists('raw')) {
+    /**
+     * 生成一个数据库的Raw对象
+     * @param string         $str
+     * @return \think\db\Raw
+     */
+    function raw($str)
+    {
+        return Db::raw($str);
+    }
+}
+
 if (!function_exists('redirect')) {
     /**
      * 获取\think\response\Redirect对象实例
      * @param mixed         $url 重定向地址 支持Url::build方法的地址
      * @param array|integer $params 额外参数
-     * @param integer       $code 状态码
+     * @param int           $code 状态码
      * @return \think\response\Redirect
      */
     function redirect($url = [], $params = [], $code = 302)
@@ -465,7 +478,7 @@ if (!function_exists('response')) {
      * @param string     $type
      * @return Response
      */
-    function response($data = [], $code = 200, $header = [], $type = 'html')
+    function response($data = '', $code = 200, $header = [], $type = 'html')
     {
         return Response::create($data, $type, $code)->header($header);
     }
@@ -577,31 +590,35 @@ if (!function_exists('url')) {
     }
 }
 
-if (!function_exists('view')) {
+if (!function_exists('validate')) {
     /**
-     * 渲染模板输出
-     * @param string    $template 模板文件
-     * @param array     $vars 模板变量
-     * @param integer   $code 状态码
-     * @param callable  $filter 内容过滤
-     * @return \think\response\View
+     * 验证数据
+     * @param  array        $data     数据
+     * @param  string|array $validate 验证器名或者验证规则数组
+     * @param  array        $message  提示信息
+     * @param  bool         $batch    是否批量验证
+     * @return true
+     * @throws ValidateException
      */
-    function view(string $template = '', $vars = [], $code = 200, $filter = null)
+    function validate(array $data, $validate, array $message = [], bool $batch = false)
     {
-        return Response::create($template, 'view', $code)->assign($vars)->filter($filter);
-    }
-}
+        if (is_array($validate)) {
+            $v = new Validate($validate, $message);
+        } else {
+            if (strpos($validate, '.')) {
+                // 支持场景
+                list($validate, $scene) = explode('.', $validate);
+            }
 
-if (!function_exists('widget')) {
-    /**
-     * 渲染输出Widget
-     * @param string    $name Widget名称
-     * @param array     $data 传入的参数
-     * @return mixed
-     */
-    function widget(string $name, array $data = [])
-    {
-        return app()->action($name, $data, 'widget');
+            $class = app()->parseClass('validate', $validate);
+            $v     = $class::make([], $message);
+
+            if (!empty($scene)) {
+                $v->scene($scene);
+            }
+        }
+
+        return $v->batch($batch)->failException(true)->check($data);
     }
 }
 
@@ -609,7 +626,7 @@ if (!function_exists('xml')) {
     /**
      * 获取\think\response\Xml对象实例
      * @param mixed   $data    返回的数据
-     * @param integer $code    状态码
+     * @param int     $code    状态码
      * @param array   $header  头部
      * @param array   $options 参数
      * @return \think\response\Xml

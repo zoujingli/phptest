@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -60,31 +60,7 @@ class Fetch
 
         $field = $aggregate . '(' . $this->builder->parseKey($this->query, $field) . ') AS tp_' . strtolower($aggregate);
 
-        if (isset($options['field'])) {
-            $this->query->removeOption('field');
-        }
-
-        if (is_string($field)) {
-            $field = array_map('trim', explode(',', $field));
-        }
-
-        $this->query->setOption('field', $field);
-        $this->query->setOption('limit', '1');
-
-        // 生成查询SQL
-        $sql = $this->builder->select($this->query);
-
-        if (isset($options['field'])) {
-            $this->query->setOption('field', $options['field']);
-        } else {
-            $this->query->removeOption('field');
-        }
-
-        // 查询完成后清空聚合字段信息
-        $this->query->removeOption('limit');
-        $this->query->removeOption('field');
-
-        return $this->fetch($sql);
+        return $this->value($field);
     }
 
     /**
@@ -106,18 +82,15 @@ class Fetch
         }
 
         $this->query->setOption('field', $field);
-        $this->query->setOption('limit', '1');
 
         // 生成查询SQL
-        $sql = $this->builder->select($this->query);
+        $sql = $this->builder->select($this->query, true);
 
         if (isset($options['field'])) {
             $this->query->setOption('field', $options['field']);
         } else {
             $this->query->removeOption('field');
         }
-
-        $this->query->removeOption('limit');
 
         return $this->fetch($sql);
     }
@@ -171,6 +144,7 @@ class Fetch
         $this->query->setOption('data', array_merge($options['data'], $data));
 
         $sql = $this->builder->insert($this->query, $replace);
+
         return $this->fetch($sql);
     }
 
@@ -220,6 +194,7 @@ class Fetch
         }
 
         $sql = $this->builder->insertAll($this->query, $dataSet, $replace);
+
         return $this->fetch($sql);
     }
 
@@ -234,6 +209,7 @@ class Fetch
     {
         $this->query->parseOptions();
         $sql = $this->builder->selectInsert($this->query, $fields, $table);
+
         return $this->fetch($sql);
     }
 
@@ -247,26 +223,21 @@ class Fetch
     {
         $options = $this->query->parseOptions();
 
-        $this->query->setOption('data', array_merge($options['data'], $data));
+        $data = array_merge($options['data'], $data);
 
-        if (isset($options['cache']) && is_string($options['cache']['key'])) {
-            $key = $options['cache']['key'];
-        }
-
-        $pk            = $this->query->getPk($options);
-        $data          = $options['data'];
-        $options['pk'] = $pk;
+        $pk   = $this->query->getPk();
+        $data = $options['data'];
 
         if (empty($options['where'])) {
             // 如果存在主键数据 则自动作为更新条件
             if (is_string($pk) && isset($data[$pk])) {
-                $where[$pk] = [$pk, '=', $data[$pk]];
+                $this->query->where($pk, '=', $data[$pk]);
                 unset($data[$pk]);
             } elseif (is_array($pk)) {
                 // 增加复合主键支持
                 foreach ($pk as $field) {
                     if (isset($data[$field])) {
-                        $where[$field] = [$field, '=', $data[$field]];
+                        $this->query->where($field, '=', $data[$field]);
                     } else {
                         // 如果缺少复合主键数据则不执行
                         throw new Exception('miss complex primary data');
@@ -275,12 +246,9 @@ class Fetch
                 }
             }
 
-            if (!isset($where)) {
+            if (empty($this->getOption('where'))) {
                 // 如果没有任何更新条件则不执行
                 throw new Exception('miss update condition');
-            } else {
-                $options['where']['AND'] = $where;
-                $this->query->setOption('where', ['AND' => $where]);
             }
         }
 
@@ -289,6 +257,7 @@ class Fetch
 
         // 生成UPDATE SQL语句
         $sql = $this->builder->update($this->query);
+
         return $this->fetch($sql);
     }
 
@@ -319,9 +288,9 @@ class Fetch
             }
         }
 
-        $this->query->setOption('data', $data);
         // 生成删除SQL语句
         $sql = $this->builder->delete($this->query);
+
         return $this->fetch($sql);
     }
 
@@ -333,11 +302,6 @@ class Fetch
      */
     public function select($data = null): string
     {
-        if ($data instanceof \Closure) {
-            $data($this);
-            $data = null;
-        }
-
         $this->query->parseOptions();
 
         if (!is_null($data)) {
@@ -345,9 +309,9 @@ class Fetch
             $this->query->parsePkWhere($data);
         }
 
-        $this->query->setOption('data', $data);
         // 生成查询SQL
         $sql = $this->builder->select($this->query);
+
         return $this->fetch($sql);
     }
 
@@ -359,11 +323,6 @@ class Fetch
      */
     public function find($data = null): string
     {
-        if ($data instanceof \Closure) {
-            $data($this);
-            $data = null;
-        }
-
         $this->query->parseOptions();
 
         if (!is_null($data)) {
@@ -371,14 +330,8 @@ class Fetch
             $this->query->parsePkWhere($data);
         }
 
-        $this->query->setOption('data', $data);
-
-        $this->query->setOption('limit', '1');
-
         // 生成查询SQL
-        $sql = $this->builder->select($this->query);
-
-        $this->query->removeOption('limit');
+        $sql = $this->builder->select($this->query, true);
 
         // 获取实际执行的SQL语句
         return $this->fetch($sql);
@@ -387,7 +340,7 @@ class Fetch
     /**
      * 查找多条记录 如果不存在则抛出异常
      * @access public
-     * @param  array|string|Query|\Closure $data
+     * @param  mixed $data
      * @return string
      */
     public function selectOrFail($data = null): string
@@ -398,23 +351,12 @@ class Fetch
     /**
      * 查找单条记录 如果不存在则抛出异常
      * @access public
-     * @param  array|string|Query|\Closure $data
+     * @param  mixed $data
      * @return string
      */
     public function findOrFail($data = null): string
     {
         return $this->failException(true)->find($data);
-    }
-
-    /**
-     * 查找单条记录 如果不存在则返回空
-     * @access public
-     * @param  array|string|Query|\Closure $data
-     * @return string
-     */
-    public function findOrEmpty($data = null): string
-    {
-        return $this->allowEmpty(true)->find($data);
     }
 
     /**

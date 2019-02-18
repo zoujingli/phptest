@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -191,8 +191,8 @@ class HasMany extends Relation
             $closure($this->query);
         }
 
-        return $this->query
-            ->whereExp($this->foreignKey, '=' . $this->parent->getTable() . '.' . $this->parent->getPk())
+        return $this->query->alias($aggregate . '_table')
+            ->whereExp($aggregate . '_table.' . $this->foreignKey, '=' . $this->parent->getTable() . '.' . $this->parent->getPk())
             ->fetchSql()
             ->$aggregate($field);
     }
@@ -237,6 +237,18 @@ class HasMany extends Relation
      */
     public function save($data, bool $replace = true)
     {
+        $model = $this->make();
+
+        return $model->replace($replace)->save($data) ? $model : false;
+    }
+
+    /**
+     * 创建关联对象实例
+     * @param array|Model $data
+     * @return Model
+     */
+    public function make($data = []): Model
+    {
         if ($data instanceof Model) {
             $data = $data->getData();
         }
@@ -244,9 +256,7 @@ class HasMany extends Relation
         // 保存关联表数据
         $data[$this->foreignKey] = $this->parent->{$this->localKey};
 
-        $model = new $this->model;
-
-        return $model->replace($replace)->save($data) ? $model : false;
+        return new $this->model($data);
     }
 
     /**

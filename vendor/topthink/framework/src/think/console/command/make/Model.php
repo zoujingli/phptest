@@ -24,12 +24,12 @@ class Model extends Make
             ->setDescription('Create a new model class');
     }
 
-    protected function getStub()
+    protected function getStub(): string
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'model.stub';
     }
 
-    protected function getNamespace(string $app)
+    protected function getNamespace(string $app): string
     {
         return parent::getNamespace($app) . '\\model';
     }

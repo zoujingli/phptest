@@ -45,7 +45,7 @@ class Config extends Command
         $output->writeln('<info>Succeed!</info>');
     }
 
-    protected function buildCacheContent($app)
+    protected function buildCacheContent(string $app): string
     {
         $header  = '// This cache file is automatically generated at:' . date('Y-m-d H:i:s') . PHP_EOL . 'declare (strict_types = 1);' . PHP_EOL;
         $content = '';
@@ -58,7 +58,7 @@ class Config extends Command
 
         $configPath = App::getConfigPath();
         $configExt  = App::getConfigExt();
-        $config     = Container::get('config');
+        $config     = Container::pull('config');
 
         // 加载应用配置文件
         $files = [];
@@ -120,7 +120,7 @@ class Config extends Command
         if (is_file($path . 'middleware.php')) {
             $middleware = include $path . 'middleware.php';
             if (is_array($middleware)) {
-                $content .= PHP_EOL . '\think\Container::get("middleware")->import(' . var_export($middleware, true) . ');' . PHP_EOL;
+                $content .= PHP_EOL . '\think\Container::pull("middleware")->import(' . var_export($middleware, true) . ');' . PHP_EOL;
             }
         }
 
@@ -131,8 +131,8 @@ class Config extends Command
             }
         }
 
-        $content .= PHP_EOL . '\think\facade\Config::set(' . var_export($config->get(), true) . ');' . PHP_EOL;
+        $content .= PHP_EOL . '\think\facade\Config::set(\think\facade\App::unserialize(\'' . \think\facade\App::serialize($config->get()) . '\'));' . PHP_EOL;
 
-        return $header . str_replace('declare (strict_types = 1);', '', $content);
+        return $header . preg_replace('/declare\s?\(\s?strict_types\s?=\s?1\s?\)\s?\;/i', '', $content);
     }
 }

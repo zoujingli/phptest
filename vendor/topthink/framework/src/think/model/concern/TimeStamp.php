@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -44,6 +44,54 @@ trait TimeStamp
     protected $dateFormat;
 
     /**
+     * 是否需要自动写入时间字段
+     * @access public
+     * @param  bool|string $auto
+     * @return $this
+     */
+    public function isAutoWriteTimestamp($auto)
+    {
+        $this->autoWriteTimestamp = $auto;
+
+        return $this;
+    }
+
+    /**
+     * 自动写入时间戳
+     * @access protected
+     * @param  string $name 时间戳字段
+     * @return mixed
+     */
+    protected function autoWriteTimestamp(string $name)
+    {
+        $value = time();
+
+        if (isset($this->type[$name])) {
+            $type = $this->type[$name];
+
+            if (strpos($type, ':')) {
+                list($type, $param) = explode(':', $type, 2);
+            }
+
+            switch ($type) {
+                case 'datetime':
+                case 'date':
+                case 'timestamp':
+                    $format = !empty($param) ? $param : $this->dateFormat;
+                    $format .= strpos($format, 'u') || false !== strpos($format, '\\') ? '' : '.u';
+                    $value = $this->formatDateTime($format);
+                    break;
+            }
+        } elseif (is_string($this->autoWriteTimestamp) && in_array(strtolower($this->autoWriteTimestamp),
+            ['datetime', 'date', 'timestamp'])) {
+            $format = strpos($this->dateFormat, 'u') || false !== strpos($this->dateFormat, '\\') ? '' : '.u';
+            $value  = $this->formatDateTime($this->dateFormat . $format);
+        }
+
+        return $value;
+    }
+
+    /**
      * 时间日期字段格式化处理
      * @access protected
      * @param  mixed $format    日期格式
@@ -61,13 +109,13 @@ trait TimeStamp
             return $time;
         } elseif (false !== strpos($format, '\\')) {
             return new $format($time);
-        } elseif ($time instanceof DateTime) {
-            return $time->format($format);
         }
 
-        if ($timestamp) {
+        if ($time instanceof DateTime) {
+            $dateTime = $time;
+        } elseif ($timestamp) {
             $dateTime = new DateTime();
-            $dateTime->setTimestamp($time);
+            $dateTime->setTimestamp((int) $time);
         } else {
             $dateTime = new DateTime($time);
         }
@@ -76,21 +124,21 @@ trait TimeStamp
     }
 
     /**
-     * 检查时间字段写入
+     * 获取时间字段值
      * @access protected
-     * @return void
+     * @param  mixed   $value
+     * @return mixed
      */
-    protected function checkTimeStampWrite(): void
+    protected function getTimestampValue($value)
     {
-        // 自动写入创建时间和更新时间
-        if ($this->autoWriteTimestamp) {
-            if ($this->createTime && !isset($this->data[$this->createTime])) {
-                $this->data[$this->createTime] = $this->autoWriteTimestamp($this->createTime);
-            }
-
-            if ($this->updateTime && !isset($this->data[$this->updateTime])) {
-                $this->data[$this->updateTime] = $this->autoWriteTimestamp($this->updateTime);
-            }
+        if (is_string($this->autoWriteTimestamp) && in_array(strtolower($this->autoWriteTimestamp), [
+            'datetime', 'date', 'timestamp',
+        ])) {
+            $value = $this->formatDateTime($this->dateFormat, $value);
+        } else {
+            $value = $this->formatDateTime($this->dateFormat, $value, true);
         }
+
+        return $value;
     }
 }

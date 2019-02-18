@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -47,7 +47,7 @@ trait RelationShip
      * 关联写入定义信息
      * @var array
      */
-    private $together;
+    private $together = [];
 
     /**
      * 关联自动写入信息
@@ -115,6 +115,37 @@ trait RelationShip
         $this->relation[$name] = $value;
 
         return $this;
+    }
+
+    /**
+     * 查询当前模型的关联数据
+     * @access public
+     * @param  array $relations 关联名
+     * @return void
+     */
+    public function relationQuery(array $relations): void
+    {
+        foreach ($relations as $key => $relation) {
+            $subRelation = '';
+            $closure     = null;
+
+            if ($relation instanceof \Closure) {
+                // 支持闭包查询过滤关联条件
+                $closure  = $relation;
+                $relation = $key;
+            }
+
+            if (is_array($relation)) {
+                $subRelation = $relation;
+                $relation    = $key;
+            } elseif (strpos($relation, '.')) {
+                list($relation, $subRelation) = explode('.', $relation, 2);
+            }
+
+            $method = App::parseName($relation, 1, false);
+
+            $this->relation[$relation] = $this->$method()->getRelation($subRelation, $closure);
+        }
     }
 
     /**

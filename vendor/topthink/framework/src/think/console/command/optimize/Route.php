@@ -43,10 +43,10 @@ class Route extends Command
         $output->writeln('<info>Succeed!</info>');
     }
 
-    protected function buildRouteCache($app)
+    protected function buildRouteCache(string $app): string
     {
-        Container::get('route')->setName([]);
-        Container::get('route')->lazy(false);
+        Container::pull('route')->setName([]);
+        Container::pull('route')->lazy(false);
 
         // 路由检测
         if ($app) {
@@ -63,13 +63,12 @@ class Route extends Command
             }
         }
 
-        if (Container::get('config')->get('route_annotation')) {
-            $suffix = Container::get('config')->get('controller_suffix') || Container::get('config')->get('class_suffix');
-            include Container::get('build')->buildRoute($suffix);
+        if (Container::pull('config')->get('route_annotation')) {
+            include Container::pull('build')->buildRoute();
         }
 
         $content = '<?php ' . PHP_EOL . 'return ';
-        $content .= var_export(Container::get('route')->getName(), true) . ';';
+        $content .= '\think\facade\App::unserialize(\'' . \think\facade\App::serialize(Container::pull('route')->getName()) . '\');';
         return $content;
     }
 

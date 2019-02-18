@@ -44,7 +44,7 @@ EOF
     /**
      * {@inheritdoc}
      */
-    public function getNativeDefinition()
+    public function getNativeDefinition(): InputDefinition
     {
         return $this->createDefinition();
     }
@@ -63,7 +63,7 @@ EOF
     /**
      * {@inheritdoc}
      */
-    private function createDefinition()
+    private function createDefinition(): InputDefinition
     {
         return new InputDefinition([
             new InputArgument('namespace', InputArgument::OPTIONAL, 'The namespace name'),

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -29,6 +29,7 @@ class File extends Driver
         'hash_type'     => 'md5',
         'data_compress' => false,
         'serialize'     => true,
+        'tag_prefix'    => 'tag_',
     ];
 
     protected $expire;
@@ -43,7 +44,7 @@ class File extends Driver
             $this->options = array_merge($this->options, $options);
         }
 
-        $app = Container::get('app');
+        $app = Container::pull('app');
 
         if (empty($this->options['path'])) {
             $this->options['path'] = $app->getRuntimePath() . 'cache' . DIRECTORY_SEPARATOR;
@@ -57,7 +58,7 @@ class File extends Driver
     /**
      * 初始化检查
      * @access private
-     * @return boolean
+     * @return bool
      */
     private function init(): bool
     {
@@ -163,7 +164,7 @@ class File extends Driver
      * @param  string        $name 缓存变量名
      * @param  mixed         $value  存储数据
      * @param  int|\DateTime $expire  有效时间 0为永久
-     * @return boolean
+     * @return bool
      */
     public function set($name, $value, $expire = null): bool
     {
@@ -243,7 +244,7 @@ class File extends Driver
      * 删除缓存
      * @access public
      * @param  string $name 缓存变量名
-     * @return boolean
+     * @return bool
      */
     public function rm(string $name): bool
     {
@@ -259,18 +260,16 @@ class File extends Driver
     /**
      * 清除缓存
      * @access public
-     * @param  string $tag 标签名
-     * @return boolean
+     * @return bool
      */
-    public function clear($tag = null): bool
+    public function clear(): bool
     {
-        if ($tag) {
+        if ($this->tag) {
             // 指定标签清除
-            $keys = $this->getTagItem($tag);
-            foreach ($keys as $key) {
-                $this->unlink($key);
+            foreach ($this->tag as $tag) {
+                $this->clearTag($tag);
             }
-            $this->rm('tag_' . md5($tag));
+
             return true;
         }
 
@@ -291,6 +290,17 @@ class File extends Driver
         }
 
         return true;
+    }
+
+    public function clearTag(string $tag)
+    {
+        $keys = $this->getTagItems($tag);
+
+        foreach ($keys as $key) {
+            $this->unlink($key);
+        }
+
+        $this->rm($this->getTagKey($tag));
     }
 
     /**

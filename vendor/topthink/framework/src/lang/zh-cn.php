@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -137,4 +137,6 @@ return [
     'invalid Request method'                                    => '无效的请求类型',
     'invalid token'                                             => '令牌数据无效',
     'not conform to the rules'                                  => '规则错误',
+
+    'record has update'                                         => '记录已经被更新了',
 ];

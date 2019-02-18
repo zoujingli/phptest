@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -26,6 +26,7 @@ class Sqlite extends Driver
         'expire'     => 0,
         'persistent' => false,
         'serialize'  => true,
+        'tag_prefix' => 'tag_',
     ];
 
     /**
@@ -112,7 +113,7 @@ class Sqlite extends Driver
      * @param  string            $name 缓存变量名
      * @param  mixed             $value  存储数据
      * @param  integer|\DateTime $expire  有效时间（秒）
-     * @return boolean
+     * @return bool
      */
     public function set($name, $value, $expire = null): bool
     {
@@ -193,7 +194,7 @@ class Sqlite extends Driver
      * 删除缓存
      * @access public
      * @param  string $name 缓存变量名
-     * @return boolean
+     * @return bool
      */
     public function rm(string $name): bool
     {
@@ -210,15 +211,14 @@ class Sqlite extends Driver
     /**
      * 清除缓存
      * @access public
-     * @param  string $tag 标签名
-     * @return boolean
+     * @return bool
      */
-    public function clear($tag = null): bool
+    public function clear(): bool
     {
-        if ($tag) {
-            $name = sqlite_escape_string($tag);
-            $sql  = 'DELETE FROM ' . $this->options['table'] . ' WHERE tag=\'' . $name . '\'';
-            sqlite_query($this->handler, $sql);
+        if ($this->tag) {
+            foreach ($this->tag as $tag) {
+                $this->clearTag($tag);
+            }
             return true;
         }
 
@@ -229,5 +229,12 @@ class Sqlite extends Driver
         sqlite_query($this->handler, $sql);
 
         return true;
+    }
+
+    public function clearTag(string $tag): void
+    {
+        $name = sqlite_escape_string($this->getTagKey($tag));
+        $sql  = 'DELETE FROM ' . $this->options['table'] . ' WHERE tag=\'' . $name . '\'';
+        sqlite_query($this->handler, $sql);
     }
 }

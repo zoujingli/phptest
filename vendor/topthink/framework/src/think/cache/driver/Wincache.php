@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -20,9 +20,10 @@ use think\cache\Driver;
 class Wincache extends Driver
 {
     protected $options = [
-        'prefix'    => '',
-        'expire'    => 0,
-        'serialize' => true,
+        'prefix'     => '',
+        'expire'     => 0,
+        'serialize'  => true,
+        'tag_prefix' => 'tag_',
     ];
 
     /**
@@ -79,7 +80,7 @@ class Wincache extends Driver
      * @param  string            $name 缓存变量名
      * @param  mixed             $value  存储数据
      * @param  integer|\DateTime $expire  有效时间（秒）
-     * @return boolean
+     * @return bool
      */
     public function set($name, $value, $expire = null): bool
     {
@@ -141,7 +142,7 @@ class Wincache extends Driver
      * 删除缓存
      * @access public
      * @param  string $name 缓存变量名
-     * @return boolean
+     * @return bool
      */
     public function rm(string $name): bool
     {
@@ -153,22 +154,29 @@ class Wincache extends Driver
     /**
      * 清除缓存
      * @access public
-     * @param  string $tag 标签名
-     * @return boolean
+     * @return bool
      */
-    public function clear($tag = null): bool
+    public function clear(): bool
     {
-        if ($tag) {
-            $keys = $this->getTagItem($tag);
-            foreach ($keys as $key) {
-                wincache_ucache_delete($key);
+        if ($this->tag) {
+            foreach ($this->tag as $tag) {
+                $this->clearTag($tag);
             }
-            $this->rm('tag_' . md5($tag));
             return true;
-        } else {
-            $this->writeTimes++;
-            return wincache_ucache_clear();
         }
+
+        $this->writeTimes++;
+        return wincache_ucache_clear();
+    }
+
+    public function clearTag(string $tag): void
+    {
+        $keys = $this->getTagItem($tag);
+
+        wincache_ucache_delete($keys);
+
+        $tagName = $this->getTagkey($tag);
+        $this->rm($tagName);
     }
 
 }

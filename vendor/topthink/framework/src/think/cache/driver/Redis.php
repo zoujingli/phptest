@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -32,6 +32,7 @@ class Redis extends Driver
         'persistent' => false,
         'prefix'     => '',
         'serialize'  => true,
+        'tag_prefix' => 'tag_',
     ];
 
     /**
@@ -69,6 +70,11 @@ class Redis extends Driver
                     unset($this->options[$key]);
                 }
             }
+
+            if ('' == $this->options['password']) {
+                unset($this->options['password']);
+            }
+
             $this->handler = new \Predis\Client($this->options, $params);
 
             $this->options['prefix'] = '';
@@ -114,7 +120,7 @@ class Redis extends Driver
      * @param  string            $name 缓存变量名
      * @param  mixed             $value  存储数据
      * @param  integer|\DateTime $expire  有效时间（秒）
-     * @return boolean
+     * @return bool
      */
     public function set($name, $value, $expire = null): bool
     {
@@ -134,14 +140,14 @@ class Redis extends Driver
         $value = $this->serialize($value);
 
         if ($expire) {
-            $result = $this->handler->setex($key, $expire, $value);
+            $this->handler->setex($key, $expire, $value);
         } else {
-            $result = $this->handler->set($key, $value);
+            $this->handler->set($key, $value);
         }
 
         isset($first) && $this->setTagItem($key);
 
-        return $result;
+        return true;
     }
 
     /**
@@ -180,38 +186,75 @@ class Redis extends Driver
      * 删除缓存
      * @access public
      * @param  string $name 缓存变量名
-     * @return boolean
+     * @return bool
      */
     public function rm(string $name): bool
     {
         $this->writeTimes++;
 
-        return $this->handler->delete($this->getCacheKey($name));
+        $this->handler->del($this->getCacheKey($name));
+        return true;
     }
 
     /**
      * 清除缓存
      * @access public
-     * @param  string $tag 标签名
-     * @return boolean
+     * @return bool
      */
-    public function clear($tag = null): bool
+    public function clear(): bool
     {
-        if ($tag) {
-            // 指定标签清除
-            $keys = $this->getTagItem($tag);
-
-            foreach ($keys as $key) {
-                $this->handler->delete($key);
+        if ($this->tag) {
+            foreach ($this->tag as $tag) {
+                $this->clearTag($tag);
             }
-
-            $this->rm('tag_' . md5($tag));
             return true;
         }
 
         $this->writeTimes++;
 
-        return $this->handler->flushDB();
+        $this->handler->flushDB();
+        return true;
+    }
+
+    public function clearTag(string $tag): void
+    {
+        // 指定标签清除
+        $keys = $this->getTagItems($tag);
+
+        $this->handler->del($keys);
+
+        $tagName = $this->getTagKey($tag);
+        $this->handler->del($tagName);
+    }
+
+    /**
+     * 更新标签
+     * @access protected
+     * @param  string $name 缓存标识
+     * @return void
+     */
+    protected function setTagItem(string $name): void
+    {
+        if ($this->tag) {
+            foreach ($this->tag as $tag) {
+                $tagName = $this->getTagKey($tag);
+                $this->handler->sAdd($tagName, $name);
+            }
+
+            $this->tag = null;
+        }
+    }
+
+    /**
+     * 获取标签包含的缓存标识
+     * @access public
+     * @param  string $tag 缓存标签
+     * @return array
+     */
+    public function getTagItems(string $tag): array
+    {
+        $tagName = $this->getTagKey($tag);
+        return $this->handler->sMembers($tagName);
     }
 
 }

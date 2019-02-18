@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -23,6 +23,7 @@ class Memcache extends Driver
         'persistent' => true,
         'prefix'     => '',
         'serialize'  => true,
+        'tag_prefix' => 'tag_',
     ];
 
     /**
@@ -52,8 +53,8 @@ class Memcache extends Driver
         }
 
         // 建立连接
-        foreach ((array) $hosts as $i => $host) {
-            $port = isset($ports[$i]) ? $ports[$i] : $ports[0];
+        foreach ($hosts as $i => $host) {
+            $port = $ports[$i] ?? $ports[0];
             $this->options['timeout'] > 0 ?
             $this->handler->addServer($host, $port, $this->options['persistent'], 1, $this->options['timeout']) :
             $this->handler->addServer($host, $port, $this->options['persistent'], 1);
@@ -180,19 +181,14 @@ class Memcache extends Driver
     /**
      * 清除缓存
      * @access public
-     * @param  string $tag 标签名
      * @return bool
      */
-    public function clear($tag = null): bool
+    public function clear(): bool
     {
-        if ($tag) {
-            // 指定标签清除
-            $keys = $this->getTagItem($tag);
-            foreach ($keys as $key) {
-                $this->handler->delete($key);
+        if ($this->tag) {
+            foreach ($this->tag as $tag) {
+                $this->clearTag($tag);
             }
-
-            $this->rm('tag_' . md5($tag));
             return true;
         }
 
@@ -200,4 +196,18 @@ class Memcache extends Driver
 
         return $this->handler->flush();
     }
+
+    public function clearTag(string $tag): void
+    {
+        // 指定标签清除
+        $keys = $this->getTagItems($tag);
+
+        foreach ($keys as $key) {
+            $this->handler->delete($key);
+        }
+
+        $tagName = $this->getTagKey($tag);
+        $this->rm($tagName);
+    }
+
 }

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -13,16 +13,24 @@ declare (strict_types = 1);
 namespace think\db\builder;
 
 use think\db\Builder;
-use think\db\Expression;
 use think\db\Query;
+use think\db\Raw;
 
 /**
  * Pgsql数据库驱动
  */
 class Pgsql extends Builder
 {
+    /**
+     * INSERT SQL表达式
+     * @var string
+     */
+    protected $insertSql = 'INSERT INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
 
-    protected $insertSql    = 'INSERT INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
+    /**
+     * INSERT ALL SQL表达式
+     * @var string
+     */
     protected $insertAllSql = 'INSERT INTO %TABLE% (%FIELD%) %DATA% %COMMENT%';
 
     /**
@@ -32,7 +40,7 @@ class Pgsql extends Builder
      * @param  mixed     $limit
      * @return string
      */
-    public function parseLimit(Query $query, $limit)
+    public function parseLimit(Query $query, string $limit): string
     {
         $limitStr = '';
 
@@ -56,11 +64,11 @@ class Pgsql extends Builder
      * @param  bool      $strict   严格检测
      * @return string
      */
-    public function parseKey(Query $query, $key, bool $strict = false)
+    public function parseKey(Query $query, $key, bool $strict = false): string
     {
         if (is_int($key)) {
-            return $key;
-        } elseif ($key instanceof Expression) {
+            return (string) $key;
+        } elseif ($key instanceof Raw) {
             return $key->getValue();
         }
 
@@ -98,7 +106,7 @@ class Pgsql extends Builder
      * @param  Query     $query        查询对象
      * @return string
      */
-    protected function parseRand(Query $query)
+    protected function parseRand(Query $query): string
     {
         return 'RANDOM()';
     }

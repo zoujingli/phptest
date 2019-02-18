@@ -1,22 +1,58 @@
 <?php
+// +----------------------------------------------------------------------
+// | ThinkPHP [ WE CAN DO IT JUST THINK ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liu21st <liu21st@gmail.com>
+// +----------------------------------------------------------------------
+use think\facade\Env;
 
 // +----------------------------------------------------------------------
-// | ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2017 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
-// +----------------------------------------------------------------------
-// | 官方网站: http://think.ctolog.com
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// +----------------------------------------------------------------------
-// | github开源项目：https://github.com/zoujingli/ThinkAdmin
+// | 应用设置
 // +----------------------------------------------------------------------
 
 return [
+    // 应用名称
+    'app_name'                => '',
+    // 应用地址
+    'app_host'                => '',
     // 应用调试模式
-    'app_debug'      => true,
-    // 应用Trace调试
-    'app_trace'      => false,
-    // URL参数方式 0 按名称成对解析 1 按顺序解析
-    'url_param_type' => 1,
+    'app_debug'               => false,
+    // 应用Trace
+    'app_trace'               => false,
+    // 默认输出类型
+    'default_return_type'     => 'html',
+    // 默认AJAX 数据返回格式,可选json xml ...
+    'default_ajax_return'     => 'json',
+    // 默认JSONP格式返回的处理方法
+    'default_jsonp_handler'   => 'jsonpReturn',
+    // 默认JSONP处理方法
+    'var_jsonp_handler'       => 'callback',
+    // 默认时区
+    'default_timezone'        => 'Asia/Shanghai',
+    // 是否开启多语言
+    'lang_switch_on'          => false,
+    // 默认语言
+    'default_lang'            => 'zh-cn',
+    // 默认验证器
+    'default_validate'        => '',
+
+    // 默认跳转页面对应的模板文件
+    'dispatch_success_tmpl'   => Env::get('think_path') . 'tpl/dispatch_jump.tpl',
+    'dispatch_error_tmpl'     => Env::get('think_path') . 'tpl/dispatch_jump.tpl',
+
+    // 异常页面的模板文件
+    'exception_tmpl'          => Env::get('think_path') . 'tpl/think_exception.tpl',
+
+    // 错误显示信息,非调试模式有效
+    'error_message'           => '页面错误！请稍后再试～',
+    // 显示错误信息
+    'show_error_msg'          => false,
+    // 异常处理handle类 留空使用 \think\exception\Handle
+    'exception_handle'        => '',
+    // 异常响应输出类型
+    'exception_response_type' => 'html',
 ];

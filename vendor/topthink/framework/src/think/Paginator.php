@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -166,10 +166,10 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
      */
     public static function getCurrentPage(string $varPage = 'page', int $default = 1): int
     {
-        $page = Container::get('request')->param($varPage);
+        $page = Container::pull('request')->param($varPage);
 
         if (filter_var($page, FILTER_VALIDATE_INT) !== false && (int) $page >= 1) {
-            return $page;
+            return (int) $page;
         }
 
         return $default;
@@ -182,7 +182,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
      */
     public static function getCurrentPath(): string
     {
-        return Container::get('request')->baseUrl();
+        return Container::pull('request')->baseUrl();
     }
 
     public function total(): int
@@ -216,7 +216,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
     /**
      * 数据是否足够分页
      * @access public
-     * @return boolean
+     * @return bool
      */
     public function hasPages(): bool
     {

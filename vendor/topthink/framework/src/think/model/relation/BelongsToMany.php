@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -19,16 +19,32 @@ use think\Exception;
 use think\Model;
 use think\model\Pivot;
 use think\model\Relation;
+use think\Paginator;
 
 class BelongsToMany extends Relation
 {
-    // 中间表表名
+    /**
+     * 中间表表名
+     * @var string
+     */
     protected $middle;
-    // 中间表模型名称
+
+    /**
+     * 中间表模型名称
+     * @var string
+     */
     protected $pivotName;
-    // 中间表模型对象
+
+    /**
+     * 中间表模型对象
+     * @var Pivot
+     */
     protected $pivot;
-    // 中间表数据名称
+
+    /**
+     * 中间表数据名称
+     * @var string
+     */
     protected $pivotDataName = 'pivot';
 
     /**
@@ -76,7 +92,7 @@ class BelongsToMany extends Relation
      * @param  string $name
      * @return $this
      */
-    public function pivotDataName(string $name)
+    public function name(string $name)
     {
         $this->pivotDataName = $name;
         return $this;
@@ -501,7 +517,7 @@ class BelongsToMany extends Relation
 
         foreach ($dataSet as $key => $data) {
             if (!$samePivot) {
-                $pivotData = isset($pivot[$key]) ? $pivot[$key] : [];
+                $pivotData = $pivot[$key] ?? [];
             } else {
                 $pivotData = $pivot;
             }
@@ -547,7 +563,10 @@ class BelongsToMany extends Relation
 
             foreach ($ids as $id) {
                 $pivot[$this->foreignKey] = $id;
-                $this->pivot->insert($pivot, true);
+                $this->pivot->replace()
+                    ->exists(false)
+                    ->data([])
+                    ->save($pivot);
                 $result[] = $this->newPivot($pivot);
             }
 

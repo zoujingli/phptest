@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -13,9 +13,9 @@ declare (strict_types = 1);
 namespace think\route;
 
 use think\Container;
-use think\exception\ValidateException;
 use think\Request;
 use think\Response;
+use think\Validate;
 
 abstract class Dispatch
 {
@@ -65,7 +65,7 @@ abstract class Dispatch
     {
         $this->request  = $request;
         $this->rule     = $rule;
-        $this->app      = Container::get('app');
+        $this->app      = Container::pull('app');
         $this->dispatch = $dispatch;
         $this->param    = $param;
         $this->code     = $code;
@@ -217,8 +217,7 @@ abstract class Dispatch
                 }
 
                 if ($match) {
-                    $query  = strpos($model, '\\') ? $model::where($where) : $this->app->model($model)->where($where);
-                    $result = $query->failException($exception)->find();
+                    $result = $model::where($where)->failException($exception)->find();
                 }
             }
 
@@ -245,8 +244,7 @@ abstract class Dispatch
             $tag    = null;
         }
 
-        $cache = $this->request->cache($key, $expire, $tag);
-        $this->app->setResponseCache($cache);
+        $this->request->cache($key, $expire, $tag);
     }
 
     /**
@@ -254,7 +252,7 @@ abstract class Dispatch
      * @access protected
      * @param  array             $option
      * @return void
-     * @throws ValidateException
+     * @throws \think\exception\ValidateException
      */
     protected function autoValidate(array $option): void
     {
@@ -262,28 +260,18 @@ abstract class Dispatch
 
         if (is_array($validate)) {
             // 指定验证规则
-            $v = $this->app->validate();
-            $v->rule($validate);
+            $v = new Validate($validate, $message);
         } else {
             // 调用验证器
-            $v = $this->app->validate($validate);
+            $class = $this->app->parseClass('validate', $validate);
+            $v     = $class::make([], $message);
+
             if (!empty($scene)) {
                 $v->scene($scene);
             }
         }
 
-        if (!empty($message)) {
-            $v->message($message);
-        }
-
-        // 批量验证
-        if ($batch) {
-            $v->batch(true);
-        }
-
-        if (!$v->check($this->request->param())) {
-            throw new ValidateException($v->getError());
-        }
+        $v->batch($batch)->failException(true)->check($this->request->param());
     }
 
     public function convert(bool $convert)
@@ -312,7 +300,16 @@ abstract class Dispatch
 
     public function __wakeup()
     {
-        $this->app     = Container::get('app');
-        $this->request = $this->app['request'];
+        $this->app     = Container::pull('app');
+        $this->request = $this->app->request;
+    }
+
+    public function __debugInfo()
+    {
+        return [
+            'dispatch' => $this->dispatch,
+            'param'    => $this->param,
+            'code'     => $this->code,
+        ];
     }
 }

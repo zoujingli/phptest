@@ -6,14 +6,14 @@
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
-// | Author: 刘志淳 <chun@engineer.com>
+// | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
 namespace think\console\command\make;
 
 use think\console\command\Make;
 use think\console\input\Option;
-use think\facade\Config;
+use think\facade\App;
 
 class Controller extends Make
 {
@@ -29,7 +29,7 @@ class Controller extends Make
             ->setDescription('Create a new resource controller class');
     }
 
-    protected function getStub()
+    protected function getStub(): string
     {
         $stubPath = __DIR__ . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR;
 
@@ -44,12 +44,12 @@ class Controller extends Make
         return $stubPath . 'controller.stub';
     }
 
-    protected function getClassName(string $name)
+    protected function getClassName(string $name): string
     {
-        return parent::getClassName($name) . (Config::get('controller_suffix') ? ucfirst(Config::get('url_controller_layer')) : '');
+        return parent::getClassName($name) . (App::hasControllerSuffix() ? 'Controller' : '');
     }
 
-    protected function getNamespace(string $app)
+    protected function getNamespace(string $app): string
     {
         return parent::getNamespace($app) . '\\controller';
     }

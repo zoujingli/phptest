@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -25,11 +25,22 @@ use think\model\Relation;
  */
 abstract class OneToOne extends Relation
 {
-    // 当前关联的JOIN类型
+    /**
+     * JOIN类型
+     * @var string
+     */
     protected $joinType = 'INNER';
-    // 要绑定的属性
+
+    /**
+     * 绑定的关联属性
+     * @var array
+     */
     protected $bindAttr = [];
-    // 关联名
+
+    /**
+     * 关联名
+     * @var string
+     */
     protected $relation;
 
     /**
@@ -189,7 +200,7 @@ abstract class OneToOne extends Relation
     /**
      * 绑定关联表的属性到父模型属性
      * @access public
-     * @param  mixed $attr 要绑定的属性列表
+     * @param  array $attr 要绑定的属性列表
      * @return $this
      */
     public function bind(array $attr)
@@ -262,8 +273,9 @@ abstract class OneToOne extends Relation
     protected function bindAttr(Model $model, Model $result): void
     {
         foreach ($this->bindAttr as $key => $attr) {
-            $key = is_numeric($key) ? $attr : $key;
-            if (isset($result->$key)) {
+            $key   = is_numeric($key) ? $attr : $key;
+            $value = $result->getOrigin($key);
+            if (!is_null($value)) {
                 throw new Exception('bind attr has exists:' . $key);
             } else {
                 $result->setAttr($key, $model ? $model->$attr : null);

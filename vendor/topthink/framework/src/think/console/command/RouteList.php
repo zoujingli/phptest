@@ -57,10 +57,10 @@ class RouteList extends Command
         file_put_contents($filename, 'Route List' . PHP_EOL . $content);
     }
 
-    protected function getRouteList($app)
+    protected function getRouteList(string $app): string
     {
-        Container::get('route')->setTestMode(true);
-        Container::get('route')->clear();
+        Container::pull('route')->setTestMode(true);
+        Container::pull('route')->clear();
 
         if (App::isMulti() && $app) {
             $path = App::getRootPath() . 'route' . DIRECTORY_SEPARATOR . $app . DIRECTORY_SEPARATOR;
@@ -76,10 +76,8 @@ class RouteList extends Command
             }
         }
 
-        if (Container::get('config')->get('route_annotation')) {
-            $suffix = Container::get('config')->get('controller_suffix') || Container::get('config')->get('class_suffix');
-
-            include Container::get('build')->buildRoute($suffix);
+        if (Container::pull('config')->get('route_annotation')) {
+            include Container::pull('build')->buildRoute();
         }
 
         $table = new Table();
@@ -92,7 +90,7 @@ class RouteList extends Command
 
         $table->setHeader($header);
 
-        $routeList = Container::get('route')->getRuleList();
+        $routeList = Container::pull('route')->getRuleList();
         $rows      = [];
 
         foreach ($routeList as $domain => $items) {
@@ -117,8 +115,8 @@ class RouteList extends Command
             }
 
             uasort($rows, function ($a, $b) use ($sort) {
-                $itemA = isset($a[$sort]) ? $a[$sort] : null;
-                $itemB = isset($b[$sort]) ? $b[$sort] : null;
+                $itemA = $a[$sort] ?? null;
+                $itemB = $b[$sort] ?? null;
 
                 return strcasecmp($itemA, $itemB);
             });

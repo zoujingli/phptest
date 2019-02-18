@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -17,6 +17,7 @@ use think\Collection;
 use think\Exception;
 use think\Model;
 use think\model\Collection as ModelCollection;
+use think\model\relation\OneToOne;
 
 /**
  * 模型数据转换处理
@@ -180,10 +181,37 @@ trait Conversion
 
             $item[$key] = $relation->append([$attr])->toArray();
         } else {
-            $value = $this->getAttr($name, $item);
+            $value       = $this->getAttr($name);
+            $item[$name] = $value;
 
-            if (false !== $value) {
-                $item[$name] = $value;
+            $this->getBindAttr($name, $value, $item);
+        }
+    }
+
+    protected function getBindAttr(string $name, $value, array &$item = [])
+    {
+        $relation = $this->isRelationAttr($name);
+        if (!$relation) {
+            return false;
+        }
+
+        $modelRelation = $this->$relation();
+
+        if ($modelRelation instanceof OneToOne) {
+            $bindAttr = $modelRelation->getBindAttr();
+
+            if ($bindAttr) {
+                unset($item[$name]);
+            }
+
+            foreach ($bindAttr as $key => $attr) {
+                $key = is_numeric($key) ? $attr : $key;
+
+                if (isset($item[$key])) {
+                    throw new Exception('bind attr has exists:' . $key);
+                }
+
+                $item[$key] = $value ? $value->getAttr($attr) : null;
             }
         }
     }
@@ -198,13 +226,11 @@ trait Conversion
                 $val->hidden($hidden[$key]);
             }
             // 关联模型对象
-            $result = $val->toArray();
-        } else {
-            // 模型属性
-            $result = $this->getAttr($key);
+            return $val->toArray();
         }
 
-        return $result;
+        // 模型属性
+        return $this->getAttr($key);
     }
 
     /**

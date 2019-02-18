@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -150,7 +150,7 @@ class File extends SplFileObject
      * 检查目录是否可写
      * @access protected
      * @param  string   $path    目录
-     * @return boolean
+     * @return bool
      */
     protected function checkPath(string $path): bool
     {
@@ -423,7 +423,7 @@ class File extends SplFileObject
         } else {
             switch ($this->rule) {
                 case 'date':
-                    $savename = date('Ymd') . DIRECTORY_SEPARATOR . md5(microtime(true));
+                    $savename = date('Ymd') . DIRECTORY_SEPARATOR . md5((string) microtime(true));
                     break;
                 default:
                     if (in_array($this->rule, hash_algos())) {
@@ -432,7 +432,7 @@ class File extends SplFileObject
                     } elseif (is_callable($this->rule)) {
                         $savename = call_user_func($this->rule);
                     } else {
-                        $savename = date('Ymd') . DIRECTORY_SEPARATOR . md5(microtime(true));
+                        $savename = date('Ymd') . DIRECTORY_SEPARATOR . md5((string) microtime(true));
                     }
             }
         }
@@ -476,7 +476,7 @@ class File extends SplFileObject
      */
     public function getError(): string
     {
-        $lang = Container::get('lang');
+        $lang = Container::pull('lang');
 
         if (is_array($this->error)) {
             list($msg, $vars) = $this->error;

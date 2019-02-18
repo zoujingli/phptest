@@ -1,4 +1,13 @@
 <?php
+// +----------------------------------------------------------------------
+// | ThinkPHP [ WE CAN DO IT JUST THINK ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liu21st <liu21st@gmail.com>
+// +----------------------------------------------------------------------
 declare (strict_types = 1);
 
 namespace think\model\concern;
@@ -19,7 +28,7 @@ trait SoftDelete
     /**
      * 判断当前实例是否被软删除
      * @access public
-     * @return boolean
+     * @return bool
      */
     public function trashed(): bool
     {
@@ -37,7 +46,7 @@ trait SoftDelete
      * @access public
      * @return Query
      */
-    public static function withTrashed()
+    public static function withTrashed(): Query
     {
         $model = new static();
 
@@ -114,6 +123,8 @@ trait SoftDelete
                 ->where($where)
                 ->removeOption('soft_delete')
                 ->delete();
+
+            $this->lazySave(false);
         }
 
         // 关联删除

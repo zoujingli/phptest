@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -18,13 +18,14 @@ use Closure;
 use Countable;
 use InvalidArgumentException;
 use IteratorAggregate;
+use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 use think\exception\ClassNotFoundException;
 
-class Container implements ArrayAccess, IteratorAggregate, Countable
+class Container implements ContainerInterface, ArrayAccess, IteratorAggregate, Countable
 {
     /**
      * 容器对象实例
@@ -43,30 +44,28 @@ class Container implements ArrayAccess, IteratorAggregate, Countable
      * @var array
      */
     protected $bind = [
-        'app'                   => App::class,
-        'build'                 => Build::class,
-        'cache'                 => Cache::class,
-        'config'                => Config::class,
-        'cookie'                => Cookie::class,
-        'db'                    => Db::class,
-        'debug'                 => Debug::class,
-        'env'                   => Env::class,
-        'event'                 => Event::class,
-        'lang'                  => Lang::class,
-        'log'                   => Log::class,
-        'middleware'            => Middleware::class,
-        'request'               => Request::class,
-        'response'              => Response::class,
-        'route'                 => Route::class,
-        'session'               => Session::class,
-        'template'              => Template::class,
-        'url'                   => Url::class,
-        'validate'              => Validate::class,
-        'view'                  => View::class,
-        'rule_name'             => route\RuleName::class,
+        'app'                     => App::class,
+        'build'                   => Build::class,
+        'cache'                   => Cache::class,
+        'config'                  => Config::class,
+        'cookie'                  => Cookie::class,
+        'db'                      => Db::class,
+        'debug'                   => Debug::class,
+        'env'                     => Env::class,
+        'event'                   => Event::class,
+        'lang'                    => Lang::class,
+        'log'                     => Log::class,
+        'middleware'              => Middleware::class,
+        'request'                 => Request::class,
+        'response'                => Response::class,
+        'route'                   => Route::class,
+        'session'                 => Session::class,
+        'url'                     => Url::class,
+        'validate'                => Validate::class,
+        'rule_name'               => route\RuleName::class,
 
         // 接口依赖注入
-        'think\LoggerInterface' => Log::class,
+        'Psr\Log\LoggerInterface' => Log::class,
     ];
 
     /**
@@ -101,49 +100,31 @@ class Container implements ArrayAccess, IteratorAggregate, Countable
     }
 
     /**
-     * 获取容器中的对象实例
+     * 获取容器中的对象实例 不存在则创建
      * @access public
      * @param  string        $abstract       类名或者标识
      * @param  array|true    $vars           变量
      * @param  bool          $newInstance    是否每次创建新的实例
      * @return object
      */
-    public static function get(string $abstract, array $vars = [], bool $newInstance = false)
+    public static function pull(string $abstract, array $vars = [], bool $newInstance = false)
     {
         return static::getInstance()->make($abstract, $vars, $newInstance);
     }
 
     /**
-     * 绑定一个类、闭包、实例、接口实现到容器
+     * 获取容器中的对象实例
      * @access public
-     * @param  string  $abstract    类标识、接口
-     * @param  mixed   $concrete    要绑定的类、闭包或者实例
-     * @return Container
+     * @param  string        $abstract       类名或者标识
+     * @return object
      */
-    public static function set(string $abstract, $concrete = null)
+    public function get($abstract)
     {
-        return static::getInstance()->bind($abstract, $concrete);
-    }
+        if ($this->has($abstract)) {
+            return $this->make($abstract);
+        }
 
-    /**
-     * 移除容器中的对象实例
-     * @access public
-     * @param  string  $abstract    类标识、接口
-     * @return void
-     */
-    public static function remove(string $abstract): void
-    {
-        static::getInstance()->delete($abstract);
-    }
-
-    /**
-     * 清除容器中的对象实例
-     * @access public
-     * @return void
-     */
-    public static function clear(): void
-    {
-        static::getInstance()->flush();
+        throw new ClassNotFoundException('class not exists: ' . $$abstract, $$abstract);
     }
 
     /**
@@ -210,7 +191,7 @@ class Container implements ArrayAccess, IteratorAggregate, Countable
      * @param  string    $name    类名或者标识
      * @return bool
      */
-    public function has(string $name): bool
+    public function has($name): bool
     {
         return $this->bound($name);
     }
@@ -231,7 +212,7 @@ class Container implements ArrayAccess, IteratorAggregate, Countable
     }
 
     /**
-     * 创建类的实例
+     * 创建类的实例 已经存在则直接获取
      * @access public
      * @param  string        $abstract       类名或者标识
      * @param  array         $vars           变量
@@ -240,7 +221,7 @@ class Container implements ArrayAccess, IteratorAggregate, Countable
      */
     public function make(string $abstract, array $vars = [], bool $newInstance = false)
     {
-        $abstract = isset($this->alias[$abstract]) ? $this->alias[$abstract] : $abstract;
+        $abstract = $this->alias[$abstract] ?? $abstract;
 
         if (isset($this->instances[$abstract]) && !$newInstance) {
             return $this->instances[$abstract];
@@ -275,7 +256,7 @@ class Container implements ArrayAccess, IteratorAggregate, Countable
     public function delete($abstract): void
     {
         foreach ((array) $abstract as $name) {
-            $name = isset($this->alias[$name]) ? $this->alias[$name] : $name;
+            $name = $this->alias[$name] ?? $name;
 
             if (isset($this->instances[$name])) {
                 unset($this->instances[$name]);
@@ -345,7 +326,7 @@ class Container implements ArrayAccess, IteratorAggregate, Countable
 
             $args = $this->bindParams($reflect, $vars);
 
-            return $reflect->invokeArgs(isset($class) ? $class : null, $args);
+            return $reflect->invokeArgs($class ?? null, $args);
         } catch (ReflectionException $e) {
             throw new Exception('method not exists: ' . (is_array($method) ? $method[0] . '::' . $method[1] : $method) . '()');
         }
@@ -483,7 +464,7 @@ class Container implements ArrayAccess, IteratorAggregate, Countable
 
     public function __get($name)
     {
-        return $this->make($name);
+        return $this->get($name);
     }
 
     public function __isset($name): bool

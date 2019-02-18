@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -13,6 +13,7 @@ declare (strict_types = 1);
 namespace think;
 
 use think\db\Connection;
+use think\db\Raw;
 
 class Db
 {
@@ -65,24 +66,24 @@ class Db
     }
 
     /**
-     * 获得查询次数
+     * 使用表达式设置数据
      * @access public
-     * @param  boolean $execute 是否包含所有查询
-     * @return integer
+     * @param  string $value 表达式
+     * @return Raw
      */
-    public function getQueryTimes(bool $execute = false): int
+    public function raw(string $value): Raw
     {
-        return $this->connection->getQueryTimes($execute);
+        return new Raw($value);
     }
 
     /**
-     * 获得执行次数
+     * 获得查询次数
      * @access public
      * @return integer
      */
-    public function getExecuteTimes(): int
+    public function getQueryTimes(): int
     {
-        return $this->connection->getExecuteTimes();
+        return $this->connection->getQueryTimes();
     }
 
     /**
@@ -95,46 +96,12 @@ class Db
     {
         if (empty($config)) {
             $config = $this->config;
-        } elseif (is_string($config) && false === strpos($config, '/')) {
+        } elseif (is_string($config)) {
             // 支持读取配置参数
-            $config = $this->config[$config] ?? $this->config;
+            $config = $this->config[$config] ?? null;
         }
 
-        return is_string($config) ? $this->parseDsnConfig($config) : $config;
-    }
-
-    /**
-     * DSN解析
-     * 格式： mysql://username:passwd@localhost:3306/DbName?param1=val1&param2=val2#utf8
-     * @access private
-     * @param  string $dsnStr
-     * @return array
-     */
-    private function parseDsnConfig(string $dsnStr): array
-    {
-        $info = parse_url($dsnStr);
-
-        if (!$info) {
-            return [];
-        }
-
-        $dsn = [
-            'type'     => $info['scheme'],
-            'username' => $info['user'] ?? '',
-            'password' => $info['pass'] ?? '',
-            'hostname' => $info['host'] ?? '',
-            'hostport' => $info['port'] ?? '',
-            'database' => !empty($info['path']) ? ltrim($info['path'], '/') : '',
-            'charset'  => $info['fragment'] ?? 'utf8',
-        ];
-
-        if (isset($info['query'])) {
-            parse_str($info['query'], $dsn['params']);
-        } else {
-            $dsn['params'] = [];
-        }
-
-        return $dsn;
+        return $config;
     }
 
     /**

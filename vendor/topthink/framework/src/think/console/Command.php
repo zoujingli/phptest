@@ -64,7 +64,7 @@ class Command
     /**
      * 忽略验证错误
      */
-    public function ignoreValidationErrors()
+    public function ignoreValidationErrors(): void
     {
         $this->ignoreValidationErrors = true;
     }
@@ -73,7 +73,7 @@ class Command
      * 设置控制台
      * @param Console $console
      */
-    public function setConsole(Console $console = null)
+    public function setConsole(Console $console = null): void
     {
         $this->console = $console;
     }
@@ -83,7 +83,7 @@ class Command
      * @return Console
      * @api
      */
-    public function getConsole()
+    public function getConsole(): Console
     {
         return $this->console;
     }
@@ -92,7 +92,7 @@ class Command
      * 是否有效
      * @return bool
      */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return true;
     }
@@ -101,8 +101,7 @@ class Command
      * 配置指令
      */
     protected function configure()
-    {
-    }
+    {}
 
     /**
      * 执行指令
@@ -123,8 +122,7 @@ class Command
      * @param Output $output
      */
     protected function interact(Input $input, Output $output)
-    {
-    }
+    {}
 
     /**
      * 初始化
@@ -132,8 +130,7 @@ class Command
      * @param Output $output An OutputInterface instance
      */
     protected function initialize(Input $input, Output $output)
-    {
-    }
+    {}
 
     /**
      * 执行
@@ -144,7 +141,7 @@ class Command
      * @see setCode()
      * @see execute()
      */
-    public function run(Input $input, Output $output)
+    public function run(Input $input, Output $output): int
     {
         $this->input  = $input;
         $this->output = $output;
@@ -188,10 +185,6 @@ class Command
      */
     public function setCode(callable $code)
     {
-        if (!is_callable($code)) {
-            throw new \InvalidArgumentException('Invalid callable provided to Command::setCode.');
-        }
-
         if (PHP_VERSION_ID >= 50400 && $code instanceof \Closure) {
             $r = new \ReflectionFunction($code);
             if (null === $r->getClosureThis()) {
@@ -208,7 +201,7 @@ class Command
      * 合并参数定义
      * @param bool $mergeArgs
      */
-    public function mergeConsoleDefinition($mergeArgs = true)
+    public function mergeConsoleDefinition(bool $mergeArgs = true)
     {
         if (null === $this->console
             || (true === $this->consoleDefinitionMerged
@@ -255,7 +248,7 @@ class Command
      * @return Definition
      * @api
      */
-    public function getDefinition()
+    public function getDefinition(): Definition
     {
         return $this->definition;
     }
@@ -264,7 +257,7 @@ class Command
      * 获取当前指令的参数定义
      * @return Definition
      */
-    public function getNativeDefinition()
+    public function getNativeDefinition(): Definition
     {
         return $this->getDefinition();
     }
@@ -277,7 +270,7 @@ class Command
      * @param mixed  $default     默认值
      * @return Command
      */
-    public function addArgument($name, $mode = null, $description = '', $default = null)
+    public function addArgument(string $name, int $mode = null, string $description = '', $default = null)
     {
         $this->definition->addArgument(new Argument($name, $mode, $description, $default));
 
@@ -293,7 +286,7 @@ class Command
      * @param mixed  $default     默认值
      * @return Command
      */
-    public function addOption($name, $shortcut = null, $mode = null, $description = '', $default = null)
+    public function addOption(string $name, string $shortcut = null, int $mode = null, string $description = '', $default = null)
     {
         $this->definition->addOption(new Option($name, $shortcut, $mode, $description, $default));
 
@@ -306,7 +299,7 @@ class Command
      * @return Command
      * @throws \InvalidArgumentException
      */
-    public function setName($name)
+    public function setName(string $name)
     {
         $this->validateName($name);
 
@@ -319,7 +312,7 @@ class Command
      * 获取指令名称
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -329,7 +322,7 @@ class Command
      * @param string $description
      * @return Command
      */
-    public function setDescription($description)
+    public function setDescription(string $description)
     {
         $this->description = $description;
 
@@ -340,7 +333,7 @@ class Command
      *  获取描述
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -350,7 +343,7 @@ class Command
      * @param string $help
      * @return Command
      */
-    public function setHelp($help)
+    public function setHelp(string $help)
     {
         $this->help = $help;
 
@@ -361,7 +354,7 @@ class Command
      * 获取帮助信息
      * @return string
      */
-    public function getHelp()
+    public function getHelp(): string
     {
         return $this->help;
     }
@@ -370,7 +363,7 @@ class Command
      * 描述信息
      * @return string
      */
-    public function getProcessedHelp()
+    public function getProcessedHelp(): string
     {
         $name = $this->name;
 
@@ -392,12 +385,8 @@ class Command
      * @return Command
      * @throws \InvalidArgumentException
      */
-    public function setAliases($aliases)
+    public function setAliases(iterable $aliases)
     {
-        if (!is_array($aliases) && !$aliases instanceof \Traversable) {
-            throw new \InvalidArgumentException('$aliases must be an array or an instance of \Traversable');
-        }
-
         foreach ($aliases as $alias) {
             $this->validateName($alias);
         }
@@ -411,7 +400,7 @@ class Command
      * 获取别名
      * @return array
      */
-    public function getAliases()
+    public function getAliases(): array
     {
         return $this->aliases;
     }
@@ -421,7 +410,7 @@ class Command
      * @param bool $short 是否简单的
      * @return string
      */
-    public function getSynopsis($short = false)
+    public function getSynopsis(bool $short = false): string
     {
         $key = $short ? 'short' : 'long';
 
@@ -437,7 +426,7 @@ class Command
      * @param string $usage
      * @return $this
      */
-    public function addUsage($usage)
+    public function addUsage(string $usage)
     {
         if (0 !== strpos($usage, $this->name)) {
             $usage = sprintf('%s %s', $this->name, $usage);
@@ -452,7 +441,7 @@ class Command
      * 获取用法介绍
      * @return array
      */
-    public function getUsages()
+    public function getUsages(): array
     {
         return $this->usages;
     }
@@ -462,7 +451,7 @@ class Command
      * @param string $name
      * @throws \InvalidArgumentException
      */
-    private function validateName($name)
+    private function validateName(string $name)
     {
         if (!preg_match('/^[^\:]++(\:[^\:]++)*$/', $name)) {
             throw new \InvalidArgumentException(sprintf('Command name "%s" is invalid.', $name));
@@ -474,7 +463,7 @@ class Command
      * @param Table $table
      * @return string
      */
-    protected function table(Table $table)
+    protected function table(Table $table): string
     {
         $content = $table->render();
         $this->output->writeln($content);

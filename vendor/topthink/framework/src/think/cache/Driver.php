@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -45,7 +45,7 @@ abstract class Driver extends SimpleCache
 
     /**
      * 缓存标签
-     * @var string
+     * @var array
      */
     protected $tag;
 
@@ -53,21 +53,21 @@ abstract class Driver extends SimpleCache
      * 序列化方法
      * @var array
      */
-    protected static $serialize = ['serialize', 'unserialize', 'think_serialize:', 16];
+    protected static $serialize = ['\think\facade\App::serialize', '\think\facade\App::unserialize', 'think_serialize:', 16];
 
     /**
      * 获取有效期
      * @access protected
-     * @param  integer|\DateTime $expire 有效期
-     * @return integer
+     * @param  integer|\DateTimeInterface $expire 有效期
+     * @return int
      */
-    protected function getExpireTime($expire)
+    protected function getExpireTime($expire): int
     {
-        if ($expire instanceof \DateTime) {
+        if ($expire instanceof \DateTimeInterface) {
             $expire = $expire->getTimestamp() - time();
         }
 
-        return $expire;
+        return (int) $expire;
     }
 
     /**
@@ -107,36 +107,34 @@ abstract class Driver extends SimpleCache
      */
     public function remember(string $name, $value, $expire = null)
     {
-        if (!$this->has($name)) {
-            $time = time();
-            while ($time + 5 > time() && $this->has($name . '_lock')) {
-                // 存在锁定则等待
-                usleep(200000);
+        if ($this->has($name)) {
+            return $this->get($name);
+        }
+
+        $time = time();
+
+        while ($time + 5 > time() && $this->has($name . '_lock')) {
+            // 存在锁定则等待
+            usleep(200000);
+        }
+
+        try {
+            // 锁定
+            $this->set($name . '_lock', true);
+
+            if ($value instanceof \Closure) {
+                // 获取缓存数据
+                $value = Container::getInstance()->invokeFunction($value);
             }
 
-            try {
-                // 锁定
-                $this->set($name . '_lock', true);
+            // 缓存数据
+            $this->set($name, $value, $expire);
 
-                if ($value instanceof \Closure) {
-                    // 获取缓存数据
-                    $value = Container::getInstance()->invokeFunction($value);
-                }
-
-                // 缓存数据
-                $this->set($name, $value, $expire);
-
-                // 解锁
-                $this->rm($name . '_lock');
-            } catch (\Exception $e) {
-                $this->rm($name . '_lock');
-                throw $e;
-            } catch (\throwable $e) {
-                $this->rm($name . '_lock');
-                throw $e;
-            }
-        } else {
-            $value = $this->get($name);
+            // 解锁
+            $this->rm($name . '_lock');
+        } catch (\Exception | \throwable $e) {
+            $this->rm($name . '_lock');
+            throw $e;
         }
 
         return $value;
@@ -145,34 +143,12 @@ abstract class Driver extends SimpleCache
     /**
      * 缓存标签
      * @access public
-     * @param  string        $name 标签名
-     * @param  string|array  $keys 缓存标识
-     * @param  bool          $overlay 是否覆盖
+     * @param  string|array        $name 标签名
      * @return $this
      */
-    public function tag(string $name, $keys = null, bool $overlay = false)
+    public function tag($name)
     {
-        if (is_null($name)) {
-
-        } elseif (is_null($keys)) {
-            $this->tag = $name;
-        } else {
-            $key = 'tag_' . md5($name);
-
-            if (is_string($keys)) {
-                $keys = explode(',', $keys);
-            }
-
-            $keys = array_map([$this, 'getCacheKey'], $keys);
-
-            if ($overlay) {
-                $value = $keys;
-            } else {
-                $value = array_unique(array_merge($this->getTagItem($name), $keys));
-            }
-
-            $this->set($key, implode(',', $value), 0);
-        }
+        $this->tag = (array) $name;
 
         return $this;
     }
@@ -186,20 +162,27 @@ abstract class Driver extends SimpleCache
     protected function setTagItem(string $name): void
     {
         if ($this->tag) {
-            $key       = 'tag_' . md5($this->tag);
-            $prev      = $this->tag;
+            $tags      = $this->tag;
             $this->tag = null;
 
-            if ($this->has($key)) {
-                $value   = explode(',', $this->get($key));
-                $value[] = $name;
-                $value   = implode(',', array_unique($value));
-            } else {
-                $value = $name;
-            }
+            foreach ($tags as $tag) {
+                $key = $this->getTagKey($tag);
 
-            $this->set($key, $value, 0);
-            $this->tag = $prev;
+                if ($this->has($key)) {
+                    $value   = explode(',', $this->get($key));
+                    $value[] = $name;
+
+                    if (count($value) > 1000) {
+                        array_shift($value);
+                    }
+
+                    $value = implode(',', array_unique($value));
+                } else {
+                    $value = $name;
+                }
+
+                $this->set($key, $value, 0);
+            }
         }
     }
 
@@ -209,9 +192,9 @@ abstract class Driver extends SimpleCache
      * @param  string $tag 缓存标签
      * @return array
      */
-    protected function getTagItem(string $tag): array
+    protected function getTagItems(string $tag): array
     {
-        $key   = 'tag_' . md5($tag);
+        $key   = $this->getTagkey($tag);
         $value = $this->get($key);
 
         if ($value) {
@@ -219,6 +202,11 @@ abstract class Driver extends SimpleCache
         } else {
             return [];
         }
+    }
+
+    protected function getTagKey(string $tag): string
+    {
+        return $this->options['tag_prefix'] . md5($tag);
     }
 
     /**
@@ -248,11 +236,10 @@ abstract class Driver extends SimpleCache
     {
         if ($this->options['serialize'] && 0 === strpos($data, self::$serialize[2])) {
             $unserialize = self::$serialize[1];
-
             return $unserialize(substr($data, self::$serialize[3]));
-        } else {
-            return $data;
         }
+
+        return $data;
     }
 
     /**

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -21,10 +21,22 @@ use think\model\Relation;
 
 class MorphMany extends Relation
 {
-    // 多态字段
+
+    /**
+     * 多态关联外键
+     * @var string
+     */
     protected $morphKey;
+    /**
+     * 多态字段名
+     * @var string
+     */
     protected $morphType;
-    // 多态类型
+
+    /**
+     * 多态类型
+     * @var string
+     */
     protected $type;
 
     /**
@@ -278,6 +290,18 @@ class MorphMany extends Relation
      */
     public function save($data)
     {
+        $model = $this->make();
+
+        return $model->save($data) ? $model : false;
+    }
+
+    /**
+     * 创建关联对象实例
+     * @param array $data
+     * @return Model
+     */
+    public function make($data = []): Model
+    {
         if ($data instanceof Model) {
             $data = $data->getData();
         }
@@ -285,12 +309,10 @@ class MorphMany extends Relation
         // 保存关联表数据
         $pk = $this->parent->getPk();
 
-        $model = new $this->model;
-
         $data[$this->morphKey]  = $this->parent->$pk;
         $data[$this->morphType] = $this->type;
 
-        return $model->save($data) ? $model : false;
+        return new $this->model($data);
     }
 
     /**

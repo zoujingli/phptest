@@ -40,7 +40,7 @@ class Handle
     {
         if (!$this->isIgnoreReport($exception)) {
             // 收集异常数据
-            if (Container::get('app')->isDebug()) {
+            if (Container::pull('app')->isDebug()) {
                 $data = [
                     'file'    => $exception->getFile(),
                     'line'    => $exception->getLine(),
@@ -56,11 +56,11 @@ class Handle
                 $log = "[{$data['code']}]{$data['message']}";
             }
 
-            if (Container::get('config')->get('log.record_trace')) {
+            if (Container::pull('config')->get('log.record_trace')) {
                 $log .= "\r\n" . $exception->getTraceAsString();
             }
 
-            Container::get('log')->record($log, 'error');
+            Container::pull('log')->record($log, 'error');
         }
     }
 
@@ -106,7 +106,7 @@ class Handle
      */
     public function renderForConsole(Output $output, Throwable $e)
     {
-        if (Container::get('app')->isDebug()) {
+        if (Container::pull('app')->isDebug()) {
             $output->setVerbosity(Output::VERBOSITY_DEBUG);
         }
 
@@ -121,9 +121,9 @@ class Handle
     protected function renderHttpException(HttpException $e)
     {
         $status   = $e->getStatusCode();
-        $template = Container::get('config')->get('http_exception_template');
+        $template = Container::pull('config')->get('http_exception_template');
 
-        if (!Container::get('app')->isDebug() && !empty($template[$status])) {
+        if (!Container::pull('app')->isDebug() && !empty($template[$status])) {
             return Response::create($template[$status], 'view', $status)->assign(['e' => $e]);
         } else {
             return $this->convertExceptionToResponse($e);
@@ -138,7 +138,7 @@ class Handle
     protected function convertExceptionToResponse(Throwable $exception)
     {
         // 收集异常数据
-        if (Container::get('app')->isDebug()) {
+        if (Container::pull('app')->isDebug()) {
             // 调试模式，获取详细的错误信息
             $data = [
                 'name'    => get_class($exception),
@@ -154,7 +154,7 @@ class Handle
                     'POST Data'             => $_POST,
                     'Files'                 => $_FILES,
                     'Cookies'               => $_COOKIE,
-                    'Session'               => isset($_SESSION) ? $_SESSION : [],
+                    'Session'               => $_SESSION ?? [],
                     'Server/Request Data'   => $_SERVER,
                     'Environment Variables' => $_ENV,
                     'ThinkPHP Constants'    => $this->getConst(),
@@ -167,38 +167,38 @@ class Handle
                 'message' => $this->getMessage($exception),
             ];
 
-            if (!Container::get('config')->get('show_error_msg')) {
+            if (!Container::pull('config')->get('show_error_msg')) {
                 // 不显示详细错误信息
-                $data['message'] = Container::get('config')->get('error_message');
+                $data['message'] = Container::pull('config')->get('error_message');
             }
         }
 
-        //保留一层
-        while (ob_get_level() > 1) {
-            ob_end_clean();
+        $type = Container::pull('config')->get('exception_response_type') ?: 'html';
+
+        if ('html' == $type) {
+            //保留一层
+            while (ob_get_level() > 1) {
+                ob_end_clean();
+            }
+
+            $data['echo'] = ob_get_clean();
+
+            ob_start();
+            extract($data);
+            include Container::pull('config')->get('exception_tmpl');
+
+            // 获取并清空缓存
+            $data = ob_get_clean();
         }
 
-        $data['echo'] = ob_get_clean();
-
-        ob_start();
-        extract($data);
-        include Container::get('config')->get('exception_tmpl');
-
-        // 获取并清空缓存
-        $content  = ob_get_clean();
-        $response = Response::create($content, 'html');
+        $response = Response::create($data, $type);
 
         if ($exception instanceof HttpException) {
             $statusCode = $exception->getStatusCode();
             $response->header($exception->getHeaders());
         }
 
-        if (!isset($statusCode)) {
-            $statusCode = 500;
-        }
-        $response->code($statusCode);
-
-        return $response;
+        return $response->code($statusCode ?? 500);
     }
 
     /**
@@ -234,7 +234,7 @@ class Handle
             return $message;
         }
 
-        $lang = Container::get('lang');
+        $lang = Container::pull('lang');
 
         if (strpos($message, ':')) {
             $name    = strstr($message, ':', true);
@@ -302,6 +302,6 @@ class Handle
     {
         $const = get_defined_constants(true);
 
-        return isset($const['user']) ? $const['user'] : [];
+        return $const['user'] ?? [];
     }
 }

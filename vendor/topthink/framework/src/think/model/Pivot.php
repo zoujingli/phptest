@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -17,9 +17,16 @@ use think\Model;
 class Pivot extends Model
 {
 
-    /** @var Model */
+    /**
+     * 父模型
+     * @var Model
+     */
     public $parent;
 
+    /**
+     * 是否时间自动写入
+     * @var bool
+     */
     protected $autoWriteTimestamp = false;
 
     /**

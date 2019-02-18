@@ -19,7 +19,10 @@ use think\db\Connection;
  */
 class Sqlsrv extends Connection
 {
-    // PDO连接参数
+    /**
+     * 默认PDO连接参数
+     * @var array
+     */
     protected $params = [
         PDO::ATTR_CASE              => PDO::CASE_NATURAL,
         PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
@@ -27,6 +30,10 @@ class Sqlsrv extends Connection
         PDO::ATTR_STRINGIFY_FETCHES => false,
     ];
 
+    /**
+     * Builder类
+     * @var string
+     */
     protected $builder = '\\think\\db\\builder\\Sqlsrv';
 
     /**
@@ -35,7 +42,7 @@ class Sqlsrv extends Connection
      * @param  array $config 连接信息
      * @return string
      */
-    protected function parseDsn(array $config)
+    protected function parseDsn(array $config): string
     {
         $dsn = 'sqlsrv:Database=' . $config['database'] . ';Server=' . $config['hostname'];
 
@@ -52,7 +59,7 @@ class Sqlsrv extends Connection
      * @param  string $tableName
      * @return array
      */
-    public function getFields(string $tableName)
+    public function getFields(string $tableName): array
     {
         list($tableName) = explode(' ', $tableName);
 
@@ -64,13 +71,14 @@ class Sqlsrv extends Connection
         AND t.table_name    = c.table_name
         WHERE   t.table_name = '$tableName'";
 
-        $pdo    = $this->query($sql, [], false, true);
+        $pdo    = $this->getPDOStatement($sql);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
 
         if ($result) {
             foreach ($result as $key => $val) {
-                $val                       = array_change_key_case($val);
+                $val = array_change_key_case($val);
+
                 $info[$val['column_name']] = [
                     'name'    => $val['column_name'],
                     'type'    => $val['data_type'],
@@ -107,14 +115,14 @@ class Sqlsrv extends Connection
      * @param  string $dbName
      * @return array
      */
-    public function getTables(string $dbName = '')
+    public function getTables(string $dbName = ''): array
     {
         $sql = "SELECT TABLE_NAME
             FROM INFORMATION_SCHEMA.TABLES
             WHERE TABLE_TYPE = 'BASE TABLE'
             ";
 
-        $pdo    = $this->query($sql, [], false, true);
+        $pdo    = $this->getPDOStatement($sql);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
 
@@ -131,7 +139,7 @@ class Sqlsrv extends Connection
      * @param  string $sql
      * @return array
      */
-    protected function getExplain(string $sql)
+    protected function getExplain(string $sql): array
     {
         return [];
     }

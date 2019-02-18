@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -13,7 +13,7 @@ declare (strict_types = 1);
 namespace think;
 
 use think\exception\RouteNotFoundException;
-use think\route\AliasRule;
+use think\facade\RuleName;
 use think\route\Dispatch;
 use think\route\dispatch\Url as UrlDispatch;
 use think\route\Domain;
@@ -42,18 +42,7 @@ class Route
      * 配置参数
      * @var array
      */
-    protected $config = [
-        'url_lazy_route'         => true,
-        'route_rule_merge'       => true,
-        'controller_auto_search' => true,
-        'route_check_cache'      => false,
-    ];
-
-    /**
-     * 应用对象
-     * @var App
-     */
-    protected $app;
+    protected $config = [];
 
     /**
      * 请求对象
@@ -98,12 +87,6 @@ class Route
     protected $cross;
 
     /**
-     * 路由别名
-     * @var array
-     */
-    protected $alias = [];
-
-    /**
      * 路由是否延迟解析
      * @var bool
      */
@@ -121,19 +104,11 @@ class Route
      */
     protected $mergeRuleRegex = true;
 
-    /**
-     * 路由解析自动搜索多级控制器
-     * @var bool
-     */
-    protected $autoSearchController = true;
-
-    public function __construct(App $app, array $config = [])
+    public function __construct(Request $request, array $config = [])
     {
-        $this->app     = $app;
-        $this->request = $app['request'];
+        $this->request = $request;
         $this->config  = $config;
-
-        $this->host = $this->request->host(true) ?: $config['app_host'];
+        $this->host    = $this->request->host(true);
 
         $this->setDefaultDomain();
     }
@@ -143,16 +118,10 @@ class Route
         return $this->config[$name] ?? null;
     }
 
-    public static function __make(App $app, Config $config)
+    public static function __make(Request $request, Config $config)
     {
-        $config = $config->pull('app');
-        $route  = new static($app, $config);
-
-        $route->lazy($config['url_lazy_route'])
-            ->autoSearchController($config['controller_auto_search'])
-            ->mergeRuleRegex($config['route_rule_merge']);
-
-        return $route;
+        $config = $config->pull('route');
+        return new static($request, $config);
     }
 
     /**
@@ -210,18 +179,6 @@ class Route
         $this->mergeRuleRegex = $merge;
         $this->group->mergeRuleRegex($merge);
 
-        return $this;
-    }
-
-    /**
-     * 设置路由自动解析是否搜索多级控制器
-     * @access public
-     * @param  bool     $auto   是否自动搜索多级控制器
-     * @return $this
-     */
-    public function autoSearchController(bool $auto = true)
-    {
-        $this->autoSearchController = $auto;
         return $this;
     }
 
@@ -296,11 +253,9 @@ class Route
      * @access public
      * @param  string|array  $name 子域名
      * @param  mixed         $rule 路由规则
-     * @param  array         $option 路由参数
-     * @param  array         $pattern 变量规则
      * @return Domain
      */
-    public function domain($name, $rule = '', array $option = [], array $pattern = []): Domain
+    public function domain($name, $rule = null): Domain
     {
         // 支持多个域名使用相同路由规则
         $domainName = is_array($name) ? array_shift($name) : $name;
@@ -310,7 +265,7 @@ class Route
         }
 
         if (!isset($this->domains[$domainName])) {
-            $domain = (new Domain($this, $domainName, $rule, $option, $pattern))
+            $domain = (new Domain($this, $domainName, $rule))
                 ->lazy($this->lazy)
                 ->mergeRuleRegex($this->mergeRuleRegex);
 
@@ -387,7 +342,7 @@ class Route
             $result = $this->bind[$domain];
         } elseif (isset($name) && isset($this->bind[$name])) {
             $result = $this->bind[$name];
-        } elseif (isset($this->bind['*'])) {
+        } elseif (!empty($subDomain) && isset($this->bind['*'])) {
             $result = $this->bind['*'];
         } else {
             $result = null;
@@ -406,7 +361,7 @@ class Route
      */
     public function getName(string $name = null, string $domain = null, string $method = '*'): array
     {
-        return $this->app['rule_name']->getName($name, $domain, $method);
+        return RuleName::getName($name, $domain, $method);
     }
 
     /**
@@ -417,7 +372,7 @@ class Route
      */
     public function setName(array $name)
     {
-        $this->app['rule_name']->import($name);
+        RuleName::import($name);
         return $this;
     }
 
@@ -434,7 +389,7 @@ class Route
             $domain = $this->domain;
         }
 
-        return $this->app['rule_name']->getRule($rule, $domain);
+        return RuleName::getRule($rule, $domain);
     }
 
     /**
@@ -445,7 +400,7 @@ class Route
      */
     public function getRuleList(string $domain = null): array
     {
-        return $this->app['rule_name']->getRuleList($domain);
+        return RuleName::getRuleList($domain);
     }
 
     /**
@@ -455,7 +410,7 @@ class Route
      */
     public function clear(): void
     {
-        $this->app['rule_name']->clear();
+        RuleName::clear();
         $this->group->clear();
     }
 
@@ -467,7 +422,7 @@ class Route
      * @param  string    $method     请求类型
      * @return RuleItem
      */
-    public function rule(string $rule, $route, string $method = '*'): RuleItem
+    public function rule(string $rule, $route = null, string $method = '*'): RuleItem
     {
         return $this->group->addRule($rule, $route, $method);
     }
@@ -494,18 +449,17 @@ class Route
      * 注册路由分组
      * @access public
      * @param  string|array      $name       分组名称或者参数
-     * @param  array|\Closure    $route      分组路由
-     * @param  array             $option     路由参数
+     * @param  mixed             $route      分组路由
      * @return RuleGroup
      */
-    public function group($name, $route, array $option = []): RuleGroup
+    public function group($name, $route = null): RuleGroup
     {
-        if (is_array($name)) {
-            $option = $name;
-            $name   = $option['name'] ?? '';
+        if ($name instanceof \Closure) {
+            $route = $name;
+            $name  = '';
         }
 
-        return (new RuleGroup($this, $this->group, $name, $route, $option))
+        return (new RuleGroup($this, $this->group, $name, $route))
             ->lazy($this->lazy)
             ->mergeRuleRegex($this->mergeRuleRegex);
     }
@@ -587,12 +541,11 @@ class Route
      * @access public
      * @param  string    $rule 路由规则
      * @param  string    $route 路由地址
-     * @param  array     $option 路由参数
      * @return Resource
      */
-    public function resource(string $rule, string $route, array $option = []): Resource
+    public function resource(string $rule, string $route): Resource
     {
-        return (new Resource($this, $this->group, $rule, $route, $option, $this->rest))
+        return (new Resource($this, $this->group, $rule, $route, $this->rest))
             ->lazy($this->lazy);
     }
 
@@ -620,38 +573,6 @@ class Route
     public function redirect(string $rule, string $route = '', int $status = 301): RuleItem
     {
         return $this->rule($rule, $route, '*')->redirect()->status($status);
-    }
-
-    /**
-     * 注册别名路由
-     * @access public
-     * @param  string  $rule 路由别名
-     * @param  string  $route 路由地址
-     * @param  array   $option 路由参数
-     * @return AliasRule
-     */
-    public function alias(string $rule, string $route, array $option = []): AliasRule
-    {
-        $aliasRule = new AliasRule($this, $this->group, $rule, $route, $option);
-
-        $this->alias[$rule] = $aliasRule;
-
-        return $aliasRule;
-    }
-
-    /**
-     * 获取别名路由定义
-     * @access public
-     * @param  string    $name 路由别名
-     * @return string|array|null
-     */
-    public function getAlias(string $name = null)
-    {
-        if (is_null($name)) {
-            return $this->alias;
-        }
-
-        return $this->alias[$name] ?? null;
     }
 
     /**
@@ -692,12 +613,11 @@ class Route
      * @access public
      * @param  string    $route 路由地址
      * @param  string    $method 请求类型
-     * @param  array     $option 路由参数
      * @return RuleItem
      */
-    public function miss(string $route, string $method = '*', array $option = []): RuleItem
+    public function miss(string $route, string $method = '*'): RuleItem
     {
-        return $this->group->addMissRule($route, $method, $option);
+        return $this->group->miss($route, $method);
     }
 
     /**
@@ -715,11 +635,10 @@ class Route
      * 检测URL路由
      * @access public
      * @param  string    $url URL地址
-     * @param  bool      $must 是否强制路由
      * @return Dispatch
      * @throws RouteNotFoundException
      */
-    public function check(string $url, bool $must = false): Dispatch
+    public function check(string $url): Dispatch
     {
         // 自动检测域名路由
         $url = str_replace($this->config['pathinfo_depr'], '|', $url);
@@ -734,15 +653,23 @@ class Route
         }
 
         if (false !== $result) {
-            // 路由匹配
             return $result;
-        } elseif ($must) {
-            // 强制路由不匹配则抛出异常
+        } elseif ($this->config['url_route_must']) {
             throw new RouteNotFoundException();
         }
 
-        // 默认路由解析
-        return new UrlDispatch($this->request, $this->group, $url, ['auto_search' => $this->autoSearchController]);
+        return $this->url($url);
+    }
+
+    /**
+     * 默认URL解析
+     * @access public
+     * @param  string    $url URL地址
+     * @return Dispatch
+     */
+    public function url(string $url): UrlDispatch
+    {
+        return new UrlDispatch($this->request, $this->group, $url);
     }
 
     /**

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -33,14 +33,18 @@ class Event
     protected $bind = [
         'AppInit'      => event\AppInit::class,
         'AppBegin'     => event\AppBegin::class,
-        'ActionBegin'  => event\ActionBegin::class,
         'AppEnd'       => event\AppEnd::class,
         'LogLevel'     => event\LogLevel::class,
         'LogWrite'     => event\LogWrite::class,
-        'ViewFilter'   => event\ViewFilter::class,
         'ResponseSend' => event\ResponseSend::class,
         'ResponseEnd'  => event\ResponseEnd::class,
     ];
+
+    /**
+     * 是否需要事件响应
+     * @var bool
+     */
+    protected $withEvent = true;
 
     /**
      * 应用对象
@@ -54,6 +58,18 @@ class Event
     }
 
     /**
+     * 设置是否开启事件响应
+     * @access protected
+     * @param  bool $event  是否需要事件响应
+     * @return $this
+     */
+    public function withEvent(bool $event)
+    {
+        $this->withEvent = $event;
+        return $this;
+    }
+
+    /**
      * 批量注册事件监听
      * @access public
      * @param  array    $events         事件定义
@@ -61,12 +77,16 @@ class Event
      */
     public function listenEvents(array $events)
     {
+        if (!$this->withEvent) {
+            return $this;
+        }
+
         foreach ($events as $event => $listeners) {
             if (isset($this->bind[$event])) {
                 $event = $this->bind[$event];
             }
 
-            $this->listener[$event] = $listeners;
+            $this->listener[$event] = array_merge($this->listener[$event] ?? [], $listeners);
         }
 
         return $this;
@@ -82,6 +102,10 @@ class Event
      */
     public function listen(string $event, $listener, bool $first = false)
     {
+        if (!$this->withEvent) {
+            return $this;
+        }
+
         if (isset($this->bind[$event])) {
             $event = $this->bind[$event];
         }
@@ -128,17 +152,12 @@ class Event
     /**
      * 指定事件别名标识 便于调用
      * @access public
-     * @param  string|array  $name     事件别名
-     * @param  mixed         $event    事件名称
+     * @param  array  $events     事件别名
      * @return $this
      */
-    public function bind($name, $event = null)
+    public function bind(array $events)
     {
-        if (is_array($name)) {
-            $this->bind = array_merge($this->bind, $name);
-        } else {
-            $this->bind[$name] = $event;
-        }
+        $this->bind = array_merge($this->bind, $events);
 
         return $this;
     }
@@ -151,6 +170,10 @@ class Event
      */
     public function subscribe($subscriber)
     {
+        if (!$this->withEvent) {
+            return $this;
+        }
+
         $subscribers = (array) $subscriber;
 
         foreach ($subscribers as $subscriber) {
@@ -178,6 +201,10 @@ class Event
      */
     public function observe($observer)
     {
+        if (!$this->withEvent) {
+            return $this;
+        }
+
         if (is_string($observer)) {
             $observer = $this->app->make($observer);
         }
@@ -205,6 +232,10 @@ class Event
      */
     public function trigger($event, $params = null, bool $once = false)
     {
+        if (!$this->withEvent) {
+            return;
+        }
+
         if (is_object($event)) {
             $class = get_class($event);
             $this->app->instance($class, $event);

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -339,9 +339,9 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
             if (strpos($field, '.')) {
                 list($field, $relation) = explode('.', $field);
 
-                $result = isset($data[$field][$relation]) ? $data[$field][$relation] : null;
+                $result = $data[$field][$relation] ?? null;
             } else {
-                $result = isset($data[$field]) ? $data[$field] : null;
+                $result = $data[$field] ?? null;
             }
 
             switch ($operator) {
@@ -380,6 +380,78 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
                     return $result == $value;
             }
         });
+    }
+
+    /**
+     * LIKE过滤
+     * @access public
+     * @param  string   $field 字段名
+     * @param  string   $value 数据
+     * @return static
+     */
+    public function whereLike(string $field, string $value)
+    {
+        return $this->where($field, 'like', $value);
+    }
+
+    /**
+     * NOT LIKE过滤
+     * @access public
+     * @param  string   $field 字段名
+     * @param  string   $value 数据
+     * @return static
+     */
+    public function whereNotLike(string $field, string $value)
+    {
+        return $this->where($field, 'not like', $value);
+    }
+
+    /**
+     * IN过滤
+     * @access public
+     * @param  string   $field 字段名
+     * @param  array    $value 数据
+     * @return static
+     */
+    public function whereIn(string $field, array $value)
+    {
+        return $this->where($field, 'in', $value);
+    }
+
+    /**
+     * NOT IN过滤
+     * @access public
+     * @param  string   $field 字段名
+     * @param  array    $value 数据
+     * @return static
+     */
+    public function whereNotIn(string $field, array $value)
+    {
+        return $this->where($field, 'not in', $value);
+    }
+
+    /**
+     * BETWEEN 过滤
+     * @access public
+     * @param  string   $field 字段名
+     * @param  mixed    $value 数据
+     * @return static
+     */
+    public function whereBetween(string $field, $value)
+    {
+        return $this->where($field, 'between', $value);
+    }
+
+    /**
+     * NOT BETWEEN 过滤
+     * @access public
+     * @param  string   $field 字段名
+     * @param  mixed    $value 数据
+     * @return static
+     */
+    public function whereNotBetween(string $field, $value)
+    {
+        return $this->where($field, 'not between', $value);
     }
 
     /**
@@ -425,8 +497,8 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     public function order(string $field, string $order = null)
     {
         return $this->sort(function ($a, $b) use ($field, $order) {
-            $fieldA = isset($a[$field]) ? $a[$field] : null;
-            $fieldB = isset($b[$field]) ? $b[$field] : null;
+            $fieldA = $a[$field] ?? null;
+            $fieldB = $b[$field] ?? null;
 
             return 'desc' == strtolower($order) ? strcmp($fieldB, $fieldA) : strcmp($fieldA, $fieldB);
         });

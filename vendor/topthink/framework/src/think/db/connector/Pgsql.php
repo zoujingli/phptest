@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -19,9 +19,16 @@ use think\db\Connection;
  */
 class Pgsql extends Connection
 {
+    /**
+     * Builder类
+     * @var string
+     */
     protected $builder = '\\think\\db\\builder\\Pgsql';
 
-    // PDO连接参数
+    /**
+     * 默认PDO连接参数
+     * @var array
+     */
     protected $params = [
         PDO::ATTR_CASE              => PDO::CASE_NATURAL,
         PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
@@ -35,7 +42,7 @@ class Pgsql extends Connection
      * @param  array $config 连接信息
      * @return string
      */
-    protected function parseDsn(array $config)
+    protected function parseDsn(array $config): string
     {
         $dsn = 'pgsql:dbname=' . $config['database'] . ';host=' . $config['hostname'];
 
@@ -52,18 +59,19 @@ class Pgsql extends Connection
      * @param  string $tableName
      * @return array
      */
-    public function getFields(string $tableName)
+    public function getFields(string $tableName): array
     {
         list($tableName) = explode(' ', $tableName);
         $sql             = 'select fields_name as "field",fields_type as "type",fields_not_null as "null",fields_key_name as "key",fields_default as "default",fields_default as "extra" from table_msg(\'' . $tableName . '\');';
 
-        $pdo    = $this->query($sql, [], false, true);
+        $pdo    = $this->getPDOStatement($sql);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
 
         if ($result) {
             foreach ($result as $key => $val) {
-                $val                 = array_change_key_case($val);
+                $val = array_change_key_case($val);
+
                 $info[$val['field']] = [
                     'name'    => $val['field'],
                     'type'    => $val['type'],
@@ -84,10 +92,10 @@ class Pgsql extends Connection
      * @param  string $dbName
      * @return array
      */
-    public function getTables(string $dbName = '')
+    public function getTables(string $dbName = ''): array
     {
         $sql    = "select tablename as Tables_in_test from pg_tables where  schemaname ='public'";
-        $pdo    = $this->query($sql, [], false, true);
+        $pdo    = $this->getPDOStatement($sql);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
 
@@ -104,12 +112,12 @@ class Pgsql extends Connection
      * @param  string $sql
      * @return array
      */
-    protected function getExplain(string $sql)
+    protected function getExplain(string $sql): array
     {
         return [];
     }
 
-    protected function supportSavepoint()
+    protected function supportSavepoint(): bool
     {
         return true;
     }
