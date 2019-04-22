@@ -7,5 +7,4 @@ $baseDir = dirname($vendorDir);
 
 return array(
     '538ca81a9a966a6716601ecf48f4eaef' => $vendorDir . '/opis/closure/functions.php',
-    '3c51c36e2870ac9423bd005f23b1c166' => $vendorDir . '/topthink/think-view/src/helper.php',
 );

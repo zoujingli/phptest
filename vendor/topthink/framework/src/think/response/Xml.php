@@ -15,6 +15,9 @@ use think\Collection;
 use think\Model;
 use think\Response;
 
+/**
+ * XML Response
+ */
 class Xml extends Response
 {
     // 输出参数
@@ -60,12 +63,12 @@ class Xml extends Response
      * @param  mixed $data 数据
      * @param  string $root 根节点名
      * @param  string $item 数字索引的子节点名
-     * @param  string $attr 根节点属性
+     * @param  mixed  $attr 根节点属性
      * @param  string $id   数字索引子节点key转换的属性名
      * @param  string $encoding 数据编码
      * @return string
      */
-    protected function xmlEncode($data, string $root, string $item, string $attr, string $id, string $encoding): string
+    protected function xmlEncode($data, string $root, string $item, $attr, string $id, string $encoding): string
     {
         if (is_array($attr)) {
             $array = [];

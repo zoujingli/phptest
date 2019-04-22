@@ -18,6 +18,9 @@ use think\cache\CacheItem;
 use think\cache\Driver;
 use think\exception\InvalidArgumentException;
 
+/**
+ * 缓存管理类
+ */
 class Cache implements CacheItemPoolInterface
 {
     /**
@@ -58,14 +61,14 @@ class Cache implements CacheItemPoolInterface
 
     public static function __make(Config $config)
     {
-        return new static($config->pull('cache'));
+        return new static($config->get('cache'));
     }
 
     /**
      * 连接缓存
      * @access public
-     * @param  array    $options  配置数组
-     * @param  bool     $force 强制重新连接
+     * @param  array $options  配置数组
+     * @param  bool  $force 强制重新连接
      * @return Driver
      */
     public function connect(array $options = [], bool $force = false): Driver
@@ -84,14 +87,14 @@ class Cache implements CacheItemPoolInterface
     /**
      * 自动初始化缓存
      * @access public
-     * @param  array         $options  配置数组
-     * @param  bool          $force    强制更新
+     * @param  array $options 配置数组
+     * @param  bool  $force   强制更新
      * @return Driver
      */
     public function init(array $options = [], bool $force = false): Driver
     {
         if (is_null($this->handler) || $force) {
-            if ('complex' == $options['type']) {
+            if (isset($options['type']) && 'complex' == $options['type']) {
                 $default = $options['default'];
                 $options = $options[$default['type']] ?? $default;
             }
@@ -141,6 +144,17 @@ class Cache implements CacheItemPoolInterface
     public function has(string $key)
     {
         return $this->init()->has($key);
+    }
+
+    /**
+     * 缓存标签
+     * @access public
+     * @param  string|array $name 标签名
+     * @return Driver
+     */
+    public function tag($name)
+    {
+        return $this->init()->tag($name);
     }
 
     /**
@@ -286,7 +300,7 @@ class Cache implements CacheItemPoolInterface
 
     public function __destruct()
     {
-        if ($this->deferred) {
+        if (!empty($this->deferred)) {
             $this->commit();
         }
     }

@@ -12,15 +12,18 @@ declare (strict_types = 1);
 
 namespace think\cache\driver;
 
+use think\App;
 use think\cache\Driver;
-use think\Container;
 
 /**
- * 文件类型缓存类
- * @author    liu21st <liu21st@gmail.com>
+ * 文件缓存类
  */
 class File extends Driver
 {
+    /**
+     * 配置参数
+     * @var array
+     */
     protected $options = [
         'expire'        => 0,
         'cache_subdir'  => true,
@@ -32,45 +35,28 @@ class File extends Driver
         'tag_prefix'    => 'tag_',
     ];
 
+    /**
+     * 有效期
+     * @var int|\DateTime
+     */
     protected $expire;
 
     /**
      * 架构函数
-     * @param array $options
+     * @param App   $app 应用对象
+     * @param array $options 参数
      */
-    public function __construct(array $options = [])
+    public function __construct(App $app, array $options = [])
     {
         if (!empty($options)) {
             $this->options = array_merge($this->options, $options);
         }
-
-        $app = Container::pull('app');
 
         if (empty($this->options['path'])) {
             $this->options['path'] = $app->getRuntimePath() . 'cache' . DIRECTORY_SEPARATOR;
         } elseif (substr($this->options['path'], -1) != DIRECTORY_SEPARATOR) {
             $this->options['path'] .= DIRECTORY_SEPARATOR;
         }
-
-        $this->init();
-    }
-
-    /**
-     * 初始化检查
-     * @access private
-     * @return bool
-     */
-    private function init(): bool
-    {
-        // 创建项目缓存目录
-        try {
-            if (!is_dir($this->options['path']) && mkdir($this->options['path'], 0755, true)) {
-                return true;
-            }
-        } catch (\Exception $e) {
-        }
-
-        return false;
     }
 
     /**
@@ -100,6 +86,7 @@ class File extends Driver
             try {
                 mkdir($dir, 0755, true);
             } catch (\Exception $e) {
+                // 创建失败
             }
         }
 
@@ -177,7 +164,7 @@ class File extends Driver
         $expire   = $this->getExpireTime($expire);
         $filename = $this->getCacheKey($name, true);
 
-        if ($this->tag && !is_file($filename)) {
+        if (!empty($this->tag) && !is_file($filename)) {
             $first = true;
         }
 
@@ -203,8 +190,8 @@ class File extends Driver
     /**
      * 自增缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     public function inc(string $name, int $step = 1)
@@ -223,8 +210,8 @@ class File extends Driver
     /**
      * 自减缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     public function dec(string $name, int $step = 1)
@@ -264,7 +251,7 @@ class File extends Driver
      */
     public function clear(): bool
     {
-        if ($this->tag) {
+        if (!empty($this->tag)) {
             // 指定标签清除
             foreach ($this->tag as $tag) {
                 $this->clearTag($tag);

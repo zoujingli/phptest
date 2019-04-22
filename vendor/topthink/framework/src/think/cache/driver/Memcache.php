@@ -13,8 +13,15 @@ namespace think\cache\driver;
 
 use think\cache\Driver;
 
+/**
+ * Memcache缓存类
+ */
 class Memcache extends Driver
 {
+    /**
+     * 配置参数
+     * @var array
+     */
     protected $options = [
         'host'       => '127.0.0.1',
         'port'       => 11211,
@@ -45,8 +52,8 @@ class Memcache extends Driver
         $this->handler = new \Memcache;
 
         // 支持集群
-        $hosts = explode(',', $this->options['host']);
-        $ports = explode(',', $this->options['port']);
+        $hosts = (array) $this->options['host'];
+        $ports = (array) $this->options['port'];
 
         if (empty($ports[0])) {
             $ports[0] = 11211;
@@ -56,8 +63,8 @@ class Memcache extends Driver
         foreach ($hosts as $i => $host) {
             $port = $ports[$i] ?? $ports[0];
             $this->options['timeout'] > 0 ?
-            $this->handler->addServer($host, $port, $this->options['persistent'], 1, $this->options['timeout']) :
-            $this->handler->addServer($host, $port, $this->options['persistent'], 1);
+            $this->handler->addServer($host, (int) $port, $this->options['persistent'], 1, $this->options['timeout']) :
+            $this->handler->addServer($host, (int) $port, $this->options['persistent'], 1);
         }
     }
 
@@ -95,7 +102,7 @@ class Memcache extends Driver
      * @access public
      * @param  string        $name 缓存变量名
      * @param  mixed         $value  存储数据
-     * @param  int|DateTime  $expire  有效时间（秒）
+     * @param  int|\DateTime $expire  有效时间（秒）
      * @return bool
      */
     public function set($name, $value, $expire = null): bool
@@ -106,7 +113,7 @@ class Memcache extends Driver
             $expire = $this->options['expire'];
         }
 
-        if ($this->tag && !$this->has($name)) {
+        if (!empty($this->tag) && !$this->has($name)) {
             $first = true;
         }
 
@@ -125,8 +132,8 @@ class Memcache extends Driver
     /**
      * 自增缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     public function inc(string $name, int $step = 1)
@@ -145,8 +152,8 @@ class Memcache extends Driver
     /**
      * 自减缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     public function dec(string $name, int $step = 1)
@@ -185,7 +192,7 @@ class Memcache extends Driver
      */
     public function clear(): bool
     {
-        if ($this->tag) {
+        if (!empty($this->tag)) {
             foreach ($this->tag as $tag) {
                 $this->clearTag($tag);
             }

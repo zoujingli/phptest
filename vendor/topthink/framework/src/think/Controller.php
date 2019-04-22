@@ -15,6 +15,9 @@ namespace think;
 use think\exception\ValidateException;
 use think\traits\Jump;
 
+/**
+ * 控制器基础类
+ */
 class Controller
 {
     use Jump;
@@ -57,7 +60,7 @@ class Controller
     public function __construct(App $app)
     {
         $this->app     = $app;
-        $this->request = $this->app['request'];
+        $this->request = $this->app->request;
 
         // 控制器初始化
         $this->initialize();
@@ -78,7 +81,7 @@ class Controller
                 }
             }
 
-            $this->app['middleware']->controller($val);
+            $this->app->middleware->controller($val);
         }
     }
 
@@ -112,18 +115,21 @@ class Controller
     protected function validate(array $data, $validate, array $message = [], bool $batch = false)
     {
         if (is_array($validate)) {
-            $v = new Validate($validate, $message);
+            $v = new Validate();
+            $v->rule($validate);
         } else {
             if (strpos($validate, '.')) {
                 // 支持场景
                 list($validate, $scene) = explode('.', $validate);
             }
             $class = $this->app->parseClass('validate', $validate);
-            $v     = $class::make([], $message);
+            $v     = new $class();
             if (!empty($scene)) {
                 $v->scene($scene);
             }
         }
+
+        $v->message($message);
 
         // 是否批量验证
         if ($batch || $this->batchValidate) {

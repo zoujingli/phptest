@@ -12,11 +12,13 @@ declare (strict_types = 1);
 
 namespace think\route;
 
-use think\Container;
 use think\Exception;
 use think\Request;
 use think\Route;
 
+/**
+ * 路由规则类
+ */
 class RuleItem extends Rule
 {
     /**
@@ -25,11 +27,11 @@ class RuleItem extends Rule
      * @param  Route             $router 路由实例
      * @param  RuleGroup         $parent 上级对象
      * @param  string            $name 路由标识
-     * @param  string|array      $rule 路由规则
+     * @param  string            $rule 路由规则
      * @param  string|\Closure   $route 路由地址
      * @param  string            $method 请求类型
      */
-    public function __construct(Route $router, RuleGroup $parent, string $name = null, string $rule = null, $route = null, string $method = '*')
+    public function __construct(Route $router, RuleGroup $parent, string $name = null, string $rule = '', $route = null, string $method = '*')
     {
         $this->router = $router;
         $this->parent = $parent;
@@ -69,6 +71,10 @@ class RuleItem extends Rule
 
         // 生成路由标识的快捷访问
         $this->setRuleName();
+
+        if ($this->router->isTest()) {
+            $this->router->setRule($this->rule, $this);
+        }
     }
 
     /**
@@ -109,7 +115,6 @@ class RuleItem extends Rule
     {
         if ($this->name) {
             $vars = $this->parseVar($this->rule);
-            $name = strtolower($this->name);
 
             if (isset($this->option['ext'])) {
                 $suffix = $this->option['ext'];
@@ -121,9 +126,7 @@ class RuleItem extends Rule
 
             $value = [$this->rule, $vars, $this->parent->getDomain(), $suffix, $this->method];
 
-            Container::pull('rule_name')->setName($name, $value, $first);
-
-            Container::pull('rule_name')->setRule($this->rule, $this);
+            $this->router->setName($this->name, $value, $first);
         }
     }
 
@@ -138,11 +141,6 @@ class RuleItem extends Rule
      */
     public function checkRule(Request $request, string $url, $match = null, bool $completeMatch = false)
     {
-        if ($dispatch = $this->checkCrossDomain($request)) {
-            // 允许跨域
-            return $dispatch;
-        }
-
         // 检查参数有效性
         if (!$this->checkOption($this->option, $request)) {
             return false;

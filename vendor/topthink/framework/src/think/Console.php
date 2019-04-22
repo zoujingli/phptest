@@ -10,8 +10,34 @@ declare (strict_types = 1);
 
 namespace think;
 
+use Closure;
+use InvalidArgumentException;
+use LogicException;
 use think\console\Command;
+use think\console\command\Build;
+use think\console\command\Clear;
+use think\console\command\Help;
 use think\console\command\Help as HelpCommand;
+use think\console\command\Lists;
+use think\console\command\make\Command as MakeCommand;
+use think\console\command\make\Controller;
+use think\console\command\make\Event;
+use think\console\command\make\Listener;
+use think\console\command\make\Middleware;
+use think\console\command\make\Model;
+use think\console\command\make\Service;
+use think\console\command\make\Subscribe;
+use think\console\command\make\Validate;
+use think\console\command\optimize\Config;
+use think\console\command\optimize\Facade;
+use think\console\command\optimize\Route;
+use think\console\command\optimize\Schema;
+use think\console\command\RouteBuild;
+use think\console\command\RouteList;
+use think\console\command\RunServer;
+use think\console\command\ServiceDiscover;
+use think\console\command\VendorPublish;
+use think\console\command\Version;
 use think\console\Input;
 use think\console\input\Argument as InputArgument;
 use think\console\input\Definition as InputDefinition;
@@ -19,168 +45,149 @@ use think\console\input\Option as InputOption;
 use think\console\Output;
 use think\console\output\driver\Buffer;
 
+/**
+ * 控制台应用管理类
+ */
 class Console
 {
 
-    private $name;
-    private $version;
+    protected $app;
 
     /** @var Command[] */
-    private $commands = [];
+    protected $commands = [];
 
-    private $wantHelps = false;
+    protected $wantHelps = false;
 
-    private $catchExceptions = true;
-    private $autoExit        = true;
-    private $definition;
-    private $defaultCommand;
+    protected $catchExceptions = true;
+    protected $autoExit        = true;
+    protected $definition;
+    protected $defaultCommand = 'list';
 
-    private static $defaultCommands = [
-        'help'            => "think\\console\\command\\Help",
-        'list'            => "think\\console\\command\\Lists",
-        'build'           => "think\\console\\command\\Build",
-        'clear'           => "think\\console\\command\\Clear",
-        'make:command'    => "think\\console\\command\\make\\Command",
-        'make:controller' => "think\\console\\command\\make\\Controller",
-        'make:model'      => "think\\console\\command\\make\\Model",
-        'make:middleware' => "think\\console\\command\\make\\Middleware",
-        'make:validate'   => "think\\console\\command\\make\\Validate",
-        'make:event'      => "think\\console\\command\\make\\Event",
-        'make:listener'   => "think\\console\\command\\make\\Listener",
-        'make:subscribe'  => "think\\console\\command\\make\\Subscribe",
-        'optimize:config' => "think\\console\\command\\optimize\\Config",
-        'optimize:schema' => "think\\console\\command\\optimize\\Schema",
-        'optimize:route'  => "think\\console\\command\\optimize\\Route",
-        'optimize:facade' => "think\\console\\command\\optimize\\Facade",
-        'run'             => "think\\console\\command\\RunServer",
-        'version'         => "think\\console\\command\\Version",
-        'route:list'      => "think\\console\\command\\RouteList",
+    protected $defaultCommands = [
+        'help'             => Help::class,
+        'list'             => Lists::class,
+        'build'            => Build::class,
+        'clear'            => Clear::class,
+        'make:command'     => MakeCommand::class,
+        'make:controller'  => Controller::class,
+        'make:model'       => Model::class,
+        'make:middleware'  => Middleware::class,
+        'make:validate'    => Validate::class,
+        'make:event'       => Event::class,
+        'make:listener'    => Listener::class,
+        'make:service'     => Service::class,
+        'make:subscribe'   => Subscribe::class,
+        'optimize:config'  => Config::class,
+        'optimize:schema'  => Schema::class,
+        'optimize:route'   => Route::class,
+        'optimize:facade'  => Facade::class,
+        'run'              => RunServer::class,
+        'version'          => Version::class,
+        'route:list'       => RouteList::class,
+        'route:build'      => RouteBuild::class,
+        'service:discover' => ServiceDiscover::class,
+        'vendor:publish'   => VendorPublish::class,
     ];
 
     /**
-     * Console constructor.
-     * @access public
-     * @param  string     $name    名称
-     * @param  string     $version 版本
-     * @param null|string $user    执行用户
+     * 启动器
+     * @var array
      */
-    public function __construct(string $name = 'UNKNOWN', string $version = 'UNKNOWN', string $user = null)
+    protected static $startCallbacks = [];
+
+    public function __construct(App $app)
     {
-        $this->name    = $name;
-        $this->version = $version;
+        $this->app = $app;
+
+        if (!$this->app->initialized()) {
+            $this->app->initialize();
+        }
+
+        $user = $this->app->config->get('console.user');
 
         if ($user) {
             $this->setUser($user);
         }
 
-        $this->defaultCommand = 'list';
-        $this->definition     = $this->getDefaultInputDefinition();
+        $this->definition = $this->getDefaultInputDefinition();
+
+        //加载指令
+        $this->loadCommands();
+
+        $this->start();
+    }
+
+    /**
+     * 添加初始化器
+     * @param Closure $callback
+     */
+    public static function starting(Closure $callback): void
+    {
+        static::$startCallbacks[] = $callback;
+    }
+
+    /**
+     * 清空启动器
+     */
+    public static function flushStartCallbacks(): void
+    {
+        static::$startCallbacks = [];
+    }
+
+    /**
+     * 启动
+     */
+    protected function start(): void
+    {
+        foreach (static::$startCallbacks as $callback) {
+            $callback($this);
+        }
     }
 
     /**
      * 设置执行用户
      * @param $user
      */
-    public function setUser(string $user)
+    protected function setUser(string $user): void
     {
-        if (DIRECTORY_SEPARATOR == '\\') {
-            return;
-        }
+        if (extension_loaded('posix')) {
+            $user = posix_getpwnam($user);
 
-        $user = posix_getpwnam($user);
-
-        if ($user) {
-            posix_setuid($user['uid']);
-            posix_setgid($user['gid']);
-        }
-    }
-
-    /**
-     * 初始化 Console
-     * @access public
-     * @param  bool $run 是否运行 Console
-     * @return int|Console
-     */
-    public static function init(bool $run = true)
-    {
-        static $console;
-
-        if (!$console) {
-            $config  = Container::pull('config')->pull('console');
-            $console = new self($config['name'], $config['version'], $config['user']);
-
-            $commands = $console->getDefinedCommands($config);
-
-            // 添加指令集
-            $console->addCommands($commands);
-        }
-
-        if ($run) {
-            // 运行
-            return $console->run();
-        }
-
-        return $console;
-    }
-
-    /**
-     * @access public
-     * @param  array $config
-     * @return array
-     */
-    public function getDefinedCommands(array $config)
-    {
-        $commands = self::$defaultCommands;
-
-        $path = Container::pull('env')->get('app_path');
-
-        if (is_dir($path . 'command')) {
-            // 自动加载指令类
-            $files = glob($path . 'command' . DIRECTORY_SEPARATOR . '*.php');
-
-            if ($files) {
-                $beforeClass = get_declared_classes();
-
-                foreach ($files as $file) {
-                    include $file;
-                }
-
-                $afterClass = get_declared_classes();
-                $commands   = array_merge($commands, array_diff($afterClass, $beforeClass));
+            if (!empty($user)) {
+                posix_setuid($user['uid']);
+                posix_setgid($user['gid']);
             }
         }
+    }
 
-        $file = $path . 'command.php';
+    /**
+     * 加载指令
+     * @access protected
+     */
+    protected function loadCommands(): void
+    {
+        $commands = $this->app->config->get('console.commands', []);
+        $commands = array_merge($this->defaultCommands, $commands);
 
-        if (is_file($file)) {
-            $appCommands = include $file;
-
-            if (is_array($appCommands)) {
-                $commands = array_merge($commands, $appCommands);
-            }
-        }
-
-        return $commands;
+        $this->addCommands($commands);
     }
 
     /**
      * @access public
-     * @param  string $command
-     * @param  array  $parameters
-     * @param  string $driver
+     * @param string $command
+     * @param array  $parameters
+     * @param string $driver
      * @return Output|Buffer
      */
-    public static function call(string $command, array $parameters = [], string $driver = 'buffer')
+    public function call(string $command, array $parameters = [], string $driver = 'buffer')
     {
-        $console = self::init(false);
-
         array_unshift($parameters, $command);
 
         $input  = new Input($parameters);
         $output = new Output($driver);
 
-        $console->setCatchExceptions(false);
-        $console->find($command)->run($input, $output);
+        $this->setCatchExceptions(false);
+        $this->find($command)->run($input, $output);
 
         return $output;
     }
@@ -233,8 +240,8 @@ class Console
     /**
      * 执行指令
      * @access public
-     * @param  Input  $input
-     * @param  Output $output
+     * @param Input  $input
+     * @param Output $output
      * @return int
      */
     public function doRun(Input $input, Output $output)
@@ -269,9 +276,9 @@ class Console
     /**
      * 设置输入参数定义
      * @access public
-     * @param  InputDefinition $definition
+     * @param InputDefinition $definition
      */
-    public function setDefinition(InputDefinition $definition)
+    public function setDefinition(InputDefinition $definition): void
     {
         $this->definition = $definition;
     }
@@ -281,7 +288,7 @@ class Console
      * @access public
      * @return InputDefinition The InputDefinition instance
      */
-    public function getDefinition()
+    public function getDefinition(): InputDefinition
     {
         return $this->definition;
     }
@@ -291,7 +298,7 @@ class Console
      * @access public
      * @return string A help message.
      */
-    public function getHelp()
+    public function getHelp(): string
     {
         return $this->getLongVersion();
     }
@@ -299,10 +306,10 @@ class Console
     /**
      * 是否捕获异常
      * @access public
-     * @param  bool $boolean
+     * @param bool $boolean
      * @api
      */
-    public function setCatchExceptions(bool $boolean)
+    public function setCatchExceptions(bool $boolean): void
     {
         $this->catchExceptions = $boolean;
     }
@@ -310,53 +317,12 @@ class Console
     /**
      * 是否自动退出
      * @access public
-     * @param  bool $boolean
+     * @param bool $boolean
      * @api
      */
-    public function setAutoExit(bool $boolean)
+    public function setAutoExit(bool $boolean): void
     {
         $this->autoExit = $boolean;
-    }
-
-    /**
-     * 获取名称
-     * @access public
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * 设置名称
-     * @access public
-     * @param  string $name
-     */
-    public function setName(string $name)
-    {
-        $this->name = $name;
-    }
-
-    /**
-     * 获取版本
-     * @access public
-     * @return string
-     * @api
-     */
-    public function getVersion()
-    {
-        return $this->version;
-    }
-
-    /**
-     * 设置版本
-     * @access public
-     * @param  string $version
-     */
-    public function setVersion(string $version)
-    {
-        $this->version = $version;
     }
 
     /**
@@ -364,37 +330,26 @@ class Console
      * @access public
      * @return string
      */
-    public function getLongVersion()
+    public function getLongVersion(): string
     {
-        if ('UNKNOWN' !== $this->getName() && 'UNKNOWN' !== $this->getVersion()) {
-            return sprintf('<info>%s</info> version <comment>%s</comment>', $this->getName(), $this->getVersion());
+        if ($this->app->version()) {
+            return sprintf('version <comment>%s</comment>', $this->app->version());
         }
 
         return '<info>Console Tool</info>';
     }
 
     /**
-     * 注册一个指令 （便于动态创建指令）
-     * @access public
-     * @param  string $name 指令名
-     * @return Command
-     */
-    public function register(string $name)
-    {
-        return $this->add(new Command($name));
-    }
-
-    /**
      * 添加指令集
      * @access public
-     * @param  array $commands
+     * @param array $commands
      */
-    public function addCommands(array $commands)
+    public function addCommands(array $commands): void
     {
         foreach ($commands as $key => $command) {
-            if (is_subclass_of($command, "\\think\\console\\Command")) {
+            if (is_subclass_of($command, Command::class)) {
                 // 注册指令
-                $this->add($command, is_numeric($key) ? '' : $key);
+                $this->addCommand($command, is_numeric($key) ? '' : $key);
             }
         }
     }
@@ -402,11 +357,11 @@ class Console
     /**
      * 添加一个指令
      * @access public
-     * @param  mixed    $command    指令对象或者指令类名
-     * @param  string   $name       指令名 留空则自动获取
-     * @return Command
+     * @param string|Command $command 指令对象或者指令类名
+     * @param string         $name    指令名 留空则自动获取
+     * @return Command|void
      */
-    public function add($command, $name)
+    public function addCommand($command, string $name = '')
     {
         if ($name) {
             $this->commands[$name] = $command;
@@ -414,7 +369,7 @@ class Console
         }
 
         if (is_string($command)) {
-            $command = new $command();
+            $command = $this->app->invokeClass($command);
         }
 
         $command->setConsole($this);
@@ -424,8 +379,10 @@ class Console
             return;
         }
 
+        $command->setApp($this->app);
+
         if (null === $command->getDefinition()) {
-            throw new \LogicException(sprintf('Command class "%s" is not correctly initialized. You probably forgot to call the parent constructor.', get_class($command)));
+            throw new LogicException(sprintf('Command class "%s" is not correctly initialized. You probably forgot to call the parent constructor.', get_class($command)));
         }
 
         $this->commands[$command->getName()] = $command;
@@ -440,29 +397,30 @@ class Console
     /**
      * 获取指令
      * @access public
-     * @param  string $name 指令名称
+     * @param string $name 指令名称
      * @return Command
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    public function get(string $name)
+    public function getCommand(string $name): Command
     {
         if (!isset($this->commands[$name])) {
-            throw new \InvalidArgumentException(sprintf('The command "%s" does not exist.', $name));
+            throw new InvalidArgumentException(sprintf('The command "%s" does not exist.', $name));
         }
 
         $command = $this->commands[$name];
 
         if (is_string($command)) {
-            $command = new $command();
+            $command = $this->app->invokeClass($command);
+            /** @var Command $command */
+            $command->setConsole($this);
+            $command->setApp($this->app);
         }
-
-        $command->setConsole($this);
 
         if ($this->wantHelps) {
             $this->wantHelps = false;
 
             /** @var HelpCommand $helpCommand */
-            $helpCommand = $this->get('help');
+            $helpCommand = $this->getCommand('help');
             $helpCommand->setCommand($command);
 
             return $helpCommand;
@@ -474,10 +432,10 @@ class Console
     /**
      * 某个指令是否存在
      * @access public
-     * @param  string $name 指令名称
+     * @param string $name 指令名称
      * @return bool
      */
-    public function has(string $name)
+    public function hasCommand(string $name): bool
     {
         return isset($this->commands[$name]);
     }
@@ -487,7 +445,7 @@ class Console
      * @access public
      * @return array
      */
-    public function getNamespaces()
+    public function getNamespaces(): array
     {
         $namespaces = [];
         foreach ($this->commands as $command) {
@@ -508,11 +466,11 @@ class Console
     /**
      * 查找注册命名空间中的名称或缩写。
      * @access public
-     * @param  string $namespace
+     * @param string $namespace
      * @return string
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    public function findNamespace(string $namespace)
+    public function findNamespace(string $namespace): string
     {
         $allNamespaces = $this->getNamespaces();
         $expr          = preg_replace_callback('{([^:]+|)}', function ($matches) {
@@ -533,12 +491,12 @@ class Console
                 $message .= implode("\n    ", $alternatives);
             }
 
-            throw new \InvalidArgumentException($message);
+            throw new InvalidArgumentException($message);
         }
 
         $exact = in_array($namespace, $namespaces, true);
         if (count($namespaces) > 1 && !$exact) {
-            throw new \InvalidArgumentException(sprintf('The namespace "%s" is ambiguous (%s).', $namespace, $this->getAbbreviationSuggestions(array_values($namespaces))));
+            throw new InvalidArgumentException(sprintf('The namespace "%s" is ambiguous (%s).', $namespace, $this->getAbbreviationSuggestions(array_values($namespaces))));
         }
 
         return $exact ? $namespace : reset($namespaces);
@@ -547,11 +505,11 @@ class Console
     /**
      * 查找指令
      * @access public
-     * @param  string $name 名称或者别名
+     * @param string $name 名称或者别名
      * @return Command
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    public function find(string $name)
+    public function find(string $name): Command
     {
         $allCommands = array_keys($this->commands);
 
@@ -577,27 +535,27 @@ class Console
                 $message .= implode("\n    ", $alternatives);
             }
 
-            throw new \InvalidArgumentException($message);
+            throw new InvalidArgumentException($message);
         }
 
         $exact = in_array($name, $commands, true);
         if (count($commands) > 1 && !$exact) {
             $suggestions = $this->getAbbreviationSuggestions(array_values($commands));
 
-            throw new \InvalidArgumentException(sprintf('Command "%s" is ambiguous (%s).', $name, $suggestions));
+            throw new InvalidArgumentException(sprintf('Command "%s" is ambiguous (%s).', $name, $suggestions));
         }
 
-        return $this->get($exact ? $name : reset($commands));
+        return $this->getCommand($exact ? $name : reset($commands));
     }
 
     /**
      * 获取所有的指令
      * @access public
-     * @param  string $namespace 命名空间
+     * @param string $namespace 命名空间
      * @return Command[]
      * @api
      */
-    public function all(string $namespace = null)
+    public function all(string $namespace = null): array
     {
         if (null === $namespace) {
             return $this->commands;
@@ -614,31 +572,12 @@ class Console
     }
 
     /**
-     * 获取可能的指令名
-     * @access public
-     * @param  array $names
-     * @return array
-     */
-    public static function getAbbreviations(array $names)
-    {
-        $abbrevs = [];
-        foreach ($names as $name) {
-            for ($len = strlen($name); $len > 0; --$len) {
-                $abbrev             = substr($name, 0, $len);
-                $abbrevs[$abbrev][] = $name;
-            }
-        }
-
-        return $abbrevs;
-    }
-
-    /**
      * 配置基于用户的参数和选项的输入和输出实例。
      * @access protected
-     * @param  Input  $input  输入实例
-     * @param  Output $output 输出实例
+     * @param Input  $input  输入实例
+     * @param Output $output 输出实例
      */
-    protected function configureIO(Input $input, Output $output)
+    protected function configureIO(Input $input, Output $output): void
     {
         if (true === $input->hasParameterOption(['--ansi'])) {
             $output->setDecorated(true);
@@ -664,9 +603,9 @@ class Console
     /**
      * 执行指令
      * @access protected
-     * @param  Command $command 指令实例
-     * @param  Input   $input   输入实例
-     * @param  Output  $output  输出实例
+     * @param Command $command 指令实例
+     * @param Input   $input   输入实例
+     * @param Output  $output  输出实例
      * @return int
      * @throws \Exception
      */
@@ -678,12 +617,12 @@ class Console
     /**
      * 获取指令的基础名称
      * @access protected
-     * @param  Input $input
+     * @param Input $input
      * @return string
      */
-    protected function getCommandName(Input $input)
+    protected function getCommandName(Input $input): string
     {
-        return $input->getFirstArgument();
+        return $input->getFirstArgument() ?: '';
     }
 
     /**
@@ -691,7 +630,7 @@ class Console
      * @access protected
      * @return InputDefinition
      */
-    protected function getDefaultInputDefinition()
+    protected function getDefaultInputDefinition(): InputDefinition
     {
         return new InputDefinition([
             new InputArgument('command', InputArgument::REQUIRED, 'The command to execute'),
@@ -705,18 +644,13 @@ class Console
         ]);
     }
 
-    public static function addDefaultCommands(array $classnames)
-    {
-        self::$defaultCommands = array_merge(self::$defaultCommands, $classnames);
-    }
-
     /**
      * 获取可能的建议
      * @access private
-     * @param  array $abbrevs
+     * @param array $abbrevs
      * @return string
      */
-    private function getAbbreviationSuggestions(array $abbrevs)
+    private function getAbbreviationSuggestions(array $abbrevs): string
     {
         return sprintf('%s, %s%s', $abbrevs[0], $abbrevs[1], count($abbrevs) > 2 ? sprintf(' and %d more', count($abbrevs) - 2) : '');
     }
@@ -724,26 +658,26 @@ class Console
     /**
      * 返回命名空间部分
      * @access public
-     * @param  string $name  指令
-     * @param  string $limit 部分的命名空间的最大数量
+     * @param string $name  指令
+     * @param int    $limit 部分的命名空间的最大数量
      * @return string
      */
-    public function extractNamespace(string $name, $limit = null)
+    public function extractNamespace(string $name, int $limit = 0): string
     {
         $parts = explode(':', $name);
         array_pop($parts);
 
-        return implode(':', null === $limit ? $parts : array_slice($parts, 0, $limit));
+        return implode(':', 0 === $limit ? $parts : array_slice($parts, 0, $limit));
     }
 
     /**
      * 查找可替代的建议
      * @access private
-     * @param  string             $name
-     * @param  array|\Traversable $collection
+     * @param string             $name
+     * @param array|\Traversable $collection
      * @return array
      */
-    private function findAlternatives(string $name, $collection)
+    private function findAlternatives(string $name, $collection): array
     {
         $threshold    = 1e3;
         $alternatives = [];
@@ -788,22 +722,12 @@ class Console
     }
 
     /**
-     * 设置默认的指令
-     * @access public
-     * @param  string $commandName The Command name
-     */
-    public function setDefaultCommand(string $commandName)
-    {
-        $this->defaultCommand = $commandName;
-    }
-
-    /**
      * 返回所有的命名空间
      * @access private
-     * @param  string $name
+     * @param string $name
      * @return array
      */
-    private function extractAllNamespaces(string $name)
+    private function extractAllNamespaces(string $name): array
     {
         $parts      = explode(':', $name, -1);
         $namespaces = [];

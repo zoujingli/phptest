@@ -35,7 +35,7 @@ trait Jump
         if (is_null($url) && isset($_SERVER["HTTP_REFERER"])) {
             $url = $_SERVER["HTTP_REFERER"];
         } elseif ('' !== $url) {
-            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : Container::pull('url')->build($url);
+            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : Container::pull('route')->buildUrl($url);
         }
 
         $result = [
@@ -52,7 +52,7 @@ trait Jump
             $type = 'jump';
         }
 
-        $response = Response::create($result, $type)->header($header)->options(['jump_template' => Container::pull('config')->get('dispatch_success_tmpl')]);
+        $response = Response::create($result, $type)->header($header)->options(['jump_template' => Container::pull('config')->get('app.dispatch_success_tmpl')]);
 
         throw new HttpResponseException($response);
     }
@@ -72,7 +72,7 @@ trait Jump
         if (is_null($url)) {
             $url = Container::pull('request')->isAjax() ? '' : 'javascript:history.back(-1);';
         } elseif ('' !== $url) {
-            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : Container::pull('url')->build($url);
+            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : Container::pull('route')->buildUrl($url);
         }
 
         $result = [
@@ -88,7 +88,7 @@ trait Jump
             $type = 'jump';
         }
 
-        $response = Response::create($result, $type)->header($header)->options(['jump_template' => Container::pull('config')->get('dispatch_error_tmpl')]);
+        $response = Response::create($result, $type)->header($header)->options(['jump_template' => Container::pull('config')->get('app.dispatch_error_tmpl')]);
 
         throw new HttpResponseException($response);
     }
@@ -129,7 +129,7 @@ trait Jump
      */
     protected function redirect($url, $params = [], $code = 302, $with = [])
     {
-        $response = new Redirect($url);
+        $response = Response::create($url, 'redirect');
 
         if (is_integer($params)) {
             $code   = $params;
@@ -148,11 +148,6 @@ trait Jump
      */
     protected function getResponseType()
     {
-        $isAjax = Container::pull('request')->isAjax();
-        $config = Container::pull('config');
-
-        return $isAjax
-        ? $config->get('default_ajax_return')
-        : $config->get('default_return_type');
+        return Container::pull('request')->isJson() ? 'json' : 'html';
     }
 }

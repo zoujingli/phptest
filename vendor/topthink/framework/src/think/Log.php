@@ -14,6 +14,9 @@ namespace think;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * 日志管理类
+ */
 class Log implements LoggerInterface
 {
     const EMERGENCY = 'emergency';
@@ -25,6 +28,12 @@ class Log implements LoggerInterface
     const INFO      = 'info';
     const DEBUG     = 'debug';
     const SQL       = 'sql';
+
+    /**
+     * 应用对象
+     * @var App
+     */
+    protected $app;
 
     /**
      * 日志信息
@@ -57,19 +66,13 @@ class Log implements LoggerInterface
     protected $allowWrite = true;
 
     /**
-     * 应用对象
-     * @var App
+     * 构造方法
+     * @access public
      */
-    protected $app;
-
     public function __construct(App $app)
     {
         $this->app = $app;
-    }
-
-    public static function __make(App $app, Config $config)
-    {
-        return (new static($app))->init($config->pull('log'));
+        $this->init($app->config->get('log'));
     }
 
     /**
@@ -129,10 +132,34 @@ class Log implements LoggerInterface
         }
 
         if (PHP_SAPI == 'cli') {
-            // 命令行日志实时写入
-            $this->write($msg, $type, true);
+            if (empty($this->config['level']) || in_array($type, $this->config['level'])) {
+                // 命令行日志实时写入
+                $this->write($msg, $type, true);
+            }
         } else {
             $this->log[$type][] = $msg;
+        }
+
+        return $this;
+    }
+
+    /**
+     * 记录批量日志信息
+     * @access public
+     * @param  array  $msg       日志信息
+     * @param  string $type      日志级别
+     * @return $this
+     */
+    public function append(array $log, string $type = 'info')
+    {
+        if (!$this->allowWrite || empty($log)) {
+            return $this;
+        }
+
+        if (isset($this->log[$type])) {
+            $this->log[$type] += $log;
+        } else {
+            $this->log[$type] = $log;
         }
 
         return $this;
@@ -216,7 +243,7 @@ class Log implements LoggerInterface
 
             if (empty($this->config['level']) || in_array($level, $this->config['level'])) {
                 $log[$level] = $info;
-                $this->app['event']->trigger('LogLevel', [$level, $info]);
+                $this->app->event->trigger('LogLevel', [$level, $info]);
             }
         }
 
@@ -244,6 +271,8 @@ class Log implements LoggerInterface
             $force = true;
         }
 
+        $log = [];
+
         if (true === $force || in_array($type, $this->config['level'])) {
             $log[$type][] = $msg;
         } else {
@@ -251,7 +280,7 @@ class Log implements LoggerInterface
         }
 
         // 监听LogWrite
-        $this->app['event']->trigger('LogWrite', $log);
+        $this->app->event->trigger('LogWrite', $log);
 
         // 写入日志
         return $this->driver->save($log, false);

@@ -13,8 +13,15 @@ namespace think\cache\driver;
 
 use think\cache\Driver;
 
+/**
+ * Memcached缓存类
+ */
 class Memcached extends Driver
 {
+    /**
+     * 配置参数
+     * @var array
+     */
     protected $options = [
         'host'       => '127.0.0.1',
         'port'       => 11211,
@@ -55,15 +62,15 @@ class Memcached extends Driver
         }
 
         // 支持集群
-        $hosts = explode(',', $this->options['host']);
-        $ports = explode(',', $this->options['port']);
+        $hosts = (array) $this->options['host'];
+        $ports = (array) $this->options['port'];
         if (empty($ports[0])) {
             $ports[0] = 11211;
         }
 
         // 建立连接
         $servers = [];
-        foreach ((array) $hosts as $i => $host) {
+        foreach ($hosts as $i => $host) {
             $servers[] = [$host, $ports[$i] ?? $ports[0], 1];
         }
 
@@ -120,7 +127,7 @@ class Memcached extends Driver
             $expire = $this->options['expire'];
         }
 
-        if ($this->tag && !$this->has($name)) {
+        if (!empty($this->tag) && !$this->has($name)) {
             $first = true;
         }
 
@@ -139,8 +146,8 @@ class Memcached extends Driver
     /**
      * 自增缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     public function inc(string $name, int $step = 1)
@@ -159,8 +166,8 @@ class Memcached extends Driver
     /**
      * 自减缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     public function dec(string $name, int $step = 1)
@@ -199,7 +206,7 @@ class Memcached extends Driver
      */
     public function clear(): bool
     {
-        if ($this->tag) {
+        if (!empty($this->tag)) {
             foreach ($this->tag as $tag) {
                 $this->clearTag($tag);
             }
@@ -231,7 +238,7 @@ class Memcached extends Driver
      */
     protected function setTagItem(string $name): void
     {
-        if ($this->tag) {
+        if (!empty($this->tag)) {
             foreach ($this->tag as $tag) {
                 $tagName = $this->getTagKey($tag);
                 if ($this->handler->has($tagName)) {

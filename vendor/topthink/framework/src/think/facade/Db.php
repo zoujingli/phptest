@@ -16,7 +16,9 @@ use think\Facade;
 /**
  * @see \think\Db
  * @mixin \think\Db
+ * @method object buildQuery(string $query, mixed $connection) static 创建一个新的查询对象
  * @method \think\db\Query connect(array $config =[], mixed $name = false) static 连接/切换数据库连接
+ * @method \think\db\Connection getConnection() static 获取数据库连接对象
  * @method \think\db\Query master() static 从主服务器读取数据
  * @method \think\db\Query table(string $table) static 指定数据表（含前缀）
  * @method \think\db\Query name(string $name) static 指定数据表（不含前缀）
@@ -39,8 +41,9 @@ use think\Facade;
  * @method array column(string $field, string $key = '') static 获取某个列的值
  * @method mixed find(mixed $data = null) static 查询单个记录
  * @method mixed select(mixed $data = null) static 查询多个记录
- * @method integer insert(array $data, boolean $replace = false, boolean $getLastInsID = false, string $sequence = null) static 插入一条记录
- * @method integer insertGetId(array $data, boolean $replace = false, string $sequence = null) static 插入一条记录并返回自增ID
+ * @method integer save(boolean $forceInsert = false) static 保存记录 自动判断insert或者update
+ * @method integer insert(array $data, boolean $getLastInsID = false, string $sequence = null) static 插入一条记录
+ * @method integer insertGetId(array $data, string $sequence = null) static 插入一条记录并返回自增ID
  * @method integer insertAll(array $dataSet) static 插入多条记录
  * @method integer update(array $data) static 更新记录
  * @method integer delete(mixed $data = null) static 删除记录

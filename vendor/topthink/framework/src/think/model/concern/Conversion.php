@@ -52,12 +52,11 @@ trait Conversion
      * 设置需要附加的输出属性
      * @access public
      * @param  array $append   属性列表
-     * @param  bool  $override 是否覆盖
      * @return $this
      */
-    public function append(array $append = [], bool $override = false)
+    public function append(array $append = [])
     {
-        $this->append = $override ? $append : array_merge($this->append, $append);
+        $this->append = $append;
 
         return $this;
     }
@@ -98,12 +97,11 @@ trait Conversion
      * 设置需要隐藏的输出属性
      * @access public
      * @param  array $hidden   属性列表
-     * @param  bool  $override 是否覆盖
      * @return $this
      */
-    public function hidden(array $hidden = [], bool $override = false)
+    public function hidden(array $hidden = [])
     {
-        $this->hidden = $override ? $hidden : array_merge($this->hidden, $hidden);
+        $this->hidden = $hidden;
 
         return $this;
     }
@@ -112,12 +110,11 @@ trait Conversion
      * 设置需要输出的属性
      * @access public
      * @param  array $visible
-     * @param  bool  $override 是否覆盖
      * @return $this
      */
-    public function visible(array $visible = [], bool $override = false)
+    public function visible(array $visible = [])
     {
-        $this->visible = $override ? $visible : array_merge($this->visible, $visible);
+        $this->visible = $visible;
 
         return $this;
     }
@@ -129,24 +126,52 @@ trait Conversion
      */
     public function toArray(): array
     {
-        $item    = [];
-        $visible = [];
-        $hidden  = [];
+        $item       = [];
+        $hasVisible = false;
+
+        foreach ($this->visible as $key => $val) {
+            if (is_string($val)) {
+                if (strpos($val, '.')) {
+                    list($relation, $name)      = explode('.', $val);
+                    $this->visible[$relation][] = $name;
+                } else {
+                    $this->visible[$val] = true;
+                    $hasVisible          = true;
+                }
+                unset($this->visible[$key]);
+            }
+        }
+
+        foreach ($this->hidden as $key => $val) {
+            if (is_string($val)) {
+                if (strpos($val, '.')) {
+                    list($relation, $name)     = explode('.', $val);
+                    $this->hidden[$relation][] = $name;
+                } else {
+                    $this->hidden[$val] = true;
+                }
+                unset($this->hidden[$key]);
+            }
+        }
 
         // 合并关联数据
         $data = array_merge($this->data, $this->relation);
 
-        // 过滤属性
-        if (!empty($this->visible)) {
-            $array = $this->parseAttr($this->visible, $visible);
-            $data  = array_intersect_key($data, array_flip($array));
-        } elseif (!empty($this->hidden)) {
-            $array = $this->parseAttr($this->hidden, $hidden, false);
-            $data  = array_diff_key($data, array_flip($array));
-        }
-
         foreach ($data as $key => $val) {
-            $item[$key] = $this->getArrayData($key, $val, $visible, $hidden);
+            if ($val instanceof Model || $val instanceof ModelCollection) {
+                // 关联模型对象
+                if (isset($this->visible[$key])) {
+                    $val->visible($this->visible[$key]);
+                } elseif (isset($this->hidden[$key])) {
+                    $val->hidden($this->hidden[$key]);
+                }
+                // 关联模型对象
+                $item[$key] = $val->toArray();
+            } elseif (isset($this->visible[$key])) {
+                $item[$key] = $this->getAttr($key);
+            } elseif (!isset($this->hidden[$key]) && !$hasVisible) {
+                $item[$key] = $this->getAttr($key);
+            }
         }
 
         // 追加属性（必须定义获取器）
@@ -157,7 +182,7 @@ trait Conversion
         return $item;
     }
 
-    protected function appendAttrToArray(array &$item, $key, string $name)
+    protected function appendAttrToArray(array &$item, $key, $name)
     {
         if (is_array($name)) {
             // 追加关联对象属性
@@ -200,7 +225,7 @@ trait Conversion
         if ($modelRelation instanceof OneToOne) {
             $bindAttr = $modelRelation->getBindAttr();
 
-            if ($bindAttr) {
+            if (!empty($bindAttr)) {
                 unset($item[$name]);
             }
 
@@ -216,23 +241,6 @@ trait Conversion
         }
     }
 
-    protected function getArrayData(string $key, $val, array $visible, array $hidden)
-    {
-        if ($val instanceof Model || $val instanceof ModelCollection) {
-            // 关联模型对象
-            if (isset($visible[$key])) {
-                $val->visible($visible[$key]);
-            } elseif (isset($hidden[$key])) {
-                $val->hidden($hidden[$key]);
-            }
-            // 关联模型对象
-            return $val->toArray();
-        }
-
-        // 模型属性
-        return $this->getAttr($key);
-    }
-
     /**
      * 转换当前模型对象为JSON字符串
      * @access public
@@ -242,17 +250,6 @@ trait Conversion
     public function toJson(int $options = JSON_UNESCAPED_UNICODE): string
     {
         return json_encode($this->toArray(), $options);
-    }
-
-    /**
-     * 移除当前模型的关联属性
-     * @access public
-     * @return $this
-     */
-    public function removeRelation()
-    {
-        $this->relation = [];
-        return $this;
     }
 
     public function __toString()
@@ -273,7 +270,7 @@ trait Conversion
      * @param  string           $resultSetType 数据集类
      * @return Collection
      */
-    public function toCollection(iterable $collection, string $resultSetType = null): Collection
+    public function toCollection(iterable $collection = [], string $resultSetType = null): Collection
     {
         $resultSetType = $resultSetType ?: $this->resultSetType;
 
@@ -286,38 +283,4 @@ trait Conversion
         return $collection;
     }
 
-    /**
-     * 解析隐藏及显示属性
-     * @access protected
-     * @param  array $attrs  属性
-     * @param  array $result 结果集
-     * @param  bool  $visible
-     * @return array
-     */
-    protected function parseAttr(array $attrs, array &$result, bool $visible = true): array
-    {
-        $array = [];
-
-        foreach ($attrs as $key => $val) {
-            if (is_array($val)) {
-                if ($visible) {
-                    $array[] = $key;
-                }
-
-                $result[$key] = $val;
-            } elseif (strpos($val, '.')) {
-                list($key, $name) = explode('.', $val);
-
-                if ($visible) {
-                    $array[] = $key;
-                }
-
-                $result[$key][] = $name;
-            } else {
-                $array[] = $val;
-            }
-        }
-
-        return $array;
-    }
 }

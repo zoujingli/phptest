@@ -22,6 +22,10 @@ use think\cache\Driver;
  */
 class Redis extends Driver
 {
+    /**
+     * 配置参数
+     * @var array
+     */
     protected $options = [
         'host'       => '127.0.0.1',
         'port'       => 6379,
@@ -130,7 +134,7 @@ class Redis extends Driver
             $expire = $this->options['expire'];
         }
 
-        if ($this->tag && !$this->has($name)) {
+        if (!empty($this->tag) && !$this->has($name)) {
             $first = true;
         }
 
@@ -153,8 +157,8 @@ class Redis extends Driver
     /**
      * 自增缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     public function inc(string $name, int $step = 1)
@@ -169,8 +173,8 @@ class Redis extends Driver
     /**
      * 自减缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     public function dec(string $name, int $step = 1)
@@ -203,7 +207,7 @@ class Redis extends Driver
      */
     public function clear(): bool
     {
-        if ($this->tag) {
+        if (!empty($this->tag)) {
             foreach ($this->tag as $tag) {
                 $this->clearTag($tag);
             }
@@ -235,7 +239,7 @@ class Redis extends Driver
      */
     protected function setTagItem(string $name): void
     {
-        if ($this->tag) {
+        if (!empty($this->tag)) {
             foreach ($this->tag as $tag) {
                 $tagName = $this->getTagKey($tag);
                 $this->handler->sAdd($tagName, $name);
@@ -254,7 +258,11 @@ class Redis extends Driver
     public function getTagItems(string $tag): array
     {
         $tagName = $this->getTagKey($tag);
-        return $this->handler->sMembers($tagName);
+        $keys    = $this->handler->sMembers($tagName);
+
+        return array_map(function ($key) {
+            return $this->getCacheKey($key);
+        }, $keys);
     }
 
 }

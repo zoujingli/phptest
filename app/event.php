@@ -11,21 +11,13 @@
 
 // 事件定义文件
 return [
-    'bind'      => [
-    ],
+    'bind'      => [],
     'listen'    => [
-        'AppInit'      => [
-            'think\listener\LoadLangPack',
-        ],
-        'AppBegin'     => [
-            'think\listener\CheckRequestCache',
-        ],
-        'AppEnd'       => [],
-        'LogLevel'     => [],
-        'LogWrite'     => [],
-        'ResponseSend' => [],
-        'ResponseEnd'  => [],
+        'AppInit'  => [],
+        'HttpRun'  => [],
+        'HttpEnd'  => [],
+        'LogLevel' => [],
+        'LogWrite' => [],
     ],
-    'subscribe' => [
-    ],
+    'subscribe' => [],
 ];

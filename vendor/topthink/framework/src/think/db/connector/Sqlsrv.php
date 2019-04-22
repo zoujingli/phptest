@@ -31,12 +31,6 @@ class Sqlsrv extends Connection
     ];
 
     /**
-     * Builder类
-     * @var string
-     */
-    protected $builder = '\\think\\db\\builder\\Sqlsrv';
-
-    /**
      * 解析pdo连接的dsn信息
      * @access protected
      * @param  array $config 连接信息
@@ -75,7 +69,7 @@ class Sqlsrv extends Connection
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
 
-        if ($result) {
+        if (!empty($result)) {
             foreach ($result as $key => $val) {
                 $val = array_change_key_case($val);
 

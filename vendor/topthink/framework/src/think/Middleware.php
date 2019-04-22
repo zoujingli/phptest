@@ -16,23 +16,39 @@ use InvalidArgumentException;
 use LogicException;
 use think\exception\HttpResponseException;
 
+/**
+ * 中间件管理类
+ */
 class Middleware
 {
+    /**
+     * 中间件执行队列
+     * @var array
+     */
     protected $queue = [];
-    protected $app;
+
+    /**
+     * 配置
+     * @var array
+     */
     protected $config = [
         'default_namespace' => 'app\\http\\middleware\\',
     ];
 
-    public function __construct(App $app, array $config = [])
+    /**
+     * 应用对象
+     * @var App
+     */
+    protected $app;
+
+    public function __construct(array $config = [])
     {
-        $this->app    = $app;
         $this->config = array_merge($this->config, $config);
     }
 
     public static function __make(App $app, Config $config)
     {
-        return new static($app, $config->pull('middleware'));
+        return (new static($config->get('middleware')))->setApp($app);
     }
 
     public function setConfig(array $config): void
@@ -41,10 +57,23 @@ class Middleware
     }
 
     /**
+     * 设置应用对象
+     * @access public
+     * @param  App  $app
+     * @return $this
+     */
+    public function setApp(App $app)
+    {
+        $this->app = $app;
+        return $this;
+    }
+
+    /**
      * 导入中间件
      * @access public
      * @param  array  $middlewares
      * @param  string $type  中间件类型
+     * @return void
      */
     public function import(array $middlewares = [], string $type = 'route'): void
     {
@@ -58,6 +87,7 @@ class Middleware
      * @access public
      * @param  mixed  $middleware
      * @param  string $type  中间件类型
+     * @return void
      */
     public function add($middleware, string $type = 'route'): void
     {
@@ -76,10 +106,11 @@ class Middleware
      * 注册控制器中间件
      * @access public
      * @param  mixed  $middleware
+     * @return void
      */
-    public function controller($middleware)
+    public function controller($middleware): void
     {
-        return $this->add($middleware, 'controller');
+        $this->add($middleware, 'controller');
     }
 
     /**
@@ -88,7 +119,7 @@ class Middleware
      * @param  mixed  $middleware
      * @param  string $type  中间件类型
      */
-    public function unshift($middleware, string $type = 'route'): void
+    public function unshift($middleware, string $type = 'route')
     {
         if (is_null($middleware)) {
             return;
@@ -96,7 +127,7 @@ class Middleware
 
         $middleware = $this->buildMiddleware($middleware, $type);
 
-        if ($middleware) {
+        if (!empty($middleware)) {
             array_unshift($this->queue[$type], $middleware);
         }
     }
@@ -127,8 +158,9 @@ class Middleware
      * @access protected
      * @param  mixed  $middleware
      * @param  string $type  中间件类型
+     * @return array
      */
-    protected function buildMiddleware($middleware, string $type = 'route')
+    protected function buildMiddleware($middleware, string $type = 'route'): array
     {
         if (is_array($middleware)) {
             list($middleware, $param) = $middleware;
@@ -151,14 +183,15 @@ class Middleware
         }
 
         if (is_array($middleware)) {
-            return $this->import($middleware, $type);
+            $this->import($middleware, $type);
+            return [];
         }
 
         if (strpos($middleware, ':')) {
             list($middleware, $param) = explode(':', $middleware, 2);
         }
 
-        return [[$this->app->make($middleware), 'handle'], $param ?? null];
+        return [[$middleware, 'handle'], $param ?? null];
     }
 
     protected function resolve(string $type = 'route')
@@ -172,8 +205,12 @@ class Middleware
 
             list($call, $param) = $middleware;
 
+            if (is_array($call) && is_string($call[0])) {
+                $call = [$this->app->make($call[0]), $call[1]];
+            }
+
             try {
-                $response = call_user_func_array($call, [$request, $this->resolve(), $param]);
+                $response = $this->app->invoke($call, [$request, $this->resolve($type), $param]);
             } catch (HttpResponseException $exception) {
                 $response = $exception->getResponse();
             }

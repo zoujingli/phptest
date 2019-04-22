@@ -15,8 +15,6 @@ use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
-use think\facade\App;
-use think\facade\Db;
 
 class Schema extends Command
 {
@@ -31,31 +29,38 @@ class Schema extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        if ($input->getArgument('app')) {
-            $runtimePath = App::getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $input->getArgument('app') . DIRECTORY_SEPARATOR;
-            $appPath     = App::getBasePath() . $input->getArgument('app') . DIRECTORY_SEPARATOR;
-            $namespace   = App::getNamespace() . '\\' . $input->getArgument('app');
+        $app = $input->getArgument('app');
+
+        if (empty($app) && !is_dir($this->app->getBasePath() . 'controller')) {
+            $output->writeln('<error>Miss app name!</error>');
+            return false;
+        }
+
+        if ($app) {
+            $runtimePath = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $app . DIRECTORY_SEPARATOR;
+            $appPath     = $this->app->getBasePath() . $app . DIRECTORY_SEPARATOR;
+            $namespace   = 'app\\' . $app;
         } else {
-            $runtimePath = App::getRuntimePath();
-            $appPath     = App::getBasePath();
-            $namespace   = App::getNamespace();
+            $runtimePath = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR;
+            $appPath     = $this->app->getBasePath();
+            $namespace   = 'app';
         }
 
         $schemaPath = $runtimePath . 'schema' . DIRECTORY_SEPARATOR;
         if (!is_dir($schemaPath)) {
-            @mkdir($schemaPath, 0755, true);
+            mkdir($schemaPath, 0755, true);
         }
 
         if ($input->hasOption('table')) {
             $table = $input->getOption('table');
             if (false === strpos($table, '.')) {
-                $dbName = Db::getConfig('database');
+                $dbName = $this->app->db->getConfig('database');
             }
 
             $tables[] = $table;
         } elseif ($input->hasOption('db')) {
             $dbName = $input->getOption('db');
-            $tables = Db::getConnection()->getTables($dbName);
+            $tables = $this->app->db->getConnection()->getTables($dbName);
         } else {
 
             $path = $appPath . 'model';
@@ -83,10 +88,14 @@ class Schema extends Command
     {
         $reflect = new \ReflectionClass($class);
         if (!$reflect->isAbstract() && $reflect->isSubclassOf('\think\Model')) {
-            $table   = $class::getTable();
-            $dbName  = $class::getConfig('database');
+
+            /** @var \think\Model $model */
+            $model = new $class;
+
+            $table   = $model->getTable();
+            $dbName  = $model->getConfig('database');
             $content = '<?php ' . PHP_EOL . 'return ';
-            $info    = $class::getConnection()->getFields($table);
+            $info    = $model->db()->getConnection()->getFields($table);
             $content .= var_export($info, true) . ';';
 
             file_put_contents($path . $dbName . '.' . $table . '.php', $content);
@@ -96,14 +105,14 @@ class Schema extends Command
     protected function buildDataBaseSchema(string $path, array $tables, string $db): void
     {
         if ('' == $db) {
-            $dbName = Db::getConfig('database') . '.';
+            $dbName = $this->app->db->getConfig('database') . '.';
         } else {
             $dbName = $db;
         }
 
         foreach ($tables as $table) {
             $content = '<?php ' . PHP_EOL . 'return ';
-            $info    = Db::getConnection()->getFields($db . $table);
+            $info    = $this->app->db->getConnection()->getFields($db . $table);
             $content .= var_export($info, true) . ';';
             file_put_contents($path . $dbName . $table . '.php', $content);
         }

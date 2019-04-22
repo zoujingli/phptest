@@ -12,9 +12,13 @@ declare (strict_types = 1);
 
 namespace think\db;
 
+use Closure;
 use PDO;
 use think\Exception;
 
+/**
+ * Db Builder
+ */
 abstract class Builder
 {
     /**
@@ -128,7 +132,7 @@ abstract class Builder
 
         // 获取绑定信息
         if (empty($bind)) {
-            $bind = $query->getFieldBindType();
+            $bind = $query->getFieldsBindType();
         }
 
         if (empty($fields)) {
@@ -149,9 +153,6 @@ abstract class Builder
                 continue;
             } elseif (!is_scalar($val) && (in_array($key, (array) $query->getOptions('json')) || 'json' == $this->connection->getFieldsType($options['table'], $key))) {
                 $val = json_encode($val);
-            } elseif (is_object($val) && method_exists($val, '__toString')) {
-                // 对象数据写入
-                $val = $val->__toString();
             }
 
             if (false !== strpos($key, '->')) {
@@ -197,7 +198,7 @@ abstract class Builder
             return $data->getValue();
         }
 
-        $name = $query->bind($data, $bind[$key] ?? PDO::PARAM_STR);
+        $name = $query->bindValue($data, $bind[$key] ?? PDO::PARAM_STR);
 
         return ':' . $name;
     }
@@ -224,11 +225,7 @@ abstract class Builder
      */
     protected function parseExtra(Query $query, string $extra): string
     {
-        if (preg_match('/^[\w]+$/i', $extra)) {
-            return ' ' . strtoupper($extra);
-        } else {
-            return '';
-        }
+        return preg_match('/^[\w]+$/i', $extra) ? ' ' . strtoupper($extra) : '';
     }
 
     /**
@@ -240,9 +237,7 @@ abstract class Builder
      */
     protected function parseField(Query $query, $fields): string
     {
-        if ('*' == $fields || empty($fields)) {
-            $fieldsStr = '*';
-        } elseif (is_array($fields)) {
+        if (is_array($fields)) {
             // 支持 'field1'=>'field2' 这样的字段别名定义
             $array = [];
 
@@ -257,6 +252,8 @@ abstract class Builder
             }
 
             $fieldsStr = implode(',', $array);
+        } else {
+            $fieldsStr = '*';
         }
 
         return $fieldsStr;
@@ -305,9 +302,9 @@ abstract class Builder
             // 附加软删除条件
             list($field, $condition) = $options['soft_delete'];
 
-            $binds    = $query->getFieldBindType();
+            $binds    = $query->getFieldsBindType();
             $whereStr = $whereStr ? '( ' . $whereStr . ' ) AND ' : '';
-            $whereStr = $whereStr . $this->parseWhereItem($query, $field, $condition, '', $binds);
+            $whereStr = $whereStr . $this->parseWhereItem($query, $field, $condition, $binds);
         }
 
         return empty($whereStr) ? '' : ' WHERE ' . $whereStr;
@@ -328,71 +325,10 @@ abstract class Builder
 
         $whereStr = '';
 
-        $binds = $query->getFieldBindType();
+        $binds = $query->getFieldsBindType();
 
         foreach ($where as $logic => $val) {
-            $str = [];
-
-            foreach ($val as $value) {
-                if ($value instanceof Raw) {
-                    $str[] = ' ' . $logic . ' ( ' . $value->getValue() . ' )';
-                    continue;
-                }
-
-                if (is_array($value)) {
-                    if (key($value) !== 0) {
-                        throw new Exception('where express error:' . var_export($value, true));
-                    }
-                    $field = array_shift($value);
-                } elseif (!($value instanceof \Closure)) {
-                    throw new Exception('where express error:' . var_export($value, true));
-                }
-
-                if ($value instanceof \Closure) {
-                    // 使用闭包查询
-                    $newQuery = $query->newQuery()->setConnection($this->connection);
-                    $value($newQuery);
-                    $whereClause = $this->buildWhere($query, $newQuery->getOptions('where'));
-
-                    if (!empty($whereClause)) {
-                        $str[] = ' ' . $logic . ' ( ' . $whereClause . ' )';
-                    }
-                } elseif (is_array($field)) {
-                    array_unshift($value, $field);
-                    $str2 = [];
-                    foreach ($value as $item) {
-                        $str2[] = $this->parseWhereItem($query, array_shift($item), $item, $logic, $binds);
-                    }
-
-                    $str[] = ' ' . $logic . ' ( ' . implode(' AND ', $str2) . ' )';
-                } elseif ($field instanceof Raw) {
-                    $str[] = ' ' . $logic . ' ' . $this->parseWhereItem($query, $field, $value, $logic, $binds);
-                } elseif (strpos($field, '|')) {
-                    // 不同字段使用相同查询条件（OR）
-                    $array = explode('|', $field);
-                    $item  = [];
-
-                    foreach ($array as $k) {
-                        $item[] = $this->parseWhereItem($query, $k, $value, '', $binds);
-                    }
-
-                    $str[] = ' ' . $logic . ' ( ' . implode(' OR ', $item) . ' )';
-                } elseif (strpos($field, '&')) {
-                    // 不同字段使用相同查询条件（AND）
-                    $array = explode('&', $field);
-                    $item  = [];
-
-                    foreach ($array as $k) {
-                        $item[] = $this->parseWhereItem($query, $k, $value, '', $binds);
-                    }
-
-                    $str[] = ' ' . $logic . ' ( ' . implode(' AND ', $item) . ' )';
-                } else {
-                    // 对字段使用表达式查询
-                    $field = is_string($field) ? $field : '';
-                    $str[] = ' ' . $logic . ' ' . $this->parseWhereItem($query, $field, $value, $logic, $binds);
-                }
-            }
+            $str = $this->parseWhereLogic($query, $logic, $val, $binds);
 
             $whereStr .= empty($whereStr) ? substr(implode(' ', $str), strlen($logic) + 1) : implode(' ', $str);
         }
@@ -400,38 +336,160 @@ abstract class Builder
         return $whereStr;
     }
 
-    // where子单元分析
-    protected function parseWhereItem(Query $query, $field, $val, $rule = '', array $binds = []): string
+    /**
+     * 不同字段使用相同查询条件（AND）
+     * @access protected
+     * @param  Query  $query 查询对象
+     * @param  string $logic Logic
+     * @param  array  $val   查询条件
+     * @param  array  $binds 参数绑定
+     * @return array
+     */
+    protected function parseWhereLogic(Query $query, string $logic, array $val, array $binds = []): array
+    {
+        $where = [];
+        foreach ($val as $value) {
+            if ($value instanceof Raw) {
+                $where[] = ' ' . $logic . ' ( ' . $value->getValue() . ' )';
+                continue;
+            }
+
+            if (is_array($value)) {
+                if (key($value) !== 0) {
+                    throw new Exception('where express error:' . var_export($value, true));
+                }
+                $field = array_shift($value);
+            } elseif (!($value instanceof \Closure)) {
+                throw new Exception('where express error:' . var_export($value, true));
+            }
+
+            if ($value instanceof \Closure) {
+                // 使用闭包查询
+                $where[] = $this->parseClousreWhere($query, $value, $logic);
+            } elseif (is_array($field)) {
+                $where[] = $this->parseMultiWhereField($query, $value, $field, $logic, $binds);
+            } elseif ($field instanceof Raw) {
+                $where[] = ' ' . $logic . ' ' . $this->parseWhereItem($query, $field, $value, $binds);
+            } elseif (strpos($field, '|')) {
+                $where[] = $this->parseFieldsOr($query, $value, $field, $logic, $binds);
+            } elseif (strpos($field, '&')) {
+                $where[] = $this->parseFieldsAnd($query, $value, $field, $logic, $binds);
+            } else {
+                // 对字段使用表达式查询
+                $field   = is_string($field) ? $field : '';
+                $where[] = ' ' . $logic . ' ' . $this->parseWhereItem($query, $field, $value, $binds);
+            }
+        }
+
+        return $where;
+    }
+
+    /**
+     * 不同字段使用相同查询条件（AND）
+     * @access protected
+     * @param  Query  $query 查询对象
+     * @param  mixed  $value 查询条件
+     * @param  string $field 查询字段
+     * @param  string $logic Logic
+     * @param  array  $binds 参数绑定
+     * @return string
+     */
+    protected function parseFieldsAnd(Query $query, $value, string $field, string $logic, array $binds): string
+    {
+        $item = [];
+
+        foreach (explode('&', $field) as $k) {
+            $item[] = $this->parseWhereItem($query, $k, $value, $binds);
+        }
+
+        return ' ' . $logic . ' ( ' . implode(' AND ', $item) . ' )';
+    }
+
+    /**
+     * 不同字段使用相同查询条件（OR）
+     * @access protected
+     * @param  Query  $query 查询对象
+     * @param  mixed  $value 查询条件
+     * @param  string $field 查询字段
+     * @param  string $logic Logic
+     * @param  array  $binds 参数绑定
+     * @return string
+     */
+    protected function parseFieldsOr(Query $query, $value, string $field, string $logic, array $binds): string
+    {
+        $item = [];
+
+        foreach (explode('|', $field) as $k) {
+            $item[] = $this->parseWhereItem($query, $k, $value, $binds);
+        }
+
+        return ' ' . $logic . ' ( ' . implode(' OR ', $item) . ' )';
+    }
+
+    /**
+     * 闭包查询
+     * @access protected
+     * @param  Query   $query 查询对象
+     * @param  Closure $value 查询条件
+     * @param  string  $logic Logic
+     * @return string
+     */
+    protected function parseClousreWhere(Query $query, Closure $value, string $logic): string
+    {
+        $newQuery = $query->newQuery()->setConnection($this->connection);
+        $value($newQuery);
+        $whereClause = $this->buildWhere($query, $newQuery->getOptions('where') ?: []);
+
+        if (!empty($whereClause)) {
+            $where = ' ' . $logic . ' ( ' . $whereClause . ' )';
+        }
+
+        return $where ?? '';
+    }
+
+    /**
+     * 复合条件查询
+     * @access protected
+     * @param  Query  $query 查询对象
+     * @param  mixed  $value 查询条件
+     * @param  mixed  $field 查询字段
+     * @param  string $logic Logic
+     * @param  array  $binds 参数绑定
+     * @return string
+     */
+    protected function parseMultiWhereField(Query $query, $value, $field, string $logic, array $binds): string
+    {
+        array_unshift($value, $field);
+
+        $where = [];
+        foreach ($value as $item) {
+            $where[] = $this->parseWhereItem($query, array_shift($item), $item, $binds);
+        }
+
+        return ' ' . $logic . ' ( ' . implode(' AND ', $where) . ' )';
+    }
+
+    /**
+     * where子单元分析
+     * @access protected
+     * @param  Query $query 查询对象
+     * @param  mixed $field 查询字段
+     * @param  array $val   查询条件
+     * @param  array $binds 参数绑定
+     * @return string
+     */
+    protected function parseWhereItem(Query $query, $field, array $val, array $binds = []): string
     {
         // 字段分析
         $key = $field ? $this->parseKey($query, $field, true) : '';
 
-        // 查询规则和条件
-        if (!is_array($val)) {
-            $val = is_null($val) ? ['NULL', ''] : ['=', $val];
-        }
-
         list($exp, $value) = $val;
 
-        // 对一个字段使用多个查询条件
-        if (is_array($exp)) {
-            $item = array_pop($val);
-
-            // 传入 or 或者 and
-            if (is_string($item) && in_array($item, ['AND', 'and', 'OR', 'or'])) {
-                $rule = $item;
-            } else {
-                array_push($val, $item);
-            }
-
-            foreach ($val as $k => $item) {
-                $str[] = $this->parseWhereItem($query, $field, $item, $rule, $binds);
-            }
-
-            return '( ' . implode(' ' . $rule . ' ', $str) . ' )';
+        // 检测操作符
+        if (!is_string($exp)) {
+            throw new Exception('where express error:' . var_export($exp, true));
         }
 
-        // 检测操作符
         $exp = strtoupper($exp);
         if (isset($this->exp[$exp])) {
             $exp = $this->exp[$exp];
@@ -441,10 +499,6 @@ abstract class Builder
             $bindType = $binds[$field] ?? PDO::PARAM_STR;
         } else {
             $bindType = PDO::PARAM_STR;
-        }
-
-        if ($value instanceof Expression) {
-            return $value->parse($query, $key, $exp, $field, $bindType, $val[2] ?? 'AND');
         }
 
         if ($value instanceof Raw) {
@@ -457,7 +511,7 @@ abstract class Builder
         if (is_scalar($value) && !in_array($exp, ['EXP', 'NOT NULL', 'NULL', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN']) && strpos($exp, 'TIME') === false) {
             if (is_string($value) && 0 === strpos($value, ':') && $query->isBind(substr($value, 1))) {
             } else {
-                $name  = $query->bind($value, $bindType);
+                $name  = $query->bindValue($value, $bindType);
                 $value = ':' . $name;
             }
         }
@@ -465,16 +519,11 @@ abstract class Builder
         // 解析查询表达式
         foreach ($this->parser as $fun => $parse) {
             if (in_array($exp, $parse)) {
-                $whereStr = $this->$fun($query, $key, $exp, $value, $field, $bindType, $val[2] ?? 'AND');
-                break;
+                return $this->$fun($query, $key, $exp, $value, $field, $bindType, $val[2] ?? 'AND');
             }
         }
 
-        if (!isset($whereStr)) {
-            throw new Exception('where express error:' . $exp);
-        }
-
-        return $whereStr;
+        throw new Exception('where express error:' . $exp);
     }
 
     /**
@@ -493,12 +542,13 @@ abstract class Builder
     {
         // 模糊匹配
         if (is_array($value)) {
+            $array = [];
             foreach ($value as $item) {
-                $name    = $query->bind($item, $bindType);
+                $name    = $query->bindValue($item, $bindType);
                 $array[] = $key . ' ' . $exp . ' :' . $name;
             }
 
-            $whereStr = '(' . implode($array, ' ' . strtoupper($logic) . ' ') . ')';
+            $whereStr = '(' . implode(' ' . strtoupper($logic) . ' ', $array) . ')';
         } else {
             $whereStr = $key . ' ' . $exp . ' ' . $value;
         }
@@ -579,8 +629,8 @@ abstract class Builder
         // BETWEEN 查询
         $data = is_array($value) ? $value : explode(',', $value);
 
-        $min = $query->bind($data[0], $bindType);
-        $max = $query->bind($data[1], $bindType);
+        $min = $query->bindValue($data[0], $bindType);
+        $max = $query->bindValue($data[1], $bindType);
 
         return $key . ' ' . $exp . ' :' . $min . ' AND :' . $max . ' ';
     }
@@ -607,7 +657,7 @@ abstract class Builder
             throw new Exception('where express error:' . $value);
         }
 
-        return $exp . ' (' . $value . ')';
+        return $exp . ' ( ' . $value . ' )';
     }
 
     /**
@@ -698,7 +748,7 @@ abstract class Builder
             $array = [];
 
             foreach ($value as $v) {
-                $name    = $query->bind($v, $bindType);
+                $name    = $query->bindValue($v, $bindType);
                 $array[] = ':' . $name;
             }
 
@@ -753,23 +803,22 @@ abstract class Builder
 
         if (isset($type[$key])) {
             $info = $type[$key];
-        }
-
-        if (isset($info)) {
             if (is_string($value)) {
                 $value = strtotime($value) ?: $value;
             }
 
-            if (preg_match('/(datetime|timestamp)/is', $info)) {
-                // 日期及时间戳类型
-                $value = date('Y-m-d H:i:s', $value);
-            } elseif (preg_match('/(date)/is', $info)) {
-                // 日期及时间戳类型
-                $value = date('Y-m-d', $value);
+            if (is_int($value)) {
+                if (preg_match('/(datetime|timestamp)/is', $info)) {
+                    // 日期及时间戳类型
+                    $value = date('Y-m-d H:i:s', $value);
+                } elseif (preg_match('/(date)/is', $info)) {
+                    // 日期及时间戳类型
+                    $value = date('Y-m-d', $value);
+                }
             }
         }
 
-        $name = $query->bind($value, $bindType);
+        $name = $query->bindValue($value, $bindType);
 
         return ':' . $name;
     }
@@ -825,6 +874,7 @@ abstract class Builder
      */
     protected function parseOrder(Query $query, array $order): string
     {
+        $array = [];
         foreach ($order as $key => $val) {
             if ($val instanceof Raw) {
                 $array[] = $val->getValue();
@@ -853,6 +903,17 @@ abstract class Builder
     }
 
     /**
+     * 随机排序
+     * @access protected
+     * @param  Query     $query        查询对象
+     * @return string
+     */
+    protected function parseRand(Query $query): string
+    {
+        return '';
+    }
+
+    /**
      * orderField分析
      * @access protected
      * @param  Query     $query        查询对象
@@ -871,7 +932,7 @@ abstract class Builder
 
         $sort = strtoupper($sort);
         $sort = in_array($sort, ['ASC', 'DESC'], true) ? ' ' . $sort : '';
-        $bind = $query->getFieldBindType();
+        $bind = $query->getFieldsBindType();
 
         foreach ($val as $item) {
             $val[] = $this->parseDataBind($query, $key, $item, $bind);
@@ -897,6 +958,7 @@ abstract class Builder
             $group = explode(',', $group);
         }
 
+        $val = [];
         foreach ($group as $key) {
             $val[] = $this->parseKey($query, $key);
         }
@@ -1006,6 +1068,8 @@ abstract class Builder
 
         if (is_string($lock) && !empty($lock)) {
             return ' ' . trim($lock) . ' ';
+        } else {
+            return '';
         }
     }
 
@@ -1045,10 +1109,9 @@ abstract class Builder
      * 生成Insert SQL
      * @access public
      * @param  Query     $query   查询对象
-     * @param  bool      $replace 是否replace
      * @return string
      */
-    public function insert(Query $query, bool $replace = false): string
+    public function insert(Query $query): string
     {
         $options = $query->getOptions();
 
@@ -1064,7 +1127,7 @@ abstract class Builder
         return str_replace(
             ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%'],
             [
-                $replace ? 'REPLACE' : 'INSERT',
+                !empty($options['replace']) ? 'REPLACE' : 'INSERT',
                 $this->parseTable($query, $options['table']),
                 $this->parseExtra($query, $options['extra']),
                 implode(' , ', $fields),
@@ -1079,10 +1142,9 @@ abstract class Builder
      * @access public
      * @param  Query     $query   查询对象
      * @param  array     $dataSet 数据集
-     * @param  bool      $replace 是否replace
      * @return string
      */
-    public function insertAll(Query $query, array $dataSet, bool $replace = false): string
+    public function insertAll(Query $query, array $dataSet): string
     {
         $options = $query->getOptions();
 
@@ -1094,10 +1156,12 @@ abstract class Builder
         }
 
         // 获取绑定信息
-        $bind = $query->getFieldBindType();
+        $bind   = $query->getFieldsBindType();
+        $fields = [];
+        $values = [];
 
         foreach ($dataSet as $k => $data) {
-            $data = $this->parseData($query, $data, $allowFields, $bind, '_' . $k);
+            $data = $this->parseData($query, $data, $allowFields, $bind);
 
             $values[] = 'SELECT ' . implode(',', array_values($data));
 
@@ -1106,8 +1170,6 @@ abstract class Builder
             }
         }
 
-        $fields = [];
-
         foreach ($insertFields as $field) {
             $fields[] = $this->parseKey($query, $field);
         }
@@ -1115,7 +1177,7 @@ abstract class Builder
         return str_replace(
             ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%'],
             [
-                $replace ? 'REPLACE' : 'INSERT',
+                !empty($options['replace']) ? 'REPLACE' : 'INSERT',
                 $this->parseTable($query, $options['table']),
                 $this->parseExtra($query, $options['extra']),
                 implode(' , ', $fields),
@@ -1152,13 +1214,13 @@ abstract class Builder
     {
         $options = $query->getOptions();
 
-        $table = $this->parseTable($query, $options['table']);
-        $data  = $this->parseData($query, $options['data']);
+        $data = $this->parseData($query, $options['data']);
 
         if (empty($data)) {
             return '';
         }
 
+        $set = [];
         foreach ($data as $key => $val) {
             $set[] = $key . ' = ' . $val;
         }

@@ -12,6 +12,9 @@ declare (strict_types = 1);
 
 namespace think\route;
 
+/**
+ * 路由标识管理类
+ */
 class RuleName
 {
     protected $item = [];
@@ -21,13 +24,14 @@ class RuleName
     /**
      * 注册路由标识
      * @access public
-     * @param  string   $name      路由标识
-     * @param  string   $value     路由规则
-     * @param  bool     $first     是否置顶
+     * @param  string       $name  路由标识
+     * @param  string|array $value 路由规则
+     * @param  bool         $first 是否置顶
      * @return void
      */
     public function setName(string $name, $value, bool $first = false): void
     {
+        $name = strtolower($name);
         if ($first && isset($this->item[$name])) {
             array_unshift($this->item[$name], $value);
         } else {
@@ -38,25 +42,24 @@ class RuleName
     /**
      * 注册路由规则
      * @access public
-     * @param  string   $rule      路由规则
-     * @param  RuleItem $route     路由
+     * @param  string   $rule  路由规则
+     * @param  RuleItem $route 路由
      * @return void
      */
     public function setRule(string $rule, RuleItem $route): void
     {
-        $this->rule[$route->getDomain()][$rule][$route->getRoute()] = $route;
+        $this->rule[$rule][$route->getRoute()] = $route;
     }
 
     /**
      * 根据路由规则获取路由对象（列表）
      * @access public
-     * @param  string   $name      路由标识
-     * @param  string   $domain   域名
-     * @return array
+     * @param  string $rule   路由标识
+     * @return RuleItem[]
      */
-    public function getRule(string $rule, string $domain = null): array
+    public function getRule(string $rule): array
     {
-        return $this->rule[$domain][$rule] ?? [];
+        return $this->rule[$rule] ?? [];
     }
 
     /**
@@ -73,30 +76,23 @@ class RuleName
     /**
      * 获取全部路由列表
      * @access public
-     * @param  string   $domain   域名
      * @return array
      */
-    public function getRuleList(string $domain = null): array
+    public function getRuleList(): array
     {
         $list = [];
 
-        foreach ($this->rule as $ruleDomain => $rules) {
-            foreach ($rules as $rule => $items) {
-                foreach ($items as $item) {
-                    $val = [];
+        foreach ($this->rule as $rule => $rules) {
+            foreach ($rules as $item) {
+                $val = [];
 
-                    foreach (['method', 'rule', 'name', 'route', 'pattern', 'option'] as $param) {
-                        $call        = 'get' . $param;
-                        $val[$param] = $item->$call();
-                    }
-
-                    $list[$ruleDomain][] = $val;
+                foreach (['method', 'rule', 'name', 'route', 'pattern', 'option'] as $param) {
+                    $call        = 'get' . $param;
+                    $val[$param] = $item->$call();
                 }
-            }
-        }
 
-        if ($domain) {
-            return $list[$domain] ?? [];
+                $list[] = $val;
+            }
         }
 
         return $list;
@@ -105,7 +101,7 @@ class RuleName
     /**
      * 导入路由标识
      * @access public
-     * @param  array   $name      路由标识
+     * @param  array $item 路由标识
      * @return void
      */
     public function import(array $item): void
@@ -116,9 +112,9 @@ class RuleName
     /**
      * 根据路由标识获取路由信息（用于URL生成）
      * @access public
-     * @param  string   $name       路由标识
-     * @param  string   $domain     域名
-     * @param  string   $method     请求类型
+     * @param  string $name   路由标识
+     * @param  string $domain 域名
+     * @param  string $method 请求类型
      * @return array
      */
     public function getName(string $name = null, string $domain = null, string $method = '*'): array
@@ -136,7 +132,7 @@ class RuleName
                 $result = $this->item[$name];
             } else {
                 foreach ($this->item[$name] as $item) {
-                    if ($item[2] == $domain && ('*' == $item[4] || $method == $item[4])) {
+                    if (($item[2] == $domain || '-' == $item[2]) && ('*' == $item[4] || '*' == $method || $method == $item[4])) {
                         $result[] = $item;
                     }
                 }

@@ -19,14 +19,17 @@ use think\exception\HttpException;
 use think\Request;
 use think\route\Dispatch;
 
+/**
+ * Controller Dispatcher
+ */
 class Controller extends Dispatch
 {
     protected $controller;
     protected $actionName;
 
-    public function init()
+    public function init(App $app)
     {
-        parent::init();
+        parent::init($app);
 
         $result = $this->dispatch;
 
@@ -35,40 +38,35 @@ class Controller extends Dispatch
         }
 
         // 是否自动转换控制器和操作名
-        $convert = is_bool($this->convert) ? $this->convert : $this->rule->getConfig('url_convert');
+        $convert = is_bool($this->convert) ? $this->convert : $this->rule->config('url_convert');
         // 获取控制器名
-        $controller = strip_tags($result[0] ?: $this->rule->getConfig('default_controller'));
+        $controller = strip_tags($result[0] ?: $this->rule->config('default_controller'));
 
         $this->controller = $convert ? strtolower($controller) : $controller;
 
         // 获取操作名
-        $this->actionName = strip_tags($result[1] ?: $this->rule->getConfig('default_action'));
+        $this->actionName = strip_tags($result[1] ?: $this->rule->config('default_action'));
 
         // 设置当前请求的控制器、操作
         $this->request
             ->setController(App::parseName($this->controller, 1))
             ->setAction($this->actionName);
-
-        return $this;
     }
 
     public function exec()
     {
         try {
             // 实例化控制器
-            $instance = $this->app->controller($this->controller);
+            $instance = $this->controller($this->controller);
         } catch (ClassNotFoundException $e) {
             throw new HttpException(404, 'controller not exists:' . $e->getClass());
         }
 
-        $this->app['middleware']->controller(function (Request $request, $next) use ($instance) {
+        $this->app->middleware->controller(function (Request $request, $next) use ($instance) {
             // 获取当前操作名
-            $action = $this->actionName . $this->rule->getConfig('action_suffix');
+            $action = $this->actionName . $this->rule->config('action_suffix');
 
             if (is_callable([$instance, $action])) {
-                // 执行操作方法
-                $call = [$instance, $action];
-
                 // 严格获取当前操作方法名
                 $reflect    = new ReflectionMethod($instance, $action);
                 $actionName = $reflect->getName();
@@ -86,6 +84,31 @@ class Controller extends Dispatch
             return $this->autoResponse($data);
         });
 
-        return $this->app['middleware']->dispatch($this->request, 'controller');
+        return $this->app->middleware->dispatch($this->request, 'controller');
+    }
+
+    /**
+     * 实例化访问控制器
+     * @access public
+     * @param  string $name 资源地址
+     * @return object
+     * @throws ClassNotFoundException
+     */
+    public function controller(string $name)
+    {
+        $suffix = $this->rule->config('controller_suffix') ? 'Controller' : '';
+
+        $controllerLayer = $this->rule->config('controller_layer') ?: 'controller';
+        $emptyController = $this->rule->config('empty_controller') ?: 'Error';
+
+        $class = $this->app->parseClass($controllerLayer, $name . $suffix);
+
+        if (class_exists($class)) {
+            return $this->app->make($class, [], true);
+        } elseif ($emptyController && class_exists($emptyClass = $this->app->parseClass($controllerLayer, $emptyController . $suffix))) {
+            return $this->app->make($emptyClass, [], true);
+        }
+
+        throw new ClassNotFoundException('class not exists:' . $class, $class);
     }
 }

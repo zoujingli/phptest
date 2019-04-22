@@ -14,33 +14,37 @@ namespace think\route\dispatch;
 
 use think\App;
 use think\exception\HttpException;
-use think\route\Dispatch;
+use think\Request;
+use think\route\Rule;
 
-class Url extends Dispatch
+/**
+ * Url Dispatcher
+ */
+class Url extends Controller
 {
-    public function init()
+
+    public function __construct(Request $request, Rule $rule, $dispatch, array $param = [], int $code = null)
     {
+        $this->request = $request;
+        $this->rule    = $rule;
         // 解析默认的URL规则
-        $result = $this->parseUrl($this->dispatch);
+        $dispatch = $this->parseUrl($dispatch);
 
-        return (new Controller($this->request, $this->rule, $result))->init();
+        parent::__construct($request, $rule, $dispatch, $param, $code);
     }
-
-    public function exec()
-    {}
 
     /**
      * 解析URL地址
      * @access protected
-     * @param  string   $url URL
+     * @param  string $url URL
      * @return array
      */
     protected function parseUrl(string $url): array
     {
-        $depr = $this->rule->getConfig('pathinfo_depr');
-        $bind = $this->rule->getRouter()->getBind();
+        $depr = $this->rule->config('pathinfo_depr');
+        $bind = $this->rule->getRouter()->getDomainBind();
 
-        if (!empty($bind) && preg_match('/^[a-z]/is', $bind)) {
+        if ($bind && preg_match('/^[a-z]/is', $bind)) {
             $bind = str_replace('/', $depr, $bind);
             // 如果有模块/控制器绑定
             $url = $bind . ('.' != substr($bind, -1) ? $depr : '') . ltrim($url, $depr);
@@ -80,7 +84,7 @@ class Url extends Dispatch
         // 封装路由
         $route = [$controller, $action];
 
-        if ($this->hasDefinedRoute($route, $bind)) {
+        if ($this->hasDefinedRoute($route)) {
             throw new HttpException(404, 'invalid request:' . str_replace('|', $depr, $url));
         }
 
@@ -90,20 +94,20 @@ class Url extends Dispatch
     /**
      * 检查URL是否已经定义过路由
      * @access protected
-     * @param  array     $route  路由信息
-     * @param  string    $bind   绑定信息
+     * @param  array $route 路由信息
      * @return bool
      */
-    protected function hasDefinedRoute(array $route, string $bind = null): bool
+    protected function hasDefinedRoute(array $route): bool
     {
         list($controller, $action) = $route;
 
         // 检查地址是否被定义过路由
         $name = strtolower(App::parseName($controller, 1) . '/' . $action);
 
-        $host = $this->request->host(true);
+        $host   = $this->request->host(true);
+        $method = $this->request->method();
 
-        if ($this->rule->getRouter()->getName($name, $host)) {
+        if ($this->rule->getRouter()->getName($name, $host, $method)) {
             return true;
         }
 

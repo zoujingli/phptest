@@ -12,14 +12,17 @@ declare (strict_types = 1);
 
 namespace think\route;
 
+use Closure;
 use think\Container;
 use think\Exception;
 use think\Request;
 use think\Response;
 use think\Route;
 use think\route\dispatch\Response as ResponseDispatch;
-use think\route\dispatch\Url as UrlDispatch;
 
+/**
+ * 路由分组类
+ */
 class RuleGroup extends Rule
 {
     // 分组路由（包括子分组）
@@ -36,11 +39,11 @@ class RuleGroup extends Rule
 
     protected $rule;
 
-    // MISS路由
+    /**
+     * MISS路由
+     * @var RuleItem
+     */
     protected $miss;
-
-    // 自动路由
-    protected $auto;
 
     // 完整名称
     protected $fullName;
@@ -51,10 +54,10 @@ class RuleGroup extends Rule
     /**
      * 架构函数
      * @access public
-     * @param  Route       $router   路由对象
-     * @param  RuleGroup   $parent   上级对象
-     * @param  string      $name     分组名称
-     * @param  mixed       $rule     分组路由
+     * @param  Route     $router 路由对象
+     * @param  RuleGroup $parent 上级对象
+     * @param  string    $name   分组名称
+     * @param  mixed     $rule   分组路由
      */
     public function __construct(Route $router, RuleGroup $parent = null, string $name = '', $rule = null)
     {
@@ -100,24 +103,19 @@ class RuleGroup extends Rule
      */
     public function getDomain(): string
     {
-        return $this->domain;
+        return $this->domain ?: '-';
     }
 
     /**
      * 检测分组路由
      * @access public
-     * @param  Request      $request  请求对象
-     * @param  string       $url      访问地址
-     * @param  bool         $completeMatch   路由是否完全匹配
+     * @param  Request $request       请求对象
+     * @param  string  $url           访问地址
+     * @param  bool    $completeMatch 路由是否完全匹配
      * @return Dispatch|false
      */
     public function check(Request $request, string $url, bool $completeMatch = false)
     {
-        if ($dispatch = $this->checkCrossDomain($request)) {
-            // 跨域OPTIONS请求
-            return $dispatch;
-        }
-
         // 检查分组有效性
         if (!$this->checkOption($this->option, $request) || !$this->checkUrl($url)) {
             return false;
@@ -125,22 +123,16 @@ class RuleGroup extends Rule
 
         // 解析分组路由
         if ($this instanceof Resource) {
-            $this->buildResourceRule($this->resource, $this->option);
-        } elseif ($this->rule) {
-            if ($this->rule instanceof Response) {
-                return new ResponseDispatch($request, $this, $this->rule);
-            }
-
+            $this->buildResourceRule();
+        } elseif ($this->rule instanceof Response) {
+            return new ResponseDispatch($request, $this, $this->rule);
+        } else {
             $this->parseGroupRule($this->rule);
         }
 
         // 获取当前路由规则
         $method = strtolower($request->method());
         $rules  = $this->getMethodRules($method);
-
-        if (count($rules) == 0) {
-            return false;
-        }
 
         if ($this->parent) {
             // 合并分组参数
@@ -171,10 +163,7 @@ class RuleGroup extends Rule
             }
         }
 
-        if ($this->auto) {
-            // 自动解析URL地址
-            $result = new UrlDispatch($request, $this, $this->auto . '/' . $url);
-        } elseif ($this->miss && in_array($this->miss->getMethod(), ['*', $method])) {
+        if ($this->miss && in_array($this->miss->getMethod(), ['*', $method])) {
             // 未匹配所有路由的路由规则处理
             $result = $this->parseRule($request, '', $this->miss->getRoute(), $url, $this->miss->mergeGroupOptions());
         } else {
@@ -187,7 +176,7 @@ class RuleGroup extends Rule
     /**
      * 获取当前请求的路由规则（包括子分组、资源路由）
      * @access protected
-     * @param  string      $method
+     * @param  string $method 请求类型
      * @return array
      */
     protected function getMethodRules(string $method): array
@@ -198,7 +187,7 @@ class RuleGroup extends Rule
     /**
      * 分组URL匹配检查
      * @access protected
-     * @param  string     $url
+     * @param  string $url URL
      * @return bool
      */
     protected function checkUrl(string $url): bool
@@ -223,7 +212,7 @@ class RuleGroup extends Rule
     /**
      * 延迟解析分组的路由规则
      * @access public
-     * @param  bool     $lazy   路由是否延迟解析
+     * @param  bool $lazy 路由是否延迟解析
      * @return $this
      */
     public function lazy(bool $lazy = true)
@@ -239,7 +228,7 @@ class RuleGroup extends Rule
     /**
      * 解析分组和域名的路由规则及绑定
      * @access public
-     * @param  mixed        $rule    路由规则
+     * @param  mixed $rule 路由规则
      * @return void
      */
     public function parseGroupRule($rule): void
@@ -259,16 +248,18 @@ class RuleGroup extends Rule
     /**
      * 检测分组路由
      * @access public
-     * @param  Request      $request  请求对象
-     * @param  array        $rules    路由规则
-     * @param  string       $url      访问地址
-     * @param  bool         $completeMatch   路由是否完全匹配
+     * @param  Request $request       请求对象
+     * @param  array   $rules         路由规则
+     * @param  string  $url           访问地址
+     * @param  bool    $completeMatch 路由是否完全匹配
      * @return Dispatch|false
      */
     protected function checkMergeRuleRegex(Request $request, array &$rules, string $url, bool $completeMatch)
     {
-        $depr = $this->router->config('pathinfo_depr');
-        $url  = $depr . str_replace('|', $depr, $url);
+        $depr  = $this->router->config('pathinfo_depr');
+        $url   = $depr . str_replace('|', $depr, $url);
+        $regex = [];
+        $items = [];
 
         foreach ($rules as $key => $item) {
             if ($item instanceof RuleItem) {
@@ -278,7 +269,7 @@ class RuleGroup extends Rule
                     continue;
                 }
 
-                $complete = null !== $item->getOption('complete_match') ? $item->getOption('complete_match') : $completeMatch;
+                $complete = $item->getOption('complete_match', $completeMatch);
 
                 if (false === strpos($rule, '<')) {
                     if (0 === strcasecmp($rule, $url) || (!$complete && 0 === strncasecmp($rule, $url, strlen($rule)))) {
@@ -366,34 +357,13 @@ class RuleGroup extends Rule
     }
 
     /**
-     * 获取分组的自动路由
-     * @access public
-     * @return string
-     */
-    public function getAutoRule() : string
-    {
-        return $this->auto;
-    }
-
-    /**
-     * 注册自动路由
-     * @access public
-     * @param  string     $route   路由规则
-     * @return void
-     */
-    public function addAutoRule(string $route): void
-    {
-        $this->auto = $route;
-    }
-
-    /**
      * 注册MISS路由
      * @access public
-     * @param  string    $route      路由地址
-     * @param  string    $method     请求类型
+     * @param  string|Closure $route  路由地址
+     * @param  string         $method 请求类型
      * @return RuleItem
      */
-    public function miss(string $route, string $method = '*'): RuleItem
+    public function miss($route, string $method = '*') : RuleItem
     {
         // 创建路由规则实例
         $ruleItem = new RuleItem($this->router, $this, null, '', $route, strtolower($method));
@@ -406,18 +376,15 @@ class RuleGroup extends Rule
     /**
      * 添加分组下的路由规则或者子分组
      * @access public
-     * @param  string    $rule       路由规则
-     * @param  mixed     $route      路由地址
-     * @param  string    $method     请求类型
+     * @param  string $rule   路由规则
+     * @param  mixed  $route  路由地址
+     * @param  string $method 请求类型
      * @return RuleItem
      */
     public function addRule(string $rule, $route = null, string $method = '*'): RuleItem
     {
         // 读取路由标识
-        if (is_array($rule)) {
-            $name = $rule[0];
-            $rule = $rule[1];
-        } elseif (is_string($route)) {
+        if (is_string($route)) {
             $name = $route;
         } else {
             $name = null;
@@ -452,7 +419,7 @@ class RuleGroup extends Rule
     /**
      * 设置分组的路由前缀
      * @access public
-     * @param  string     $prefix
+     * @param  string $prefix 路由前缀
      * @return $this
      */
     public function prefix(string $prefix)
@@ -467,7 +434,7 @@ class RuleGroup extends Rule
     /**
      * 设置资源允许
      * @access public
-     * @param  array     $only
+     * @param  array $only 资源允许
      * @return $this
      */
     public function only(array $only)
@@ -478,7 +445,7 @@ class RuleGroup extends Rule
     /**
      * 设置资源排除
      * @access public
-     * @param  array     $except
+     * @param  array $except 排除资源
      * @return $this
      */
     public function except(array $except)
@@ -489,7 +456,7 @@ class RuleGroup extends Rule
     /**
      * 设置资源路由的变量
      * @access public
-     * @param  array     $vars
+     * @param  array $vars 资源变量
      * @return $this
      */
     public function vars(array $vars)
@@ -500,7 +467,7 @@ class RuleGroup extends Rule
     /**
      * 合并分组的路由规则正则
      * @access public
-     * @param  bool     $merge
+     * @param  bool $merge 是否合并
      * @return $this
      */
     public function mergeRuleRegex(bool $merge = true)
@@ -521,7 +488,7 @@ class RuleGroup extends Rule
     /**
      * 获取分组的路由规则
      * @access public
-     * @param  string     $method
+     * @param  string $method 请求类型
      * @return array
      */
     public function getRules(string $method = '') : array

@@ -14,46 +14,43 @@ use think\console\Command;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
-use think\Container;
-use think\facade\App;
 
 class Route extends Command
 {
     protected function configure()
     {
         $this->setName('optimize:route')
-            ->addArgument('app', Argument::OPTIONAL, 'Build app route cache .')
-            ->setDescription('Build route cache.');
+            ->addArgument('app', Argument::OPTIONAL, 'app name.')
+            ->setDescription('Build app route cache.');
     }
 
     protected function execute(Input $input, Output $output)
     {
         $app = $input->getArgument('app');
-        if ($app) {
-            $path = App::getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $app . DIRECTORY_SEPARATOR;
-        } else {
-            $path = App::getRuntimePath();
+
+        if (empty($app) && !is_dir($this->app->getBasePath() . 'controller')) {
+            $output->writeln('<error>Miss app name!</error>');
+            return false;
         }
+
+        $path = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . ($app ? $app . DIRECTORY_SEPARATOR : '');
 
         $filename = $path . 'route.php';
         if (is_file($filename)) {
             unlink($filename);
         }
+
         file_put_contents($filename, $this->buildRouteCache($app));
         $output->writeln('<info>Succeed!</info>');
     }
 
-    protected function buildRouteCache(string $app): string
+    protected function buildRouteCache(string $app = null): string
     {
-        Container::pull('route')->setName([]);
-        Container::pull('route')->lazy(false);
+        $this->app->route->clear();
+        $this->app->route->lazy(false);
 
         // 路由检测
-        if ($app) {
-            $path = App::getRootPath() . 'route' . DIRECTORY_SEPARATOR . $app . DIRECTORY_SEPARATOR;
-        } else {
-            $path = App::getRoutePath();
-        }
+        $path = $this->app->getRootPath() . 'route' . DIRECTORY_SEPARATOR . ($app ? $app . DIRECTORY_SEPARATOR : '');
 
         $files = is_dir($path) ? scandir($path) : [];
 
@@ -63,12 +60,17 @@ class Route extends Command
             }
         }
 
-        if (Container::pull('config')->get('route_annotation')) {
-            include Container::pull('build')->buildRoute();
+        if ($this->app->config->get('route.route_annotation')) {
+            $this->app->console->call('route:build', [$app ?: '']);
+            $filename = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . ($app ? $app . DIRECTORY_SEPARATOR : '') . 'build_route.php';
+
+            if (is_file($filename)) {
+                include $filename;
+            }
         }
 
         $content = '<?php ' . PHP_EOL . 'return ';
-        $content .= '\think\facade\App::unserialize(\'' . \think\facade\App::serialize(Container::pull('route')->getName()) . '\');';
+        $content .= '\think\App::unserialize(\'' . \think\App::serialize($this->app->route->getName()) . '\');';
         return $content;
     }
 

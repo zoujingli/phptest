@@ -8,10 +8,10 @@
 // +----------------------------------------------------------------------
 // | Author: yangweijie <yangweijiester@gmail.com>
 // +----------------------------------------------------------------------
-
+declare (strict_types = 1);
 namespace think\debug;
 
-use think\Container;
+use think\App;
 use think\Response;
 
 /**
@@ -26,9 +26,7 @@ class Console
     // 实例化并传入参数
     public function __construct(array $config = [])
     {
-        if (is_array($config)) {
-            $this->config = array_merge($this->config, $config);
-        }
+        $this->config = array_merge($this->config, $config);
     }
 
     /**
@@ -36,11 +34,11 @@ class Console
      * @access public
      * @param  Response  $response Response对象
      * @param  array     $log 日志信息
-     * @return bool
+     * @return string|bool
      */
-    public function output(Response $response, array $log = [])
+    public function output(App $app, Response $response, array $log = [])
     {
-        $request     = Container::pull('request');
+        $request     = $app->request;
         $contentType = $response->getHeader('Content-Type');
         $accept      = $request->header('accept');
         if (strpos($accept, 'application/json') === 0 || $request->isAjax()) {
@@ -49,9 +47,9 @@ class Console
             return false;
         }
         // 获取基本信息
-        $runtime = number_format(microtime(true) - Container::pull('app')->getBeginTime(), 10);
+        $runtime = number_format(microtime(true) - $app->getBeginTime(), 10);
         $reqs    = $runtime > 0 ? number_format(1 / $runtime, 2) : '∞';
-        $mem     = number_format((memory_get_usage() - Container::pull('app')->getBeginMem()) / 1024, 2);
+        $mem     = number_format((memory_get_usage() - $app->getBeginMem()) / 1024, 2);
 
         if ($request->host()) {
             $uri = $request->protocol() . ' ' . $request->method() . ' : ' . $request->url(true);
@@ -61,17 +59,17 @@ class Console
 
         // 页面Trace信息
         $base = [
-            '请求信息' => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']) . ' ' . $uri,
-            '运行时间' => number_format($runtime, 6) . 's [ 吞吐率：' . $reqs . 'req/s ] 内存消耗：' . $mem . 'kb 文件加载：' . count(get_included_files()),
-            '查询信息' => Container::pull('db')->getQueryTimes() . ' queries',
-            '缓存信息' => Container::pull('cache')->getReadTimes() . ' reads,' . Container::pull('cache')->getWriteTimes() . ' writes',
+            '请求信息' => date('Y-m-d H:i:s', $request->time()) . ' ' . $uri,
+            '运行时间' => number_format((float) $runtime, 6) . 's [ 吞吐率：' . $reqs . 'req/s ] 内存消耗：' . $mem . 'kb 文件加载：' . count(get_included_files()),
+            '查询信息' => $app->db->getQueryTimes() . ' queries',
+            '缓存信息' => $app->cache->getReadTimes() . ' reads,' . $app->cache->getWriteTimes() . ' writes',
         ];
 
-        if (session_id()) {
-            $base['会话信息'] = 'SESSION_ID=' . session_id();
+        if ($app->session->getId(false)) {
+            $base['会话信息'] = 'SESSION_ID=' . $app->session->getId();
         }
 
-        $info = Container::pull('debug')->getFile(true);
+        $info = $this->getFileInfo();
 
         // 页面Trace信息
         $trace = [];
@@ -89,8 +87,8 @@ class Console
                         // 多组信息
                         $names  = explode('|', $name);
                         $result = [];
-                        foreach ($names as $name) {
-                            $result = array_merge($result, $log[$name] ?? []);
+                        foreach ($names as $item) {
+                            $result = array_merge($result, $log[$item] ?? []);
                         }
                         $trace[$title] = $result;
                     } else {
@@ -117,6 +115,7 @@ JS;
     {
         $type       = strtolower($type);
         $trace_tabs = array_values($this->config['tabs']);
+        $line       = [];
         $line[]     = ($type == $trace_tabs[0] || '调试' == $type || '错误' == $type)
         ? "console.group('{$type}');"
         : "console.groupCollapsed('{$type}');";
@@ -128,7 +127,7 @@ JS;
                     if (in_array($var_type, ['array', 'string'])) {
                         $line[] = "console.log(" . json_encode($m) . ");";
                     } else {
-                        $line[] = "console.log(" . json_encode(var_export($m, 1)) . ");";
+                        $line[] = "console.log(" . json_encode(var_export($m, true)) . ");";
                     }
                     break;
                 case '错误':
@@ -152,4 +151,20 @@ JS;
         return implode(PHP_EOL, $line);
     }
 
+    /**
+     * 获取文件加载信息
+     * @access protected
+     * @return integer|array
+     */
+    protected function getFileInfo()
+    {
+        $files = get_included_files();
+        $info  = [];
+
+        foreach ($files as $key => $file) {
+            $info[] = $file . ' ( ' . number_format(filesize($file) / 1024, 2) . ' KB )';
+        }
+
+        return $info;
+    }
 }

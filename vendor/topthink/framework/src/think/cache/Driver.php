@@ -53,7 +53,7 @@ abstract class Driver extends SimpleCache
      * 序列化方法
      * @var array
      */
-    protected static $serialize = ['\think\facade\App::serialize', '\think\facade\App::unserialize', 'think_serialize:', 16];
+    protected static $serialize = ['\think\App::serialize', '\think\App::unserialize', 'think_serialize:', 16];
 
     /**
      * 获取有效期
@@ -148,7 +148,9 @@ abstract class Driver extends SimpleCache
      */
     public function tag($name)
     {
-        $this->tag = (array) $name;
+        if ($name) {
+            $this->tag = (array) $name;
+        }
 
         return $this;
     }
@@ -161,7 +163,7 @@ abstract class Driver extends SimpleCache
      */
     protected function setTagItem(string $name): void
     {
-        if ($this->tag) {
+        if (!empty($this->tag)) {
             $tags      = $this->tag;
             $this->tag = null;
 

@@ -16,8 +16,6 @@ use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
 use think\console\Table;
-use think\Container;
-use think\facade\App;
 
 class RouteList extends Command
 {
@@ -43,10 +41,10 @@ class RouteList extends Command
     {
         $app = $input->getArgument('app');
 
-        if (App::isMulti() && $app) {
-            $filename = App::getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $app . DIRECTORY_SEPARATOR . 'route_list_' . $app . '.php';
+        if ($app) {
+            $filename = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $app . DIRECTORY_SEPARATOR . 'route_list_' . $app . '.php';
         } else {
-            $filename = App::getRuntimePath() . 'route_list.php';
+            $filename = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . 'route_list.php';
         }
 
         if (is_file($filename)) {
@@ -57,15 +55,15 @@ class RouteList extends Command
         file_put_contents($filename, 'Route List' . PHP_EOL . $content);
     }
 
-    protected function getRouteList(string $app): string
+    protected function getRouteList(string $app = null): string
     {
-        Container::pull('route')->setTestMode(true);
-        Container::pull('route')->clear();
+        $this->app->route->setTestMode(true);
+        $this->app->route->clear();
 
-        if (App::isMulti() && $app) {
-            $path = App::getRootPath() . 'route' . DIRECTORY_SEPARATOR . $app . DIRECTORY_SEPARATOR;
+        if ($app) {
+            $path = $this->app->getRootPath() . 'route' . DIRECTORY_SEPARATOR . $app . DIRECTORY_SEPARATOR;
         } else {
-            $path = App::getRoutePath();
+            $path = $this->app->getRootPath() . 'route' . DIRECTORY_SEPARATOR;
         }
 
         $files = is_dir($path) ? scandir($path) : [];
@@ -76,8 +74,13 @@ class RouteList extends Command
             }
         }
 
-        if (Container::pull('config')->get('route_annotation')) {
-            include Container::pull('build')->buildRoute();
+        if ($this->app->config->get('route.route_annotation')) {
+            $this->app->console->call('route:build', [$app ?: '']);
+            $filename = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . ($app ? $app . DIRECTORY_SEPARATOR : '') . 'build_route.php';
+
+            if (is_file($filename)) {
+                include $filename;
+            }
         }
 
         $table = new Table();
@@ -90,7 +93,7 @@ class RouteList extends Command
 
         $table->setHeader($header);
 
-        $routeList = Container::pull('route')->getRuleList();
+        $routeList = $this->app->route->getRuleList();
         $rows      = [];
 
         foreach ($routeList as $domain => $items) {

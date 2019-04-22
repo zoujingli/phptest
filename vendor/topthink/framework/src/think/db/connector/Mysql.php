@@ -20,11 +20,6 @@ use think\db\Connection;
  */
 class Mysql extends Connection
 {
-    /**
-     * Builder类
-     * @var string
-     */
-    protected $builder = '\\think\\db\\builder\\Mysql';
 
     /**
      * 解析pdo连接的dsn信息
@@ -72,7 +67,7 @@ class Mysql extends Connection
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
 
-        if ($result) {
+        if (!empty($result)) {
             foreach ($result as $key => $val) {
                 $val = array_change_key_case($val);
 

@@ -57,6 +57,39 @@ trait TimeStamp
     }
 
     /**
+     * 获取自动写入时间字段
+     * @access public
+     * @return bool|string
+     */
+    public function getAutoWriteTimestamp()
+    {
+        return $this->autoWriteTimestamp;
+    }
+
+    /**
+     * 设置时间字段格式化
+     * @access public
+     * @param  string $format
+     * @return $this
+     */
+    public function setDateFormat(string $format)
+    {
+        $this->dateFormat = $format;
+
+        return $this;
+    }
+
+    /**
+     * 获取自动写入时间字段
+     * @access public
+     * @return string
+     */
+    public function getDateFormat()
+    {
+        return $this->dateFormat;
+    }
+
+    /**
      * 自动写入时间戳
      * @access protected
      * @param  string $name 时间戳字段
@@ -77,15 +110,21 @@ trait TimeStamp
                 case 'datetime':
                 case 'date':
                 case 'timestamp':
-                    $format = !empty($param) ? $param : $this->dateFormat;
-                    $format .= strpos($format, 'u') || false !== strpos($format, '\\') ? '' : '.u';
-                    $value = $this->formatDateTime($format);
+                    $value = $this->formatDateTime('Y-m-d H:i:s.u');
                     break;
+                default:
+                    if (false !== strpos($type, '\\')) {
+                        // 对象数据写入
+                        $value = new $type();
+                        if (method_exists($value, '__toString')) {
+                            // 对象数据写入
+                            $value = $value->__toString();
+                        }
+                    }
             }
         } elseif (is_string($this->autoWriteTimestamp) && in_array(strtolower($this->autoWriteTimestamp),
             ['datetime', 'date', 'timestamp'])) {
-            $format = strpos($this->dateFormat, 'u') || false !== strpos($this->dateFormat, '\\') ? '' : '.u';
-            $value  = $this->formatDateTime($this->dateFormat . $format);
+            $value = $this->formatDateTime('Y-m-d H:i:s.u');
         }
 
         return $value;

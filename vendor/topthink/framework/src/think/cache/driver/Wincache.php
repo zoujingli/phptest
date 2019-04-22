@@ -15,10 +15,13 @@ use think\cache\Driver;
 
 /**
  * Wincache缓存驱动
- * @author    liu21st <liu21st@gmail.com>
  */
 class Wincache extends Driver
 {
+    /**
+     * 配置参数
+     * @var array
+     */
     protected $options = [
         'prefix'     => '',
         'expire'     => 0,
@@ -94,7 +97,7 @@ class Wincache extends Driver
         $expire = $this->getExpireTime($expire);
         $value  = $this->serialize($value);
 
-        if ($this->tag && !$this->has($name)) {
+        if (!empty($this->tag) && !$this->has($name)) {
             $first = true;
         }
 
@@ -158,7 +161,7 @@ class Wincache extends Driver
      */
     public function clear(): bool
     {
-        if ($this->tag) {
+        if (!empty($this->tag)) {
             foreach ($this->tag as $tag) {
                 $this->clearTag($tag);
             }
@@ -171,7 +174,7 @@ class Wincache extends Driver
 
     public function clearTag(string $tag): void
     {
-        $keys = $this->getTagItem($tag);
+        $keys = $this->getTagItems($tag);
 
         wincache_ucache_delete($keys);
 

@@ -12,27 +12,31 @@ declare (strict_types = 1);
 
 namespace think\console;
 
+use Exception;
+use InvalidArgumentException;
+use LogicException;
+use think\App;
 use think\Console;
 use think\console\input\Argument;
 use think\console\input\Definition;
 use think\console\input\Option;
 
-class Command
+abstract class Command
 {
 
     /** @var  Console */
     private $console;
     private $name;
-    private $aliases = [];
+    private $processTitle;
+    private $aliases                         = [];
     private $definition;
     private $help;
     private $description;
     private $ignoreValidationErrors          = false;
     private $consoleDefinitionMerged         = false;
     private $consoleDefinitionMergedWithArgs = false;
-    private $code;
-    private $synopsis = [];
-    private $usages   = [];
+    private $synopsis                        = [];
+    private $usages                          = [];
 
     /** @var  Input */
     protected $input;
@@ -40,24 +44,22 @@ class Command
     /** @var  Output */
     protected $output;
 
+    /** @var App */
+    protected $app;
+
     /**
      * 构造方法
-     * @param string|null $name 命令名称,如果没有设置则比如在 configure() 里设置
-     * @throws \LogicException
+     * @throws LogicException
      * @api
      */
-    public function __construct($name = null)
+    public function __construct()
     {
         $this->definition = new Definition();
-
-        if (null !== $name) {
-            $this->setName($name);
-        }
 
         $this->configure();
 
         if (!$this->name) {
-            throw new \LogicException(sprintf('The command defined in "%s" cannot have an empty name.', get_class($this)));
+            throw new LogicException(sprintf('The command defined in "%s" cannot have an empty name.', get_class($this)));
         }
     }
 
@@ -89,6 +91,24 @@ class Command
     }
 
     /**
+     * 设置app
+     * @param App $app
+     */
+    public function setApp(App $app)
+    {
+        $this->app = $app;
+    }
+
+    /**
+     * 获取app
+     * @return App
+     */
+    public function getApp()
+    {
+        return $this->app;
+    }
+
+    /**
      * 是否有效
      * @return bool
      */
@@ -101,19 +121,20 @@ class Command
      * 配置指令
      */
     protected function configure()
-    {}
+    {
+    }
 
     /**
      * 执行指令
      * @param Input  $input
      * @param Output $output
      * @return null|int
-     * @throws \LogicException
+     * @throws LogicException
      * @see setCode()
      */
     protected function execute(Input $input, Output $output)
     {
-        throw new \LogicException('You must override the execute() method in the concrete command class.');
+        return $this->app->invoke([$this, 'handle']);
     }
 
     /**
@@ -122,7 +143,8 @@ class Command
      * @param Output $output
      */
     protected function interact(Input $input, Output $output)
-    {}
+    {
+    }
 
     /**
      * 初始化
@@ -130,14 +152,15 @@ class Command
      * @param Output $output An OutputInterface instance
      */
     protected function initialize(Input $input, Output $output)
-    {}
+    {
+    }
 
     /**
      * 执行
      * @param Input  $input
      * @param Output $output
      * @return int
-     * @throws \Exception
+     * @throws Exception
      * @see setCode()
      * @see execute()
      */
@@ -153,7 +176,7 @@ class Command
 
         try {
             $input->bind($this->definition);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if (!$this->ignoreValidationErrors) {
                 throw $e;
             }
@@ -161,40 +184,32 @@ class Command
 
         $this->initialize($input, $output);
 
+        if (null !== $this->processTitle) {
+            if (function_exists('cli_set_process_title')) {
+                if (false === @cli_set_process_title($this->processTitle)) {
+                    if ('Darwin' === PHP_OS) {
+                        $output->writeln('<comment>Running "cli_get_process_title" as an unprivileged user is not supported on MacOS.</comment>');
+                    } else {
+                        $error = error_get_last();
+                        trigger_error($error['message'], E_USER_WARNING);
+                    }
+                }
+            } elseif (function_exists('setproctitle')) {
+                setproctitle($this->processTitle);
+            } elseif (Output::VERBOSITY_VERY_VERBOSE === $output->getVerbosity()) {
+                $output->writeln('<comment>Install the proctitle PECL to be able to change the process title.</comment>');
+            }
+        }
+
         if ($input->isInteractive()) {
             $this->interact($input, $output);
         }
 
         $input->validate();
 
-        if ($this->code) {
-            $statusCode = call_user_func($this->code, $input, $output);
-        } else {
-            $statusCode = $this->execute($input, $output);
-        }
+        $statusCode = $this->execute($input, $output);
 
         return is_numeric($statusCode) ? (int) $statusCode : 0;
-    }
-
-    /**
-     * 设置执行代码
-     * @param callable $code callable(InputInterface $input, OutputInterface $output)
-     * @return Command
-     * @throws \InvalidArgumentException
-     * @see execute()
-     */
-    public function setCode(callable $code)
-    {
-        if (PHP_VERSION_ID >= 50400 && $code instanceof \Closure) {
-            $r = new \ReflectionFunction($code);
-            if (null === $r->getClosureThis()) {
-                $code = \Closure::bind($code, $this);
-            }
-        }
-
-        $this->code = $code;
-
-        return $this;
     }
 
     /**
@@ -297,7 +312,7 @@ class Command
      * 设置指令名称
      * @param string $name
      * @return Command
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function setName(string $name)
     {
@@ -309,12 +324,28 @@ class Command
     }
 
     /**
+     * 设置进程名称
+     *
+     * PHP 5.5+ or the proctitle PECL library is required
+     *
+     * @param string $title The process title
+     *
+     * @return $this
+     */
+    public function setProcessTitle($title)
+    {
+        $this->processTitle = $title;
+
+        return $this;
+    }
+
+    /**
      * 获取指令名称
      * @return string
      */
     public function getName(): string
     {
-        return $this->name;
+        return $this->name ?: '';
     }
 
     /**
@@ -335,7 +366,7 @@ class Command
      */
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->description ?: '';
     }
 
     /**
@@ -356,7 +387,7 @@ class Command
      */
     public function getHelp(): string
     {
-        return $this->help;
+        return $this->help ?: '';
     }
 
     /**
@@ -383,7 +414,7 @@ class Command
      * 设置别名
      * @param string[] $aliases
      * @return Command
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function setAliases(iterable $aliases)
     {
@@ -449,12 +480,12 @@ class Command
     /**
      * 验证指令名称
      * @param string $name
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateName(string $name)
     {
         if (!preg_match('/^[^\:]++(\:[^\:]++)*$/', $name)) {
-            throw new \InvalidArgumentException(sprintf('Command name "%s" is invalid.', $name));
+            throw new InvalidArgumentException(sprintf('Command name "%s" is invalid.', $name));
         }
     }
 

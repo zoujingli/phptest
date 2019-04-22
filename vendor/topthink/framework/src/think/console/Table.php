@@ -109,7 +109,7 @@ class Table
      * @param int   $align      对齐方式 默认1 ALGIN_LEFT 0 ALIGN_RIGHT 2 ALIGN_CENTER
      * @return void
      */
-    public function setHeader(array $header, int $align = self::ALIGN_LEFT): void
+    public function setHeader(array $header, int $align = 1): void
     {
         $this->header      = $header;
         $this->headerAlign = $align;
@@ -124,7 +124,7 @@ class Table
      * @param int   $align      对齐方式 默认1 ALGIN_LEFT 0 ALIGN_RIGHT 2 ALIGN_CENTER
      * @return void
      */
-    public function setRows(array $rows, int $align = self::ALIGN_LEFT): void
+    public function setRows(array $rows, int $align = 1): void
     {
         $this->rows      = $rows;
         $this->cellAlign = $align;
@@ -215,7 +215,7 @@ class Table
         if (!empty($array)) {
             $content .= $style[0] . implode(' ' . $style[2], $array) . ' ' . $style[3] . PHP_EOL;
 
-            if ($this->rows) {
+            if (!empty($this->rows)) {
                 $content .= $this->renderSeparator('middle');
             }
         }
@@ -242,7 +242,7 @@ class Table
      */
     public function render(array $dataList = []): string
     {
-        if ($dataList) {
+        if (!empty($dataList)) {
             $this->setRows($dataList);
         }
 
@@ -250,7 +250,7 @@ class Table
         $content = $this->renderHeader();
         $style   = $this->getStyle('cell');
 
-        if ($this->rows) {
+        if (!empty($this->rows)) {
             foreach ($this->rows as $row) {
                 if (is_string($row) && '-' === $row) {
                     $content .= $this->renderSeparator('middle');

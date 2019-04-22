@@ -17,6 +17,9 @@ use think\App;
 use think\db\Raw;
 use think\model\Relation;
 
+/**
+ * 模型数据处理
+ */
 trait Attribute
 {
     /**
@@ -172,9 +175,9 @@ trait Attribute
      * 获取实际的字段名
      * @access public
      * @param  string $name 字段名
-     * @return $this
+     * @return string
      */
-    protected function getRealFieldName($name)
+    protected function getRealFieldName(string $name): string
     {
         return $this->strict ? $name : App::parseName($name);
     }
@@ -409,9 +412,9 @@ trait Attribute
                 }
                 break;
             case 'datetime':
-                $format = !empty($param) ? $param : $this->dateFormat;
-                $value  = is_numeric($value) ? $value : strtotime($value);
-                $value  = $this->formatDateTime($format, $value);
+
+                $value = is_numeric($value) ? $value : strtotime($value);
+                $value = $this->formatDateTime('Y-m-d H:i:s.u', $value);
                 break;
             case 'object':
                 if (is_object($value)) {
@@ -427,6 +430,11 @@ trait Attribute
             case 'serialize':
                 $value = serialize($value);
                 break;
+            default:
+                if (is_object($value) && false !== strpos($type, '\\') && method_exists($value, '__toString')) {
+                    // 对象类型
+                    $value = $value->__toString();
+                }
         }
 
         return $value;

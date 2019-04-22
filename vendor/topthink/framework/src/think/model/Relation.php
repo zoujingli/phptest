@@ -17,7 +17,7 @@ use think\Exception;
 use think\Model;
 
 /**
- * Class Relation
+ * 模型关联基础类
  * @package think\model
  *
  * @mixin Query
@@ -84,18 +84,6 @@ abstract class Relation
     public function getModel(): Model
     {
         return $this->query->getModel();
-    }
-
-    /**
-     * 设置当前关联为自关联
-     * @access public
-     * @param  bool $self 是否自关联
-     * @return $this
-     */
-    public function selfRelation(bool $self = true)
-    {
-        $this->selfRelation = $self;
-        return $this;
     }
 
     /**

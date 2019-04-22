@@ -15,6 +15,9 @@ namespace think\cache;
 use Psr\SimpleCache\CacheInterface;
 use think\exception\InvalidArgumentException;
 
+/**
+ * SimpleCache接口
+ */
 abstract class SimpleCache implements CacheInterface
 {
     /**
@@ -37,9 +40,9 @@ abstract class SimpleCache implements CacheInterface
     /**
      * 写入缓存
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  mixed     $value  存储数据
-     * @param  int       $expire  有效时间 0为永久
+     * @param  string                 $name 缓存变量名
+     * @param  mixed                  $value  存储数据
+     * @param  null|int|\DateInterval $expire  有效时间 0为永久
      * @return bool
      */
     abstract public function set($name, $value, $expire = null);
@@ -47,8 +50,8 @@ abstract class SimpleCache implements CacheInterface
     /**
      * 自增缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     abstract public function inc(string $name, int $step = 1);
@@ -56,8 +59,8 @@ abstract class SimpleCache implements CacheInterface
     /**
      * 自减缓存（针对数值缓存）
      * @access public
-     * @param  string    $name 缓存变量名
-     * @param  int       $step 步长
+     * @param  string $name 缓存变量名
+     * @param  int    $step 步长
      * @return false|int
      */
     abstract public function dec(string $name, int $step = 1);
@@ -92,7 +95,7 @@ abstract class SimpleCache implements CacheInterface
      * 读取缓存
      * @access public
      * @param  iterable $keys 缓存变量名
-     * @param  mixed  $default 默认值
+     * @param  mixed    $default 默认值
      * @return iterable
      * @throws InvalidArgumentException
      */
@@ -136,7 +139,7 @@ abstract class SimpleCache implements CacheInterface
      */
     public function deleteMultiple($keys): bool
     {
-        foreach ($kyes as $key) {
+        foreach ($keys as $key) {
             $result = $this->delete($key);
 
             if (false === $result) {
