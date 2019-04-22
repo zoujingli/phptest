@@ -17,7 +17,7 @@ return [
     // 应用地址
     'app_host'              => '',
     // 应用Trace（环境变量优先读取）
-    'app_trace'             => false,
+    'app_trace'             => true,
     // 应用的命名空间
     'app_namespace'         => '',
     // 是否启用路由

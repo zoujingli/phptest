@@ -1,6 +1,5 @@
+.env
+*.log
 /.idea
 /.vscode
-/vendor
-*.log
-thinkphp
-.env
+/runtime
