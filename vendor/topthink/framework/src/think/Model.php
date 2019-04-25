@@ -158,6 +158,12 @@ abstract class Model implements JsonSerializable, ArrayAccess
     protected $db;
 
     /**
+     * Event对象
+     * @var Event
+     */
+    protected $event;
+
+    /**
      * 服务注入
      * @var Closure
      */
@@ -369,9 +375,8 @@ abstract class Model implements JsonSerializable, ArrayAccess
      * @access protected
      * @return void
      */
-    protected static function init(): void
-    {
-    }
+    protected static function init()
+    {}
 
     /**
      * 数据自动完成
@@ -398,12 +403,10 @@ abstract class Model implements JsonSerializable, ArrayAccess
     }
 
     protected function checkData(): void
-    {
-    }
+    {}
 
     protected function checkResult($result): void
-    {
-    }
+    {}
 
     /**
      * 更新是否强制写入数据 而不做比较

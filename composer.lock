@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2b198878f2331e428e4bdc9512a87fa5",
+    "content-hash": "5784be4b4a4e9890c6e6488ec8060856",
     "packages": [
         {
             "name": "opis/closure",
@@ -293,12 +293,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/top-think/framework.git",
-                "reference": "68b4916bf909b7def90524e457f21075a43bca1c"
+                "reference": "8d8f1edf302de82f266af4bf89cfe4b7fa6faf59"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/top-think/framework/zipball/68b4916bf909b7def90524e457f21075a43bca1c",
-                "reference": "68b4916bf909b7def90524e457f21075a43bca1c",
+                "url": "https://api.github.com/repos/top-think/framework/zipball/8d8f1edf302de82f266af4bf89cfe4b7fa6faf59",
+                "reference": "8d8f1edf302de82f266af4bf89cfe4b7fa6faf59",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -348,7 +348,7 @@
                 "orm",
                 "thinkphp"
             ],
-            "time": "2019-04-22T00:13:46+00:00"
+            "time": "2019-04-25T05:40:18+00:00"
         },
         {
             "name": "topthink/think-installer",

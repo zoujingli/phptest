@@ -12,6 +12,7 @@ declare (strict_types = 1);
 
 namespace think;
 
+use Closure;
 use think\exception\Handle;
 use think\exception\HttpException;
 use Throwable;
@@ -296,12 +297,18 @@ class Http
 
             if (!$this->bindDomain) {
                 $map  = $this->app->config->get('app.app_map', []);
+                $deny = $this->app->config->get('app.deny_app_list', []);
                 $path = $this->app->request->pathinfo();
                 $name = current(explode('/', $path));
 
                 if (isset($map[$name])) {
-                    $appName = $map[$name];
-                } elseif ($name && false !== array_search($name, $map)) {
+                    if ($map[$name] instanceof Closure) {
+                        $result  = call_user_func_array($map[$name], [$this]);
+                        $appName = $result ?: $name;
+                    } else {
+                        $appName = $map[$name];
+                    }
+                } elseif ($name && (false !== array_search($name, $map) || in_array($name, $deny))) {
                     throw new HttpException(404, 'app not exists:' . $name);
                 } else {
                     $appName = $name;
