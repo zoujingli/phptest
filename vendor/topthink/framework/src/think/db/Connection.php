@@ -300,13 +300,11 @@ abstract class Connection
      * 设置当前的数据库Builder对象
      * @access protected
      * @param Builder $builder
-     * @return $this
+     * @return void
      */
-    protected function setBuilder(Builder $builder)
+    protected function setBuilder(Builder $builder): void
     {
         $this->builder = $builder;
-
-        return $this;
     }
 
     /**
@@ -323,13 +321,11 @@ abstract class Connection
      * 设置当前的数据库Db对象
      * @access public
      * @param Db $db
-     * @return $this
+     * @return void
      */
-    public function setDb(Db $db)
+    public function setDb(Db $db): void
     {
         $this->db = $db;
-
-        return $this;
     }
 
     /**
@@ -820,7 +816,7 @@ abstract class Connection
 
     protected function queryPDOStatement(Query $query, string $sql, array $bind = []): PDOStatement
     {
-        $options   = $query->parseOptions();
+        $options   = $query->getOptions();
         $master    = !empty($options['master']) ? true : false;
         $procedure = !empty($options['procedure']) ? true : in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
 
@@ -959,7 +955,7 @@ abstract class Connection
 
         if ($result) {
             $sequence  = $options['sequence'] ?? null;
-            $lastInsId = $this->getLastInsID($sequence);
+            $lastInsId = $query->getLastInsID($sequence);
 
             $data = $options['data'];
 
@@ -1040,6 +1036,8 @@ abstract class Connection
     public function selectInsert(Query $query, array $fields, string $table): int
     {
         // 分析查询表达式
+        $query->parseOptions();
+
         $sql = $this->builder->selectInsert($query, $fields, $table);
 
         return $this->execute($query, $sql, $query->getBind());
@@ -1060,6 +1058,7 @@ abstract class Connection
         if (isset($options['cache'])) {
             $cacheItem = $this->parseCache($query, $options['cache']);
             $key       = $cacheItem->getKey();
+            $tag       = $cacheItem->getTag();
         }
 
         // 生成UPDATE SQL语句
@@ -1069,8 +1068,8 @@ abstract class Connection
         if (isset($key) && $this->cache->get($key)) {
             // 删除缓存
             $this->cache->delete($key);
-        } elseif (isset($cacheItem) && $cacheItem->getTag()) {
-            $this->cache->tag($cacheItem->getTag())->clear();
+        } elseif (!empty($tag)) {
+            $this->cache->tag($tag)->clear();
         }
 
         // 执行操作
@@ -1099,6 +1098,7 @@ abstract class Connection
         if (isset($options['cache'])) {
             $cacheItem = $this->parseCache($query, $options['cache']);
             $key       = $cacheItem->getKey();
+            $tag       = $cacheItem->getTag();
         }
 
         // 生成删除SQL语句
@@ -1108,8 +1108,8 @@ abstract class Connection
         if (isset($key) && $this->cache->get($key)) {
             // 删除缓存
             $this->cache->delete($key);
-        } elseif (isset($cacheItem) && $cacheItem->getTag()) {
-            $this->cache->tag($cacheItem->getTag())->clear();
+        } elseif (!empty($tag)) {
+            $this->cache->tag($tag)->clear();
         }
 
         // 执行操作
@@ -1128,9 +1128,10 @@ abstract class Connection
      * @param Query  $query   查询对象
      * @param string $field   字段名
      * @param mixed  $default 默认值
+     * @param bool   $one     返回一个值
      * @return mixed
      */
-    public function value(Query $query, string $field, $default = null)
+    public function value(Query $query, string $field, $default = null, bool $one = true)
     {
         $options = $query->parseOptions();
 
@@ -1150,7 +1151,7 @@ abstract class Connection
         }
 
         // 生成查询SQL
-        $sql = $this->builder->select($query, true);
+        $sql = $this->builder->select($query, $one);
 
         if (isset($options['field'])) {
             $query->setOption('field', $options['field']);
@@ -1189,7 +1190,7 @@ abstract class Connection
 
         $field = $aggregate . '(' . (!empty($distinct) ? 'DISTINCT ' : '') . $this->builder->parseKey($query, $field, true) . ') AS tp_' . strtolower($aggregate);
 
-        $result = $this->value($query, $field, 0);
+        $result = $this->value($query, $field, 0, false);
 
         return $force ? (float) $result : $result;
     }

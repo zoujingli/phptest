@@ -61,9 +61,9 @@ if (!function_exists('app')) {
      * @param bool   $newInstance 是否每次创建新的实例
      * @return object|App
      */
-    function app(string $name = App::class, array $args = [], bool $newInstance = false)
+    function app(string $name = '', array $args = [], bool $newInstance = false)
     {
-        return Container::pull($name, $args, $newInstance);
+        return Container::getInstance()->make($name ?: App::class, $args, $newInstance);
     }
 }
 
@@ -108,7 +108,7 @@ if (!function_exists('cache')) {
         if (is_array($options)) {
             $expire = $options['expire'] ?? null; //修复查询缓存无法设置过期时间
         } else {
-            $expire = is_numeric($options) ? $options : null; //默认快捷缓存设置过期时间
+            $expire = $options;
         }
 
         if (is_null($tag)) {
@@ -277,6 +277,51 @@ if (!function_exists('env')) {
     }
 }
 
+if (!function_exists('error')) {
+    /**
+     * 操作错误跳转的快捷方法
+     * @param  mixed   $msg 提示信息
+     * @param  string  $url 跳转的URL地址
+     * @param  mixed   $data 返回的数据
+     * @param  integer $wait 跳转等待时间
+     * @param  array   $header 发送的Header信息
+     * @return Response
+     */
+    function error($msg = '', string $url = null, $data = '', int $wait = 3, array $header = []): Response
+    {
+        if (is_null($url)) {
+            $url = request()->isAjax() ? '' : 'javascript:history.back(-1);';
+        } elseif ($url) {
+            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : app('route')->buildUrl($url);
+        }
+
+        $result = [
+            'code' => 0,
+            'msg'  => $msg,
+            'data' => $data,
+            'url'  => $url,
+            'wait' => $wait,
+        ];
+
+        $type = (request()->isJson() || request()->isAjax()) ? 'json' : 'html';
+        if ('html' == strtolower($type)) {
+            $type = 'jump';
+        }
+
+        $response = Response::create($result, $type)->header($header)->options(['jump_template' => app('config')->get('app.dispatch_error_tmpl')]);
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+
+        foreach ($trace as $call) {
+            if ('__construct' == $call['function']) {
+                throw new HttpResponseException($response);
+            }
+        }
+
+        return $response;
+    }
+}
+
 if (!function_exists('event')) {
     /**
      * 触发事件
@@ -351,6 +396,19 @@ if (!function_exists('input')) {
         return isset($has) ?
         request()->has($key, $method) :
         request()->$method($key, $default, $filter);
+    }
+}
+
+if (!function_exists('invoke')) {
+    /**
+     * 调用反射实例化对象 支持依赖注入
+     * @param  string $class 类名
+     * @param  array  $args  参数
+     * @return mixed
+     */
+    function invoke(string $class, array $args = [])
+    {
+        return Container::getInstance()->invokeClass($class, $args);
     }
 }
 
@@ -478,6 +536,40 @@ if (!function_exists('response')) {
     }
 }
 
+if (!function_exists('result')) {
+    /**
+     * 返回封装后的API数据到客户端
+     * @param  mixed   $data 要返回的数据
+     * @param  integer $code 返回的code
+     * @param  mixed   $msg 提示信息
+     * @param  string  $type 返回数据格式
+     * @param  array   $header 发送的Header信息
+     * @return Response
+     */
+    function result($data, int $code = 0, $msg = '', string $type = '', array $header = []): Response
+    {
+        $result = [
+            'code' => $code,
+            'msg'  => $msg,
+            'time' => time(),
+            'data' => $data,
+        ];
+
+        $type     = $type ?: 'json';
+        $response = Response::create($result, $type)->header($header);
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+
+        foreach ($trace as $call) {
+            if ('__construct' == $call['function']) {
+                throw new HttpResponseException($response);
+            }
+        }
+
+        return $response;
+    }
+}
+
 if (!function_exists('route')) {
     /**
      * 路由注册
@@ -517,18 +609,92 @@ if (!function_exists('session')) {
     }
 }
 
+if (!function_exists('success')) {
+    /**
+     * 操作成功跳转的快捷方法
+     * @param  mixed     $msg 提示信息
+     * @param  string    $url 跳转的URL地址
+     * @param  mixed     $data 返回的数据
+     * @param  integer   $wait 跳转等待时间
+     * @param  array     $header 发送的Header信息
+     * @return Response
+     */
+    function success($msg = '', string $url = null, $data = '', int $wait = 3, array $header = []): Response
+    {
+        if (is_null($url) && isset($_SERVER["HTTP_REFERER"])) {
+            $url = $_SERVER["HTTP_REFERER"];
+        } elseif ($url) {
+            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : app('route')->buildUrl($url);
+        }
+
+        $result = [
+            'code' => 1,
+            'msg'  => $msg,
+            'data' => $data,
+            'url'  => $url,
+            'wait' => $wait,
+        ];
+
+        $type = (request()->isJson() || request()->isAjax()) ? 'json' : 'html';
+        // 把跳转模板的渲染下沉，这样在 response_send 行为里通过getData()获得的数据是一致性的格式
+        if ('html' == strtolower($type)) {
+            $type = 'jump';
+        }
+
+        $response = Response::create($result, $type)->header($header)->options(['jump_template' => app('config')->get('app.dispatch_success_tmpl')]);
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+
+        foreach ($trace as $call) {
+            if ('__construct' == $call['function']) {
+                throw new HttpResponseException($response);
+            }
+        }
+
+        return $response;
+    }
+}
+
 if (!function_exists('token')) {
     /**
-     * 生成表单令牌
+     * 获取Token令牌
      * @param  string $name 令牌名称
      * @param  mixed  $type 令牌生成方法
      * @return string
      */
     function token(string $name = '__token__', string $type = 'md5'): string
     {
-        $token = Request::token($name, $type);
+        return Request::buildToken($name, $type);
+    }
+}
+
+if (!function_exists('token_field')) {
+    /**
+     * 生成令牌隐藏表单
+     * @param  string $name 令牌名称
+     * @param  mixed  $type 令牌生成方法
+     * @return string
+     */
+    function token_field(string $name = '__token__', string $type = 'md5'): string
+    {
+        $token = Request::buildToken($name, $type);
 
         return '<input type="hidden" name="' . $name . '" value="' . $token . '" />';
+    }
+}
+
+if (!function_exists('token_meta')) {
+    /**
+     * 生成令牌meta
+     * @param  string $name 令牌名称
+     * @param  mixed  $type 令牌生成方法
+     * @return string
+     */
+    function token_meta(string $name = '__token__', string $type = 'md5'): string
+    {
+        $token = Request::buildToken($name, $type);
+
+        return '<meta name="csrf-token" content="' . $token . '">';
     }
 }
 
@@ -603,8 +769,9 @@ if (!function_exists('validate')) {
                 list($validate, $scene) = explode('.', $validate);
             }
 
-            $class = app()->parseClass('validate', $validate);
-            $v     = new $class();
+            $class = false !== strpos($validate, '\\') ? $validate : app()->parseClass('validate', $validate);
+
+            $v = new $class();
 
             if (!empty($scene)) {
                 $v->scene($scene);

@@ -319,6 +319,16 @@ class Query
     }
 
     /**
+     * 获取详细字段类型信息
+     * @access public
+     * @return array
+     */
+    public function getFields(): array
+    {
+        return $this->connection->getFields($this->getTable());
+    }
+
+    /**
      * 获取字段类型信息
      * @access public
      * @return array
@@ -402,11 +412,25 @@ class Query
      * 获取最近插入的ID
      * @access public
      * @param string $sequence 自增序列名
-     * @return string
+     * @return mixed
      */
-    public function getLastInsID(string $sequence = null): string
+    public function getLastInsID(string $sequence = null)
     {
-        return $this->connection->getLastInsID($sequence);
+        $insertId = $this->connection->getLastInsID($sequence);
+
+        $pk = $this->getPk();
+
+        if (is_string($pk)) {
+            $type = $this->getFieldBindType($pk);
+
+            if (PDO::PARAM_INT == $type) {
+                $insertId = (int) $insertId;
+            } elseif (Connection::PARAM_FLOAT == $type) {
+                $insertId = (float) $insertId;
+            }
+        }
+
+        return $insertId;
     }
 
     /**
@@ -1787,10 +1811,10 @@ class Query
     /**
      * 指定distinct查询
      * @access public
-     * @param bool|string $distinct 是否唯一
+     * @param bool $distinct 是否唯一
      * @return $this
      */
-    public function distinct($distinct = true)
+    public function distinct(bool $distinct = true)
     {
         $this->options['distinct'] = $distinct;
         return $this;
@@ -2435,7 +2459,7 @@ class Query
      * @param callable     $callback 闭包获取器
      * @return $this
      */
-    public function withAttr($name, callable $callback)
+    public function withAttr($name, callable $callback = null)
     {
         if (is_array($name)) {
             $this->options['with_attr'] = $name;
@@ -3065,16 +3089,16 @@ class Query
                 continue;
             }
 
-            $result[$name] = json_decode($result[$name], $assoc);
+            $result[$name] = json_decode($result[$name], true);
 
-            if (!isset($withRelationAttr[$name])) {
-                continue;
+            if (isset($withRelationAttr[$name])) {
+                foreach ($withRelationAttr[$name] as $key => $closure) {
+                    $result[$name][$key] = $closure($result[$name][$key] ?? null, $result[$name]);
+                }
             }
 
-            foreach ($withRelationAttr[$name] as $key => $closure) {
-                $data = get_object_vars($result[$name]);
-
-                $result[$name]->$key = $closure($result[$name]->$key ?? null, $data);
+            if (!$assoc) {
+                $result[$name] = (object) $result[$name];
             }
         }
     }
@@ -3127,7 +3151,7 @@ class Query
 
         // 关联查询
         if (!empty($options['relation'])) {
-            $result->relationQuery($options['relation']);
+            $result->relationQuery($options['relation'], $withRelationAttr);
         }
 
         // 预载入查询
@@ -3457,4 +3481,14 @@ class Query
         return $options;
     }
 
+    public function __debugInfo()
+    {
+        return [
+            'name'    => $this->name,
+            'pk'      => $this->pk,
+            'prefix'  => $this->prefix,
+            'bind'    => $this->bind,
+            'options' => $this->options,
+        ];
+    }
 }

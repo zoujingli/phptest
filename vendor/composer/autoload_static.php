@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
+class ComposerStaticInita00460cf6642c0b924581a39c525b67f
 {
     public static $files = array (
         '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
@@ -14,7 +14,6 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         't' => 
         array (
             'think\\view\\driver\\' => 18,
-            'think\\composer\\' => 15,
             'think\\' => 6,
         ),
         'a' => 
@@ -38,10 +37,6 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\view\\driver\\' => 
         array (
             0 => __DIR__ . '/..' . '/topthink/think-view/src',
-        ),
-        'think\\composer\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/topthink/think-installer/src',
         ),
         'think\\' => 
         array (
@@ -117,7 +112,6 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\Config' => __DIR__ . '/..' . '/topthink/framework/src/think/Config.php',
         'think\\Console' => __DIR__ . '/..' . '/topthink/framework/src/think/Console.php',
         'think\\Container' => __DIR__ . '/..' . '/topthink/framework/src/think/Container.php',
-        'think\\Controller' => __DIR__ . '/..' . '/topthink/framework/src/think/Controller.php',
         'think\\Cookie' => __DIR__ . '/..' . '/topthink/framework/src/think/Cookie.php',
         'think\\Db' => __DIR__ . '/..' . '/topthink/framework/src/think/Db.php',
         'think\\Env' => __DIR__ . '/..' . '/topthink/framework/src/think/Env.php',
@@ -139,7 +133,6 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\Template' => __DIR__ . '/..' . '/topthink/think-template/src/Template.php',
         'think\\Validate' => __DIR__ . '/..' . '/topthink/framework/src/think/Validate.php',
         'think\\View' => __DIR__ . '/..' . '/topthink/framework/src/think/View.php',
-        'think\\cache\\CacheHandlerInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/CacheHandlerInterface.php',
         'think\\cache\\CacheItem' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/CacheItem.php',
         'think\\cache\\Driver' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/Driver.php',
         'think\\cache\\SimpleCache' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/SimpleCache.php',
@@ -149,10 +142,6 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\cache\\driver\\Redis' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/Redis.php',
         'think\\cache\\driver\\Sqlite' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/Sqlite.php',
         'think\\cache\\driver\\Wincache' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/Wincache.php',
-        'think\\composer\\Plugin' => __DIR__ . '/..' . '/topthink/think-installer/src/Plugin.php',
-        'think\\composer\\ThinkExtend' => __DIR__ . '/..' . '/topthink/think-installer/src/ThinkExtend.php',
-        'think\\composer\\ThinkFramework' => __DIR__ . '/..' . '/topthink/think-installer/src/ThinkFramework.php',
-        'think\\composer\\ThinkTesting' => __DIR__ . '/..' . '/topthink/think-installer/src/ThinkTesting.php',
         'think\\console\\Command' => __DIR__ . '/..' . '/topthink/framework/src/think/console/Command.php',
         'think\\console\\Input' => __DIR__ . '/..' . '/topthink/framework/src/think/console/Input.php',
         'think\\console\\Output' => __DIR__ . '/..' . '/topthink/framework/src/think/console/Output.php',
@@ -178,8 +167,6 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\console\\command\\make\\Subscribe' => __DIR__ . '/..' . '/topthink/framework/src/think/console/command/make/Subscribe.php',
         'think\\console\\command\\make\\Validate' => __DIR__ . '/..' . '/topthink/framework/src/think/console/command/make/Validate.php',
         'think\\console\\command\\optimize\\Config' => __DIR__ . '/..' . '/topthink/framework/src/think/console/command/optimize/Config.php',
-        'think\\console\\command\\optimize\\Facade' => __DIR__ . '/..' . '/topthink/framework/src/think/console/command/optimize/Facade.php',
-        'think\\console\\command\\optimize\\Model' => __DIR__ . '/..' . '/topthink/framework/src/think/console/command/optimize/Model.php',
         'think\\console\\command\\optimize\\Route' => __DIR__ . '/..' . '/topthink/framework/src/think/console/command/optimize/Route.php',
         'think\\console\\command\\optimize\\Schema' => __DIR__ . '/..' . '/topthink/framework/src/think/console/command/optimize/Schema.php',
         'think\\console\\input\\Argument' => __DIR__ . '/..' . '/topthink/framework/src/think/console/input/Argument.php',
@@ -197,6 +184,11 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\console\\output\\formatter\\Style' => __DIR__ . '/..' . '/topthink/framework/src/think/console/output/formatter/Style.php',
         'think\\console\\output\\question\\Choice' => __DIR__ . '/..' . '/topthink/framework/src/think/console/output/question/Choice.php',
         'think\\console\\output\\question\\Confirmation' => __DIR__ . '/..' . '/topthink/framework/src/think/console/output/question/Confirmation.php',
+        'think\\contract\\CacheHandlerInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/contract/CacheHandlerInterface.php',
+        'think\\contract\\LogHandlerInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/contract/LogHandlerInterface.php',
+        'think\\contract\\ModelRelationInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/contract/ModelRelationInterface.php',
+        'think\\contract\\SessionHandlerInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/contract/SessionHandlerInterface.php',
+        'think\\contract\\TemplateHandlerInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/contract/TemplateHandlerInterface.php',
         'think\\db\\Builder' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Builder.php',
         'think\\db\\Connection' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Connection.php',
         'think\\db\\Fetch' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Fetch.php',
@@ -204,13 +196,7 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\db\\Raw' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Raw.php',
         'think\\db\\Where' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Where.php',
         'think\\db\\builder\\Mysql' => __DIR__ . '/..' . '/topthink/framework/src/think/db/builder/Mysql.php',
-        'think\\db\\builder\\Pgsql' => __DIR__ . '/..' . '/topthink/framework/src/think/db/builder/Pgsql.php',
-        'think\\db\\builder\\Sqlite' => __DIR__ . '/..' . '/topthink/framework/src/think/db/builder/Sqlite.php',
-        'think\\db\\builder\\Sqlsrv' => __DIR__ . '/..' . '/topthink/framework/src/think/db/builder/Sqlsrv.php',
         'think\\db\\connector\\Mysql' => __DIR__ . '/..' . '/topthink/framework/src/think/db/connector/Mysql.php',
-        'think\\db\\connector\\Pgsql' => __DIR__ . '/..' . '/topthink/framework/src/think/db/connector/Pgsql.php',
-        'think\\db\\connector\\Sqlite' => __DIR__ . '/..' . '/topthink/framework/src/think/db/connector/Sqlite.php',
-        'think\\db\\connector\\Sqlsrv' => __DIR__ . '/..' . '/topthink/framework/src/think/db/connector/Sqlsrv.php',
         'think\\db\\exception\\BindParamException' => __DIR__ . '/..' . '/topthink/framework/src/think/db/exception/BindParamException.php',
         'think\\db\\exception\\DataNotFoundException' => __DIR__ . '/..' . '/topthink/framework/src/think/db/exception/DataNotFoundException.php',
         'think\\db\\exception\\ModelNotFoundException' => __DIR__ . '/..' . '/topthink/framework/src/think/db/exception/ModelNotFoundException.php',
@@ -252,11 +238,10 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\initializer\\BootService' => __DIR__ . '/..' . '/topthink/framework/src/think/initializer/BootService.php',
         'think\\initializer\\Error' => __DIR__ . '/..' . '/topthink/framework/src/think/initializer/Error.php',
         'think\\initializer\\RegisterService' => __DIR__ . '/..' . '/topthink/framework/src/think/initializer/RegisterService.php',
-        'think\\log\\LogHandlerInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/log/LogHandlerInterface.php',
         'think\\log\\driver\\File' => __DIR__ . '/..' . '/topthink/framework/src/think/log/driver/File.php',
-        'think\\log\\driver\\Socket' => __DIR__ . '/..' . '/topthink/framework/src/think/log/driver/Socket.php',
         'think\\middleware\\AllowCrossDomain' => __DIR__ . '/..' . '/topthink/framework/src/think/middleware/AllowCrossDomain.php',
         'think\\middleware\\CheckRequestCache' => __DIR__ . '/..' . '/topthink/framework/src/think/middleware/CheckRequestCache.php',
+        'think\\middleware\\FormTokenCheck' => __DIR__ . '/..' . '/topthink/framework/src/think/middleware/FormTokenCheck.php',
         'think\\middleware\\LoadLangPack' => __DIR__ . '/..' . '/topthink/framework/src/think/middleware/LoadLangPack.php',
         'think\\middleware\\SessionInit' => __DIR__ . '/..' . '/topthink/framework/src/think/middleware/SessionInit.php',
         'think\\middleware\\TraceDebug' => __DIR__ . '/..' . '/topthink/framework/src/think/middleware/TraceDebug.php',
@@ -303,7 +288,6 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\service\\ModelService' => __DIR__ . '/..' . '/topthink/framework/src/think/service/ModelService.php',
         'think\\service\\PaginatorService' => __DIR__ . '/..' . '/topthink/framework/src/think/service/PaginatorService.php',
         'think\\service\\ValidateService' => __DIR__ . '/..' . '/topthink/framework/src/think/service/ValidateService.php',
-        'think\\session\\SessionHandlerInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/session/SessionHandlerInterface.php',
         'think\\session\\driver\\File' => __DIR__ . '/..' . '/topthink/framework/src/think/session/driver/File.php',
         'think\\session\\driver\\Memcache' => __DIR__ . '/..' . '/topthink/framework/src/think/session/driver/Memcache.php',
         'think\\session\\driver\\Memcached' => __DIR__ . '/..' . '/topthink/framework/src/think/session/driver/Memcached.php',
@@ -312,9 +296,7 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
         'think\\template\\driver\\File' => __DIR__ . '/..' . '/topthink/think-template/src/template/driver/File.php',
         'think\\template\\exception\\TemplateNotFoundException' => __DIR__ . '/..' . '/topthink/think-template/src/template/exception/TemplateNotFoundException.php',
         'think\\template\\taglib\\Cx' => __DIR__ . '/..' . '/topthink/think-template/src/template/taglib/Cx.php',
-        'think\\traits\\Jump' => __DIR__ . '/..' . '/topthink/framework/src/think/traits/Jump.php',
         'think\\validate\\ValidateRule' => __DIR__ . '/..' . '/topthink/framework/src/think/validate/ValidateRule.php',
-        'think\\view\\TemplateHandlerInterface' => __DIR__ . '/..' . '/topthink/framework/src/think/view/TemplateHandlerInterface.php',
         'think\\view\\driver\\Php' => __DIR__ . '/..' . '/topthink/framework/src/think/view/driver/Php.php',
         'think\\view\\driver\\Think' => __DIR__ . '/..' . '/topthink/think-view/src/Think.php',
     );
@@ -322,10 +304,10 @@ class ComposerStaticInita6f07df2fc06aa02677c9a58957c8851
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInita6f07df2fc06aa02677c9a58957c8851::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInita6f07df2fc06aa02677c9a58957c8851::$prefixDirsPsr4;
-            $loader->fallbackDirsPsr0 = ComposerStaticInita6f07df2fc06aa02677c9a58957c8851::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInita6f07df2fc06aa02677c9a58957c8851::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInita00460cf6642c0b924581a39c525b67f::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInita00460cf6642c0b924581a39c525b67f::$prefixDirsPsr4;
+            $loader->fallbackDirsPsr0 = ComposerStaticInita00460cf6642c0b924581a39c525b67f::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInita00460cf6642c0b924581a39c525b67f::$classMap;
 
         }, null, ClassLoader::class);
     }
