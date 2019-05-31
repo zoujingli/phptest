@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2
+class ComposerStaticInit65220a7644c7258574fc73051f627d43
 {
     public static $files = array (
         '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
@@ -383,10 +383,10 @@ class ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2::$prefixDirsPsr4;
-            $loader->fallbackDirsPsr0 = ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit65220a7644c7258574fc73051f627d43::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit65220a7644c7258574fc73051f627d43::$prefixDirsPsr4;
+            $loader->fallbackDirsPsr0 = ComposerStaticInit65220a7644c7258574fc73051f627d43::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit65220a7644c7258574fc73051f627d43::$classMap;
 
         }, null, ClassLoader::class);
     }

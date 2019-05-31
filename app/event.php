@@ -11,9 +11,7 @@
 
 // 事件定义文件
 return [
-    'bind'      => [
-    ],
-
+    'bind'      => [],
     'listen'    => [
         'AppInit'  => [],
         'HttpRun'  => [],
@@ -21,7 +19,5 @@ return [
         'LogLevel' => [],
         'LogWrite' => [],
     ],
-
-    'subscribe' => [
-    ],
+    'subscribe' => [],
 ];
