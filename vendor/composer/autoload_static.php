@@ -4,10 +4,13 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInita00460cf6642c0b924581a39c525b67f
+class ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2
 {
     public static $files = array (
         '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
+        '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -19,6 +22,12 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
         'a' => 
         array (
             'app\\' => 4,
+        ),
+        'S' => 
+        array (
+            'Symfony\\Polyfill\\Php72\\' => 23,
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
+            'Symfony\\Component\\VarDumper\\' => 28,
         ),
         'P' => 
         array (
@@ -46,6 +55,18 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
         'app\\' => 
         array (
             0 => __DIR__ . '/../..' . '/app',
+        ),
+        'Symfony\\Polyfill\\Php72\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php72',
+        ),
+        'Symfony\\Polyfill\\Mbstring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
+        'Symfony\\Component\\VarDumper\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/var-dumper',
         ),
         'Psr\\SimpleCache\\' => 
         array (
@@ -105,6 +126,67 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
         'Psr\\SimpleCache\\CacheException' => __DIR__ . '/..' . '/psr/simple-cache/src/CacheException.php',
         'Psr\\SimpleCache\\CacheInterface' => __DIR__ . '/..' . '/psr/simple-cache/src/CacheInterface.php',
         'Psr\\SimpleCache\\InvalidArgumentException' => __DIR__ . '/..' . '/psr/simple-cache/src/InvalidArgumentException.php',
+        'Symfony\\Component\\VarDumper\\Caster\\AmqpCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/AmqpCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\ArgsStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/ArgsStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\Caster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/Caster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\ClassStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/ClassStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\ConstStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/ConstStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\CutArrayStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/CutArrayStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\CutStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/CutStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\DOMCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/DOMCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\DateCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/DateCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\DoctrineCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/DoctrineCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\DsCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/DsCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\DsPairStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/DsPairStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\EnumStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/EnumStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\ExceptionCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/ExceptionCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\FrameStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/FrameStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\GmpCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/GmpCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\IntlCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/IntlCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\LinkStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/LinkStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\MemcachedCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/MemcachedCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\PdoCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/PdoCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\PgSqlCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/PgSqlCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\ProxyManagerCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/ProxyManagerCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\RedisCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/RedisCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\ReflectionCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/ReflectionCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\ResourceCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/ResourceCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\SplCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/SplCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\StubCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/StubCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\SymfonyCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/SymfonyCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\TraceStub' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/TraceStub.php',
+        'Symfony\\Component\\VarDumper\\Caster\\XmlReaderCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/XmlReaderCaster.php',
+        'Symfony\\Component\\VarDumper\\Caster\\XmlResourceCaster' => __DIR__ . '/..' . '/symfony/var-dumper/Caster/XmlResourceCaster.php',
+        'Symfony\\Component\\VarDumper\\Cloner\\AbstractCloner' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/AbstractCloner.php',
+        'Symfony\\Component\\VarDumper\\Cloner\\ClonerInterface' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/ClonerInterface.php',
+        'Symfony\\Component\\VarDumper\\Cloner\\Cursor' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Cursor.php',
+        'Symfony\\Component\\VarDumper\\Cloner\\Data' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Data.php',
+        'Symfony\\Component\\VarDumper\\Cloner\\DumperInterface' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/DumperInterface.php',
+        'Symfony\\Component\\VarDumper\\Cloner\\Stub' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Stub.php',
+        'Symfony\\Component\\VarDumper\\Cloner\\VarCloner' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/VarCloner.php',
+        'Symfony\\Component\\VarDumper\\Command\\Descriptor\\CliDescriptor' => __DIR__ . '/..' . '/symfony/var-dumper/Command/Descriptor/CliDescriptor.php',
+        'Symfony\\Component\\VarDumper\\Command\\Descriptor\\DumpDescriptorInterface' => __DIR__ . '/..' . '/symfony/var-dumper/Command/Descriptor/DumpDescriptorInterface.php',
+        'Symfony\\Component\\VarDumper\\Command\\Descriptor\\HtmlDescriptor' => __DIR__ . '/..' . '/symfony/var-dumper/Command/Descriptor/HtmlDescriptor.php',
+        'Symfony\\Component\\VarDumper\\Command\\ServerDumpCommand' => __DIR__ . '/..' . '/symfony/var-dumper/Command/ServerDumpCommand.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\AbstractDumper' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/AbstractDumper.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\CliDumper' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/CliDumper.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\ContextProvider\\CliContextProvider' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/ContextProvider/CliContextProvider.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\ContextProvider\\ContextProviderInterface' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/ContextProvider/ContextProviderInterface.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\ContextProvider\\RequestContextProvider' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/ContextProvider/RequestContextProvider.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\ContextProvider\\SourceContextProvider' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/ContextProvider/SourceContextProvider.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\DataDumperInterface' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/DataDumperInterface.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\HtmlDumper' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/HtmlDumper.php',
+        'Symfony\\Component\\VarDumper\\Dumper\\ServerDumper' => __DIR__ . '/..' . '/symfony/var-dumper/Dumper/ServerDumper.php',
+        'Symfony\\Component\\VarDumper\\Exception\\ThrowingCasterException' => __DIR__ . '/..' . '/symfony/var-dumper/Exception/ThrowingCasterException.php',
+        'Symfony\\Component\\VarDumper\\Server\\Connection' => __DIR__ . '/..' . '/symfony/var-dumper/Server/Connection.php',
+        'Symfony\\Component\\VarDumper\\Server\\DumpServer' => __DIR__ . '/..' . '/symfony/var-dumper/Server/DumpServer.php',
+        'Symfony\\Component\\VarDumper\\Test\\VarDumperTestTrait' => __DIR__ . '/..' . '/symfony/var-dumper/Test/VarDumperTestTrait.php',
+        'Symfony\\Component\\VarDumper\\VarDumper' => __DIR__ . '/..' . '/symfony/var-dumper/VarDumper.php',
+        'Symfony\\Polyfill\\Mbstring\\Mbstring' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/Mbstring.php',
+        'Symfony\\Polyfill\\Php72\\Php72' => __DIR__ . '/..' . '/symfony/polyfill-php72/Php72.php',
+        'app\\BaseController' => __DIR__ . '/../..' . '/app/BaseController.php',
+        'app\\ExceptionHandle' => __DIR__ . '/../..' . '/app/ExceptionHandle.php',
+        'app\\Request' => __DIR__ . '/../..' . '/app/Request.php',
         'app\\controller\\Index' => __DIR__ . '/../..' . '/app/controller/Index.php',
         'think\\App' => __DIR__ . '/..' . '/topthink/framework/src/think/App.php',
         'think\\Cache' => __DIR__ . '/..' . '/topthink/framework/src/think/Cache.php',
@@ -135,12 +217,11 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
         'think\\View' => __DIR__ . '/..' . '/topthink/framework/src/think/View.php',
         'think\\cache\\CacheItem' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/CacheItem.php',
         'think\\cache\\Driver' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/Driver.php',
-        'think\\cache\\SimpleCache' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/SimpleCache.php',
+        'think\\cache\\TagSet' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/TagSet.php',
         'think\\cache\\driver\\File' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/File.php',
         'think\\cache\\driver\\Memcache' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/Memcache.php',
         'think\\cache\\driver\\Memcached' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/Memcached.php',
         'think\\cache\\driver\\Redis' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/Redis.php',
-        'think\\cache\\driver\\Sqlite' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/Sqlite.php',
         'think\\cache\\driver\\Wincache' => __DIR__ . '/..' . '/topthink/framework/src/think/cache/driver/Wincache.php',
         'think\\console\\Command' => __DIR__ . '/..' . '/topthink/framework/src/think/console/Command.php',
         'think\\console\\Input' => __DIR__ . '/..' . '/topthink/framework/src/think/console/Input.php',
@@ -194,7 +275,6 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
         'think\\db\\Fetch' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Fetch.php',
         'think\\db\\Query' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Query.php',
         'think\\db\\Raw' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Raw.php',
-        'think\\db\\Where' => __DIR__ . '/..' . '/topthink/framework/src/think/db/Where.php',
         'think\\db\\builder\\Mysql' => __DIR__ . '/..' . '/topthink/framework/src/think/db/builder/Mysql.php',
         'think\\db\\connector\\Mysql' => __DIR__ . '/..' . '/topthink/framework/src/think/db/connector/Mysql.php',
         'think\\db\\exception\\BindParamException' => __DIR__ . '/..' . '/topthink/framework/src/think/db/exception/BindParamException.php',
@@ -233,7 +313,6 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
         'think\\facade\\Request' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/Request.php',
         'think\\facade\\Route' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/Route.php',
         'think\\facade\\Session' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/Session.php',
-        'think\\facade\\Validate' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/Validate.php',
         'think\\facade\\View' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/View.php',
         'think\\initializer\\BootService' => __DIR__ . '/..' . '/topthink/framework/src/think/initializer/BootService.php',
         'think\\initializer\\Error' => __DIR__ . '/..' . '/topthink/framework/src/think/initializer/Error.php',
@@ -268,7 +347,6 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
         'think\\response\\File' => __DIR__ . '/..' . '/topthink/framework/src/think/response/File.php',
         'think\\response\\Json' => __DIR__ . '/..' . '/topthink/framework/src/think/response/Json.php',
         'think\\response\\Jsonp' => __DIR__ . '/..' . '/topthink/framework/src/think/response/Jsonp.php',
-        'think\\response\\Jump' => __DIR__ . '/..' . '/topthink/framework/src/think/response/Jump.php',
         'think\\response\\Redirect' => __DIR__ . '/..' . '/topthink/framework/src/think/response/Redirect.php',
         'think\\response\\View' => __DIR__ . '/..' . '/topthink/framework/src/think/response/View.php',
         'think\\response\\Xml' => __DIR__ . '/..' . '/topthink/framework/src/think/response/Xml.php',
@@ -279,6 +357,7 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
         'think\\route\\RuleGroup' => __DIR__ . '/..' . '/topthink/framework/src/think/route/RuleGroup.php',
         'think\\route\\RuleItem' => __DIR__ . '/..' . '/topthink/framework/src/think/route/RuleItem.php',
         'think\\route\\RuleName' => __DIR__ . '/..' . '/topthink/framework/src/think/route/RuleName.php',
+        'think\\route\\Url' => __DIR__ . '/..' . '/topthink/framework/src/think/route/Url.php',
         'think\\route\\dispatch\\Callback' => __DIR__ . '/..' . '/topthink/framework/src/think/route/dispatch/Callback.php',
         'think\\route\\dispatch\\Controller' => __DIR__ . '/..' . '/topthink/framework/src/think/route/dispatch/Controller.php',
         'think\\route\\dispatch\\Redirect' => __DIR__ . '/..' . '/topthink/framework/src/think/route/dispatch/Redirect.php',
@@ -304,10 +383,10 @@ class ComposerStaticInita00460cf6642c0b924581a39c525b67f
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInita00460cf6642c0b924581a39c525b67f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInita00460cf6642c0b924581a39c525b67f::$prefixDirsPsr4;
-            $loader->fallbackDirsPsr0 = ComposerStaticInita00460cf6642c0b924581a39c525b67f::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInita00460cf6642c0b924581a39c525b67f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2::$prefixDirsPsr4;
+            $loader->fallbackDirsPsr0 = ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInitb7d1a31e0f38ba990b51fb7b8d792bf2::$classMap;
 
         }, null, ClassLoader::class);
     }

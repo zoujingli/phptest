@@ -14,13 +14,12 @@
 // +----------------------------------------------------------------------
 
 return [
-    'id'             => '',
-    // SESSION_ID 的提交变量,解决 flash 上传跨域
+    // session name
+    'name'           => '',
+    // SESSION_ID的提交变量,解决flash上传跨域
     'var_session_id' => '',
-    // 驱动方式 支持 redis memcache memcached
-    'type'           => '',
-    // 是否自动开启 SESSION
-    'auto_start'     => true,
-    // Session 配置参数
-    'options'        => [],
+    // 驱动方式 支持file redis memcache memcached
+    'type'           => 'file',
+    // 过期时间
+    'expire'         => 0,
 ];

@@ -272,11 +272,17 @@ abstract class Model implements JsonSerializable, ArrayAccess
      * 设置当前模型的数据库查询对象
      * @access public
      * @param Query $query 查询对象实例
+     * @param bool  $clear 是否需要清空查询条件
      * @return $this
      */
-    public function setQuery(Query $query)
+    public function setQuery(Query $query, bool $clear = true)
     {
         $this->queryInstance = clone $query;
+
+        if ($clear) {
+            $this->queryInstance->removeOption();
+        }
+
         return $this;
     }
 
@@ -305,14 +311,14 @@ abstract class Model implements JsonSerializable, ArrayAccess
     /**
      * 获取当前模型的数据库查询对象
      * @access public
-     * @param array|false $scope 使用的全局查询范围
+     * @param array $scope 设置不使用的全局查询范围
      * @return Query
      */
     public function db($scope = []): Query
     {
         /** @var Query $query */
         if ($this->queryInstance) {
-            $query = $this->queryInstance->removeOption();
+            $query = $this->queryInstance;
         } else {
             $query = $this->db->buildQuery($this->connection)
                 ->name($this->name . $this->suffix)
@@ -333,9 +339,8 @@ abstract class Model implements JsonSerializable, ArrayAccess
         }
 
         // 全局作用域
-        $globalScope = is_array($scope) && !empty($scope) ? $scope : $this->globalScope;
-
-        if (!empty($globalScope) && false !== $scope) {
+        if (is_array($scope)) {
+            $globalScope = array_diff($this->globalScope, $scope);
             $query->scope($globalScope);
         }
 
@@ -875,10 +880,13 @@ abstract class Model implements JsonSerializable, ArrayAccess
 
     public function __debugInfo()
     {
-        return [
-            'data'     => $this->data,
-            'relation' => $this->relation,
-        ];
+        $attrs = get_object_vars($this);
+
+        foreach (['db', 'queryInstance', 'event'] as $name) {
+            unset($attrs[$name]);
+        }
+
+        return $attrs;
     }
 
     /**
@@ -948,12 +956,12 @@ abstract class Model implements JsonSerializable, ArrayAccess
     }
 
     /**
-     * 设置使用的全局查询范围
+     * 设置不使用的全局查询范围
      * @access public
-     * @param array|false $scope 启用的全局查询范围
+     * @param array $scope 不启用的全局查询范围
      * @return Query
      */
-    public static function useGlobalScope($scope)
+    public static function withoutGlobalScope(array $scope = null)
     {
         $model = new static();
 
