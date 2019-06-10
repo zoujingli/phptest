@@ -55,21 +55,18 @@ class HasMany extends Relation
     public function getRelation(array $subRelation = [], Closure $closure = null): Collection
     {
         if ($closure) {
-            $closure($this->query);
+            $closure($this);
         }
 
-        $list = $this->query
+        if ($this->withLimit) {
+            $this->query->limit($this->withLimit);
+        }
+
+        return $this->query
             ->where($this->foreignKey, $this->parent->{$this->localKey})
             ->relation($subRelation)
-            ->select();
-
-        $parent = clone $this->parent;
-
-        foreach ($list as &$model) {
-            $model->setParent($parent);
-        }
-
-        return $list;
+            ->select()
+            ->setParent(clone $this->parent);
     }
 
     /**
@@ -109,11 +106,7 @@ class HasMany extends Relation
                     $data[$pk] = [];
                 }
 
-                foreach ($data[$pk] as &$relationModel) {
-                    $relationModel->setParent(clone $result);
-                }
-
-                $result->setRelation($attr, $this->resultSetBuild($data[$pk]));
+                $result->setRelation($attr, $this->resultSetBuild($data[$pk], clone $this->parent));
             }
         }
     }
@@ -141,11 +134,7 @@ class HasMany extends Relation
                 $data[$pk] = [];
             }
 
-            foreach ($data[$pk] as &$relationModel) {
-                $relationModel->setParent(clone $result);
-            }
-
-            $result->setRelation(App::parseName($relation), $this->resultSetBuild($data[$pk]));
+            $result->setRelation(App::parseName($relation), $this->resultSetBuild($data[$pk], clone $this->parent));
         }
     }
 
@@ -168,7 +157,7 @@ class HasMany extends Relation
         }
 
         if ($closure) {
-            $closure($this->query, $name);
+            $closure($this, $name);
         }
 
         return $this->query
@@ -188,14 +177,11 @@ class HasMany extends Relation
     public function getRelationCountQuery(Closure $closure = null, string $aggregate = 'count', string $field = '*', string &$name = null): string
     {
         if ($closure) {
-            $return = $closure($this->query);
-            if ($return && is_string($return)) {
-                $name = $return;
-            }
+            $closure($this, $name);
         }
 
         return $this->query->alias($aggregate . '_table')
-            ->whereExp($aggregate . '_table.' . $this->foreignKey, '=' . $this->parent->getTable() . '.' . $this->parent->getPk())
+            ->whereExp($aggregate . '_table.' . $this->foreignKey, '=' . $this->parent->getTable() . '.' . $this->localKey)
             ->fetchSql()
             ->$aggregate($field);
     }
@@ -217,7 +203,7 @@ class HasMany extends Relation
 
         // 预载入关联查询 支持嵌套预载入
         if ($closure) {
-            $closure($this->query);
+            $closure($this);
         }
 
         $list = $this->query->where($where)->with($subRelation)->select();
@@ -226,7 +212,13 @@ class HasMany extends Relation
         $data = [];
 
         foreach ($list as $set) {
-            $data[$set->$foreignKey][] = $set;
+            $key = $set->$foreignKey;
+
+            if ($this->withLimit && isset($data[$key]) && count($data[$key]) >= $this->withLimit) {
+                continue;
+            }
+
+            $data[$key][] = $set;
         }
 
         return $data;
@@ -297,6 +289,10 @@ class HasMany extends Relation
         $model    = App::classBaseName($this->parent);
         $relation = App::classBaseName($this->model);
 
+        if ('*' != $id) {
+            $id = $relation . '.' . (new $this->model)->getPk();
+        }
+
         return $this->parent->db()
             ->alias($model)
             ->field($model . '.*')
@@ -321,6 +317,8 @@ class HasMany extends Relation
 
         if (is_array($where)) {
             $this->getQueryWhere($where, $relation);
+        } elseif ($where instanceof Query) {
+            $where->via($relation);
         }
 
         $fields = $this->getRelationQueryFields($fields, $model);

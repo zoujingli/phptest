@@ -287,6 +287,16 @@ abstract class Model implements JsonSerializable, ArrayAccess
     }
 
     /**
+     * 获取当前模型的数据库查询对象
+     * @access public
+     * @return Query|null
+     */
+    public function getQuery()
+    {
+        return $this->queryInstance;
+    }
+
+    /**
      * 设置当前模型数据表的后缀
      * @access public
      * @param string $suffix 数据表后缀
@@ -323,15 +333,15 @@ abstract class Model implements JsonSerializable, ArrayAccess
             $query = $this->db->buildQuery($this->connection)
                 ->name($this->name . $this->suffix)
                 ->pk($this->pk);
+
+            if (!empty($this->table)) {
+                $query->table($this->table . $this->suffix);
+            }
         }
 
         $query->model($this)
             ->json($this->json, $this->jsonAssoc)
             ->setFieldType(array_merge($this->schema, $this->jsonType));
-
-        if (!empty($this->table)) {
-            $query->table($this->table . $this->suffix);
-        }
 
         // 软删除
         if (property_exists($this, 'withTrashed') && !$this->withTrashed) {
@@ -974,7 +984,7 @@ abstract class Model implements JsonSerializable, ArrayAccess
      * @param string $suffix 切换的表后缀
      * @return Model
      */
-    public static function change(string $suffix)
+    public static function suffix(string $suffix)
     {
         $model = new static();
         $model->setSuffix($suffix);

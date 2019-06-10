@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit65220a7644c7258574fc73051f627d43
+class ComposerStaticInita8b757c2c20e4104dc82b203b26420b2
 {
     public static $files = array (
         '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
@@ -313,6 +313,7 @@ class ComposerStaticInit65220a7644c7258574fc73051f627d43
         'think\\facade\\Request' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/Request.php',
         'think\\facade\\Route' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/Route.php',
         'think\\facade\\Session' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/Session.php',
+        'think\\facade\\Validate' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/Validate.php',
         'think\\facade\\View' => __DIR__ . '/..' . '/topthink/framework/src/think/facade/View.php',
         'think\\initializer\\BootService' => __DIR__ . '/..' . '/topthink/framework/src/think/initializer/BootService.php',
         'think\\initializer\\Error' => __DIR__ . '/..' . '/topthink/framework/src/think/initializer/Error.php',
@@ -339,6 +340,7 @@ class ComposerStaticInit65220a7644c7258574fc73051f627d43
         'think\\model\\relation\\HasMany' => __DIR__ . '/..' . '/topthink/framework/src/think/model/relation/HasMany.php',
         'think\\model\\relation\\HasManyThrough' => __DIR__ . '/..' . '/topthink/framework/src/think/model/relation/HasManyThrough.php',
         'think\\model\\relation\\HasOne' => __DIR__ . '/..' . '/topthink/framework/src/think/model/relation/HasOne.php',
+        'think\\model\\relation\\HasOneThrough' => __DIR__ . '/..' . '/topthink/framework/src/think/model/relation/HasOneThrough.php',
         'think\\model\\relation\\MorphMany' => __DIR__ . '/..' . '/topthink/framework/src/think/model/relation/MorphMany.php',
         'think\\model\\relation\\MorphOne' => __DIR__ . '/..' . '/topthink/framework/src/think/model/relation/MorphOne.php',
         'think\\model\\relation\\MorphTo' => __DIR__ . '/..' . '/topthink/framework/src/think/model/relation/MorphTo.php',
@@ -383,10 +385,10 @@ class ComposerStaticInit65220a7644c7258574fc73051f627d43
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit65220a7644c7258574fc73051f627d43::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit65220a7644c7258574fc73051f627d43::$prefixDirsPsr4;
-            $loader->fallbackDirsPsr0 = ComposerStaticInit65220a7644c7258574fc73051f627d43::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInit65220a7644c7258574fc73051f627d43::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInita8b757c2c20e4104dc82b203b26420b2::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInita8b757c2c20e4104dc82b203b26420b2::$prefixDirsPsr4;
+            $loader->fallbackDirsPsr0 = ComposerStaticInita8b757c2c20e4104dc82b203b26420b2::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInita8b757c2c20e4104dc82b203b26420b2::$classMap;
 
         }, null, ClassLoader::class);
     }

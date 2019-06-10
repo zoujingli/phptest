@@ -294,6 +294,9 @@ if (!function_exists('input')) {
             $method = substr($key, 0, $pos);
             if (in_array($method, ['get', 'post', 'put', 'patch', 'delete', 'route', 'param', 'request', 'session', 'cookie', 'server', 'env', 'path', 'file'])) {
                 $key = substr($key, $pos + 1);
+                if ('server' == $method && is_null($default)) {
+                    $default = '';
+                }
             } else {
                 $method = 'param';
             }
@@ -557,19 +560,19 @@ if (!function_exists('url')) {
 
 if (!function_exists('validate')) {
     /**
-     * 验证数据
-     * @param  array        $data     数据
-     * @param  string|array $validate 验证器名或者验证规则数组
-     * @param  array        $message  提示信息
+     * 生成验证对象
+     * @param  string|array $validate 验证器类名或者验证规则数组
+     * @param  array        $message  错误提示信息
      * @param  bool         $batch    是否批量验证
-     * @return bool
-     * @throws ValidateException
+     * @return Validate
      */
-    function validate(array $data, $validate, array $message = [], bool $batch = false): bool
+    function validate($validate = '', array $message = [], bool $batch = false): Validate
     {
-        if (is_array($validate)) {
+        if (is_array($validate) || '' === $validate) {
             $v = new Validate();
-            $v->rule($validate);
+            if (is_array($validate)) {
+                $v->rule($validate);
+            }
         } else {
             if (strpos($validate, '.')) {
                 // 支持场景
@@ -585,7 +588,7 @@ if (!function_exists('validate')) {
             }
         }
 
-        return $v->message($message)->batch($batch)->failException(true)->check($data);
+        return $v->message($message)->batch($batch)->failException(true);
     }
 }
 
@@ -601,6 +604,21 @@ if (!function_exists('view')) {
     function view(string $template = '', $vars = [], $code = 200, $filter = null)
     {
         return Response::create($template, 'view', $code)->assign($vars)->filter($filter);
+    }
+}
+
+if (!function_exists('display')) {
+    /**
+     * 渲染模板输出
+     * @param string    $content 渲染内容
+     * @param array     $vars 模板变量
+     * @param int       $code 状态码
+     * @param callable  $filter 内容过滤
+     * @return \think\response\View
+     */
+    function display(string $content, $vars = [], $code = 200, $filter = null)
+    {
+        return Response::create($template, 'view', $code)->isContent(true)->assign($vars)->filter($filter);
     }
 }
 

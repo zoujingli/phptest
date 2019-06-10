@@ -1,17 +1,17 @@
 [
     {
         "name": "opis/closure",
-        "version": "3.2.0",
-        "version_normalized": "3.2.0.0",
+        "version": "3.3.0",
+        "version_normalized": "3.3.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/opis/closure.git",
-            "reference": "09b4389715a7eec100176ea58286649181753508"
+            "reference": "f846725591203098246276b2e7b9e8b7814c4965"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/opis/closure/zipball/09b4389715a7eec100176ea58286649181753508",
-            "reference": "09b4389715a7eec100176ea58286649181753508",
+            "url": "https://api.github.com/repos/opis/closure/zipball/f846725591203098246276b2e7b9e8b7814c4965",
+            "reference": "f846725591203098246276b2e7b9e8b7814c4965",
             "shasum": "",
             "mirrors": [
                 {
@@ -25,13 +25,13 @@
         },
         "require-dev": {
             "jeremeamia/superclosure": "^2.0",
-            "phpunit/phpunit": "^4.0|^5.0|^6.0|^7.0"
+            "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0 || ^7.0"
         },
-        "time": "2019-05-05T12:50:25+00:00",
+        "time": "2019-05-31T20:04:32+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "3.2.x-dev"
+                "dev-master": "3.3.x-dev"
             }
         },
         "installation-source": "dist",
@@ -422,17 +422,17 @@
     },
     {
         "name": "symfony/var-dumper",
-        "version": "v4.3.0",
-        "version_normalized": "4.3.0.0",
+        "version": "v4.3.1",
+        "version_normalized": "4.3.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/var-dumper.git",
-            "reference": "2fd2ecf7913fb96f0c2e941ca15bb702184c6574"
+            "reference": "f974f448154928d2b5fb7c412bd23b81d063f34b"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/var-dumper/zipball/2fd2ecf7913fb96f0c2e941ca15bb702184c6574",
-            "reference": "2fd2ecf7913fb96f0c2e941ca15bb702184c6574",
+            "url": "https://api.github.com/repos/symfony/var-dumper/zipball/f974f448154928d2b5fb7c412bd23b81d063f34b",
+            "reference": "f974f448154928d2b5fb7c412bd23b81d063f34b",
             "shasum": "",
             "mirrors": [
                 {
@@ -461,7 +461,7 @@
             "ext-intl": "To show region name in time zone dump",
             "symfony/console": "To use the ServerDumpCommand and/or the bin/var-dump-server script"
         },
-        "time": "2019-05-01T12:55:49+00:00",
+        "time": "2019-06-05T02:08:12+00:00",
         "bin": [
             "Resources/bin/var-dump-server"
         ],
@@ -511,12 +511,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/framework.git",
-            "reference": "9deb29a4460f87fa6fd85d83b4ceb733c90f18d4"
+            "reference": "71e4e1c7bfcb4a2ecd057d3d5125e16290dfab22"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/framework/zipball/9deb29a4460f87fa6fd85d83b4ceb733c90f18d4",
-            "reference": "9deb29a4460f87fa6fd85d83b4ceb733c90f18d4",
+            "url": "https://api.github.com/repos/top-think/framework/zipball/71e4e1c7bfcb4a2ecd057d3d5125e16290dfab22",
+            "reference": "71e4e1c7bfcb4a2ecd057d3d5125e16290dfab22",
             "shasum": "",
             "mirrors": [
                 {
@@ -538,7 +538,7 @@
             "mockery/mockery": "^1.2",
             "phpunit/phpunit": "^7.0"
         },
-        "time": "2019-05-31T06:50:40+00:00",
+        "time": "2019-06-10T08:46:32+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

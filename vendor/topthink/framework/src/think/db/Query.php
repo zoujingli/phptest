@@ -322,11 +322,12 @@ class Query
     /**
      * 获取详细字段类型信息
      * @access public
+     * @param string $tableName 数据表名称
      * @return array
      */
-    public function getFields(): array
+    public function getFields(string $tableName = ''): array
     {
-        return $this->connection->getFields($this->getTable());
+        return $this->connection->getFields($tableName ?: $this->getTable());
     }
 
     /**
@@ -1013,14 +1014,37 @@ class Query
     public function where($field, $op = null, $condition = null)
     {
         if ($field instanceof $this) {
-            $this->options['where'] = $field->getOptions('where');
-            $this->bind($field->getBind(false));
+            $this->parseQueryWhere($field);
             return $this;
         }
 
         $param = func_get_args();
         array_shift($param);
         return $this->parseWhereExp('AND', $field, $op, $condition, $param);
+    }
+
+    /**
+     * 解析Query对象查询条件
+     * @access public
+     * @param Query $query 查询对象
+     * @return void
+     */
+    protected function parseQueryWhere(Query $query): void
+    {
+        $this->options['where'] = $query->getOptions('where');
+
+        if ($query->getOptions('via')) {
+            $via = $query->getOptions('via');
+            foreach ($this->options['where'] as $logic => &$where) {
+                foreach ($where as $key => &$val) {
+                    if (is_array($val) && !strpos($val[0], '.')) {
+                        $val[0] = $via . '.' . $val[0];
+                    }
+                }
+            }
+        }
+
+        $this->bind($query->getBind(false));
     }
 
     /**
@@ -1936,30 +1960,6 @@ class Query
     }
 
     /**
-     * 设置是否返回数据集对象
-     * @access public
-     * @param bool|string $collection 是否返回数据集对象
-     * @return $this
-     */
-    public function fetchCollection($collection = true)
-    {
-        $this->options['collection'] = $collection;
-        return $this;
-    }
-
-    /**
-     * 设置是否返回数组
-     * @access public
-     * @param bool $asArray 是否返回数组
-     * @return $this
-     */
-    public function fetchArray(bool $asArray = true)
-    {
-        $this->options['array'] = $asArray;
-        return $this;
-    }
-
-    /**
      * 设置从主服务器读取数据
      * @access public
      * @param bool $readMaster 是否从主服务器读取
@@ -2683,24 +2683,6 @@ class Query
     }
 
     /**
-     * 关联预加载中 获取关联指定字段值
-     * example:
-     * Model::with(['relation' => function($query){
-     *     $query->withField("id,name");
-     * }])
-     *
-     * @access public
-     * @param string|array $field 指定获取的字段
-     * @return $this
-     */
-    public function withField($field)
-    {
-        $this->options['with_field'] = $field;
-
-        return $this;
-    }
-
-    /**
      * 设置当前字段添加的表别名
      * @access public
      * @param string $via 临时表别名
@@ -2921,7 +2903,7 @@ class Query
         }
 
         // 数据列表读取后的处理
-        if (!empty($this->model) && empty($this->options['array'])) {
+        if (!empty($this->model)) {
             // 生成模型对象
             $resultSet = $this->resultSetToModelCollection($resultSet);
         } else {
@@ -3006,10 +2988,8 @@ class Query
             }
         }
 
-        if (!empty($this->options['collection'])) {
-            // 返回Collection对象
-            $resultSet = new Collection($resultSet);
-        }
+        // 返回Collection对象
+        $resultSet = new Collection($resultSet);
     }
 
     /**

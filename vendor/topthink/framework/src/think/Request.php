@@ -425,16 +425,13 @@ class Request
     {
         if (is_null($this->subDomain)) {
             // 获取当前主域名
-            $rootDomain = $this->urlDdomainRoot;
+            $rootDomain = $this->rootDomain();
 
             if ($rootDomain) {
-                // 配置域名根 例如 thinkphp.cn 163.com.cn 如果是国家级域名 com.cn net.cn 之类的域名需要配置
-                $domain = explode('.', rtrim(stristr($this->host(), $rootDomain, true), '.'));
+                $this->subDomain = rtrim(stristr($this->host(), $rootDomain, true), '.');
             } else {
-                $domain = explode('.', $this->host(), -2);
+                $this->subDomain = '';
             }
-
-            $this->subDomain = implode('.', $domain);
         }
 
         return $this->subDomain;
@@ -1417,7 +1414,7 @@ class Request
                 // 调用函数或者方法过滤
                 $value = call_user_func($filter, $value);
             } elseif (is_scalar($value)) {
-                if (false !== strpos($filter, '/')) {
+                if (is_string($filter) && false !== strpos($filter, '/')) {
                     // 正则过滤
                     if (!preg_match($filter, $value)) {
                         // 匹配不成功返回默认值

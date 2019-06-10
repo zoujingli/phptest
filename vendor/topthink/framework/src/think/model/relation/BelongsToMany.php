@@ -174,10 +174,14 @@ class BelongsToMany extends Relation
     public function getRelation(array $subRelation = [], Closure $closure = null): Collection
     {
         if ($closure) {
-            $closure($this->query);
+            $closure($this);
         }
 
-        $result = $this->buildQuery()->relation($subRelation)->select();
+        $result = $this->buildQuery()
+            ->relation($subRelation)
+            ->select()
+            ->setParent(clone $this->parent);
+
         $this->hydratePivot($result);
 
         return $result;
@@ -331,7 +335,7 @@ class BelongsToMany extends Relation
                     $data[$result->$pk] = [];
                 }
 
-                $result->setRelation($attr, $this->resultSetBuild($data[$result->$pk]));
+                $result->setRelation($attr, $this->resultSetBuild($data[$result->$pk], clone $this->parent));
             }
         }
     }
@@ -361,7 +365,7 @@ class BelongsToMany extends Relation
                 $data[$pk] = [];
             }
 
-            $result->setRelation(App::parseName($relation), $this->resultSetBuild($data[$pk]));
+            $result->setRelation(App::parseName($relation), $this->resultSetBuild($data[$pk], clone $this->parent));
         }
     }
 
@@ -386,7 +390,7 @@ class BelongsToMany extends Relation
         $pk = $result->$pk;
 
         if ($closure) {
-            $closure($this->query, $name);
+            $closure($this, $name);
         }
 
         return $this->belongsToManyQuery($this->foreignKey, $this->localKey, [
@@ -406,11 +410,7 @@ class BelongsToMany extends Relation
     public function getRelationCountQuery(Closure $closure = null, string $aggregate = 'count', string $field = '*', string &$name = null): string
     {
         if ($closure) {
-            $return = $closure($this->query);
-
-            if ($return && is_string($return)) {
-                $name = $return;
-            }
+            $closure($this, $name);
         }
 
         return $this->belongsToManyQuery($this->foreignKey, $this->localKey, [
@@ -432,7 +432,7 @@ class BelongsToMany extends Relation
     protected function eagerlyManyToMany(array $where, string $relation, array $subRelation = [], Closure $closure = null): array
     {
         if ($closure) {
-            $closure($this->query);
+            $closure($this);
         }
 
         // 预载入关联查询 支持嵌套预载入
@@ -454,9 +454,15 @@ class BelongsToMany extends Relation
                 }
             }
 
+            $key = $pivot[$this->localKey];
+
+            if ($this->withLimit && isset($data[$key]) && count($data[$key]) >= $this->withLimit) {
+                continue;
+            }
+
             $set->setRelation($this->pivotDataName, $this->newPivot($pivot));
 
-            $data[$pivot[$this->localKey]][] = $set;
+            $data[$key][] = $set;
         }
 
         return $data;
@@ -476,6 +482,10 @@ class BelongsToMany extends Relation
         $tableName = $this->query->getTable();
         $table     = $this->pivot->db()->getTable();
         $fields    = $this->getQueryFields($tableName);
+
+        if ($this->withLimit) {
+            $this->query->limit($this->withLimit);
+        }
 
         $query = $this->query
             ->field($fields)

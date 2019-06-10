@@ -14,6 +14,7 @@ namespace think\model\relation;
 
 use Closure;
 use think\App;
+use think\db\Query;
 use think\Model;
 
 /**
@@ -54,7 +55,7 @@ class BelongsTo extends OneToOne
     public function getRelation(array $subRelation = [], Closure $closure = null)
     {
         if ($closure) {
-            $closure($this->query);
+            $closure($this);
         }
 
         $foreignKey = $this->foreignKey;
@@ -84,7 +85,7 @@ class BelongsTo extends OneToOne
     public function getRelationCountQuery(Closure $closure = null, string $aggregate = 'count', string $field = '*', &$name = ''): string
     {
         if ($closure) {
-            $closure($this->query, $name);
+            $closure($this, $name);
         }
 
         return $this->query
@@ -112,11 +113,7 @@ class BelongsTo extends OneToOne
         }
 
         if ($closure) {
-            $return = $closure($this->query);
-
-            if ($return && is_string($return)) {
-                $name = $return;
-            }
+            $closure($this, $name);
         }
 
         return $this->query
@@ -166,6 +163,8 @@ class BelongsTo extends OneToOne
 
         if (is_array($where)) {
             $this->getQueryWhere($where, $relation);
+        } elseif ($where instanceof Query) {
+            $where->via($relation);
         }
 
         $fields = $this->getRelationQueryFields($fields, $model);
@@ -277,10 +276,7 @@ class BelongsTo extends OneToOne
      */
     public function associate(Model $model): Model
     {
-        $foreignKey = $this->foreignKey;
-        $pk         = $model->getPk();
-
-        $this->parent->setAttr($foreignKey, $model->$pk);
+        $this->parent->setAttr($this->foreignKey, $model->getKey());
         $this->parent->save();
 
         return $this->parent->setRelation($this->relation, $model);

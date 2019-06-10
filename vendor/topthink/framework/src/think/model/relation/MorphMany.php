@@ -71,19 +71,18 @@ class MorphMany extends Relation
     public function getRelation(array $subRelation = [], Closure $closure = null): Collection
     {
         if ($closure) {
-            $closure($this->query);
+            $closure($this);
         }
 
         $this->baseQuery();
 
-        $list   = $this->query->relation($subRelation)->select();
-        $parent = clone $this->parent;
-
-        foreach ($list as &$model) {
-            $model->setParent($parent);
+        if ($this->withLimit) {
+            $this->query->limit($this->withLimit);
         }
 
-        return $list;
+        return $this->query->relation($subRelation)
+            ->select()
+            ->setParent(clone $this->parent);
     }
 
     /**
@@ -153,12 +152,7 @@ class MorphMany extends Relation
                     $data[$result->$pk] = [];
                 }
 
-                foreach ($data[$result->$pk] as &$relationModel) {
-                    $relationModel->setParent(clone $result);
-                    $relationModel->exists(true);
-                }
-
-                $result->setRelation($attr, $this->resultSetBuild($data[$result->$pk]));
+                $result->setRelation($attr, $this->resultSetBuild($data[$result->$pk], clone $this->parent));
             }
         }
     }
@@ -177,23 +171,17 @@ class MorphMany extends Relation
         $pk = $result->getPk();
 
         if (isset($result->$pk)) {
-            $key   = $result->$pk;
-            $where = [
+            $key  = $result->$pk;
+            $data = $this->eagerlyMorphToMany([
                 [$this->morphKey, '=', $key],
                 [$this->morphType, '=', $this->type],
-            ];
-            $data = $this->eagerlyMorphToMany($where, $relation, $subRelation, $closure);
+            ], $relation, $subRelation, $closure);
 
             if (!isset($data[$key])) {
                 $data[$key] = [];
             }
 
-            foreach ($data[$key] as &$relationModel) {
-                $relationModel->setParent(clone $result);
-                $relationModel->exists(true);
-            }
-
-            $result->setRelation(App::parseName($relation), $this->resultSetBuild($data[$key]));
+            $result->setRelation(App::parseName($relation), $this->resultSetBuild($data[$key], clone $this->parent));
         }
     }
 
@@ -205,7 +193,7 @@ class MorphMany extends Relation
      * @param  string  $aggregate 聚合查询方法
      * @param  string  $field 字段
      * @param  string  $name 统计字段别名
-     * @return integer
+     * @return mixed
      */
     public function relationCount(Model $result, Closure $closure, string $aggregate = 'count', string $field = '*', string &$name = null)
     {
@@ -216,7 +204,7 @@ class MorphMany extends Relation
         }
 
         if ($closure) {
-            $closure($this->query, $name);
+            $closure($this, $name);
         }
 
         return $this->query
@@ -239,11 +227,7 @@ class MorphMany extends Relation
     public function getRelationCountQuery(Closure $closure = null, string $aggregate = 'count', string $field = '*', string &$name = null): string
     {
         if ($closure) {
-            $return = $closure($this->query);
-
-            if ($return && is_string($return)) {
-                $name = $return;
-            }
+            $closure($this, $name);
         }
 
         return $this->query
@@ -268,7 +252,7 @@ class MorphMany extends Relation
         $this->query->removeOption('where');
 
         if ($closure) {
-            $closure($this->query);
+            $closure($this);
         }
 
         $list     = $this->query->where($where)->with($subRelation)->select();
@@ -277,7 +261,13 @@ class MorphMany extends Relation
         // 组装模型数据
         $data = [];
         foreach ($list as $set) {
-            $data[$set->$morphKey][] = $set;
+            $key = $set->$morphKey;
+
+            if ($this->withLimit && isset($data[$key]) && count($data[$key]) >= $this->withLimit) {
+                continue;
+            }
+
+            $data[$key][] = $set;
         }
 
         return $data;

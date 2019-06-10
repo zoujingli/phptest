@@ -12,6 +12,7 @@ declare (strict_types = 1);
 
 namespace think\model\concern;
 
+use Closure;
 use think\App;
 use think\Collection;
 use think\db\Query;
@@ -23,6 +24,7 @@ use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
 use think\model\relation\HasManyThrough;
 use think\model\relation\HasOne;
+use think\model\relation\HasOneThrough;
 use think\model\relation\MorphMany;
 use think\model\relation\MorphOne;
 use think\model\relation\MorphTo;
@@ -135,7 +137,7 @@ trait RelationShip
             $subRelation = '';
             $closure     = null;
 
-            if ($relation instanceof \Closure) {
+            if ($relation instanceof Closure) {
                 // 支持闭包查询过滤关联条件
                 $closure  = $relation;
                 $relation = $key;
@@ -224,7 +226,7 @@ trait RelationShip
             $subRelation = [];
             $closure     = null;
 
-            if ($relation instanceof \Closure) {
+            if ($relation instanceof Closure) {
                 $closure  = $relation;
                 $relation = $key;
             }
@@ -266,7 +268,7 @@ trait RelationShip
             $subRelation = [];
             $closure     = null;
 
-            if ($relation instanceof \Closure) {
+            if ($relation instanceof Closure) {
                 $closure  = $relation;
                 $relation = $key;
             }
@@ -311,9 +313,9 @@ trait RelationShip
 
             if (!is_null($value)) {
                 throw new Exception('bind attr has exists:' . $key);
-            } else {
-                $this->set($key, $relation ? $relation->$attr : null);
             }
+
+            $this->set($key, $relation ? $relation->$attr : null);
         }
 
         return $this;
@@ -333,7 +335,7 @@ trait RelationShip
         foreach ($relations as $key => $relation) {
             $closure = $name = null;
 
-            if ($relation instanceof \Closure) {
+            if ($relation instanceof Closure) {
                 $closure  = $relation;
                 $relation = $key;
             } elseif (is_string($key)) {
@@ -416,9 +418,10 @@ trait RelationShip
      * @param  string $foreignKey 关联外键
      * @param  string $throughKey 关联外键
      * @param  string $localKey   当前主键
+     * @param  string $throughPk  中间表主键
      * @return HasManyThrough
      */
-    public function hasManyThrough(string $model, string $through, string $foreignKey = '', string $throughKey = '', string $localKey = ''): HasManyThrough
+    public function hasManyThrough(string $model, string $through, string $foreignKey = '', string $throughKey = '', string $localKey = '', string $throughPk = ''): HasManyThrough
     {
         // 记录当前关联信息
         $model      = $this->parseModel($model);
@@ -426,8 +429,33 @@ trait RelationShip
         $localKey   = $localKey ?: $this->getPk();
         $foreignKey = $foreignKey ?: $this->getForeignKey($this->name);
         $throughKey = $throughKey ?: $this->getForeignKey((new $through)->getName());
+        $throughPk  = $throughPk ?: (new $through)->getPk();
 
-        return new HasManyThrough($this, $model, $through, $foreignKey, $throughKey, $localKey);
+        return new HasManyThrough($this, $model, $through, $foreignKey, $throughKey, $localKey, $throughPk);
+    }
+
+    /**
+     * HAS ONE 远程关联定义
+     * @access public
+     * @param  string $model      模型名
+     * @param  string $through    中间模型名
+     * @param  string $foreignKey 关联外键
+     * @param  string $throughKey 关联外键
+     * @param  string $localKey   当前主键
+     * @param  string $throughPk  中间表主键
+     * @return HasOneThrough
+     */
+    public function hasOneThrough(string $model, string $through, string $foreignKey = '', string $throughKey = '', string $localKey = '', string $throughPk = ''): HasOneThrough
+    {
+        // 记录当前关联信息
+        $model      = $this->parseModel($model);
+        $through    = $this->parseModel($through);
+        $localKey   = $localKey ?: $this->getPk();
+        $foreignKey = $foreignKey ?: $this->getForeignKey($this->name);
+        $throughKey = $throughKey ?: $this->getForeignKey((new $through)->getName());
+        $throughPk  = $throughPk ?: (new $through)->getPk();
+
+        return new HasOneThrough($this, $model, $through, $foreignKey, $throughKey, $localKey, $throughPk);
     }
 
     /**

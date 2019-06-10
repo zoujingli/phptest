@@ -55,7 +55,7 @@ class HasOne extends OneToOne
         $localKey = $this->localKey;
 
         if ($closure) {
-            $closure($this->query);
+            $closure($this);
         }
 
         // 判断关联类型执行查询
@@ -84,11 +84,11 @@ class HasOne extends OneToOne
     public function getRelationCountQuery(Closure $closure = null, string $aggregate = 'count', string $field = '*', string &$name = null): string
     {
         if ($closure) {
-            $closure($this->query, $name);
+            $closure($this, $name);
         }
 
         return $this->query
-            ->whereExp($this->foreignKey, '=' . $this->parent->getTable() . '.' . $this->parent->getPk())
+            ->whereExp($this->foreignKey, '=' . $this->parent->getTable() . '.' . $this->localKey)
             ->fetchSql()
             ->$aggregate($field);
     }
@@ -112,10 +112,7 @@ class HasOne extends OneToOne
         }
 
         if ($closure) {
-            $return = $closure($this->query);
-            if ($return && is_string($return)) {
-                $name = $return;
-            }
+            $closure($this, $name);
         }
 
         return $this->query
@@ -165,6 +162,8 @@ class HasOne extends OneToOne
 
         if (is_array($where)) {
             $this->getQueryWhere($where, $relation);
+        } elseif ($where instanceof Query) {
+            $where->via($relation);
         }
 
         $fields = $this->getRelationQueryFields($fields, $model);
