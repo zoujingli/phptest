@@ -59,12 +59,6 @@ class RuleGroup extends Rule
     protected $fullName;
 
     /**
-     * 所在域名
-     * @var string
-     */
-    protected $domain;
-
-    /**
      * 分组别名
      * @var string
      */
@@ -422,7 +416,7 @@ class RuleGroup extends Rule
     }
 
     /**
-     * 添加分组下的路由规则或者子分组
+     * 添加分组下的路由规则
      * @access public
      * @param  string $rule   路由规则
      * @param  mixed  $route  路由地址
@@ -452,6 +446,13 @@ class RuleGroup extends Rule
         return $ruleItem;
     }
 
+    /**
+     * 注册分组下的路由规则
+     * @access public
+     * @param  Rule   $rule   路由规则
+     * @param  string $method 请求类型
+     * @return $this
+     */
     public function addRuleItem(Rule $rule, string $method = '*')
     {
         if (strpos($method, '|')) {
@@ -460,6 +461,10 @@ class RuleGroup extends Rule
         }
 
         $this->rules[$method][] = $rule;
+
+        if ($rule instanceof RuleItem && 'options' != $method) {
+            $this->rules['options'][] = $rule->setAutoOptions();
+        }
 
         return $this;
     }
@@ -480,39 +485,6 @@ class RuleGroup extends Rule
     }
 
     /**
-     * 设置资源允许
-     * @access public
-     * @param  array $only 资源允许
-     * @return $this
-     */
-    public function only(array $only)
-    {
-        return $this->setOption('only', $only);
-    }
-
-    /**
-     * 设置资源排除
-     * @access public
-     * @param  array $except 排除资源
-     * @return $this
-     */
-    public function except(array $except)
-    {
-        return $this->setOption('except', $except);
-    }
-
-    /**
-     * 设置资源路由的变量
-     * @access public
-     * @param  array $vars 资源变量
-     * @return $this
-     */
-    public function vars(array $vars)
-    {
-        return $this->setOption('var', $vars);
-    }
-
-    /**
      * 合并分组的路由规则正则
      * @access public
      * @param  bool $merge 是否合并
@@ -528,9 +500,9 @@ class RuleGroup extends Rule
      * @access public
      * @return string
      */
-    public function getFullName():  ? string
+    public function getFullName(): string
     {
-        return $this->fullName;
+        return $this->fullName ?: '';
     }
 
     /**
@@ -539,7 +511,7 @@ class RuleGroup extends Rule
      * @param  string $method 请求类型
      * @return array
      */
-    public function getRules(string $method = '') : array
+    public function getRules(string $method = ''): array
     {
         if ('' === $method) {
             return $this->rules;

@@ -28,10 +28,8 @@ use think\console\command\make\Model;
 use think\console\command\make\Service;
 use think\console\command\make\Subscribe;
 use think\console\command\make\Validate;
-use think\console\command\optimize\Config;
 use think\console\command\optimize\Route;
 use think\console\command\optimize\Schema;
-use think\console\command\RouteBuild;
 use think\console\command\RouteList;
 use think\console\command\RunServer;
 use think\console\command\ServiceDiscover;
@@ -60,7 +58,7 @@ class Console
     protected $catchExceptions = true;
     protected $autoExit        = true;
     protected $definition;
-    protected $defaultCommand = 'list';
+    protected $defaultCommand  = 'list';
 
     protected $defaultCommands = [
         'help'             => Help::class,
@@ -76,13 +74,11 @@ class Console
         'make:listener'    => Listener::class,
         'make:service'     => Service::class,
         'make:subscribe'   => Subscribe::class,
-        'optimize:config'  => Config::class,
-        'optimize:schema'  => Schema::class,
         'optimize:route'   => Route::class,
+        'optimize:schema'  => Schema::class,
         'run'              => RunServer::class,
         'version'          => Version::class,
         'route:list'       => RouteList::class,
-        'route:build'      => RouteBuild::class,
         'service:discover' => ServiceDiscover::class,
         'vendor:publish'   => VendorPublish::class,
     ];
@@ -99,12 +95,6 @@ class Console
 
         if (!$this->app->initialized()) {
             $this->app->initialize();
-        }
-
-        $user = $this->app->config->get('console.user');
-
-        if ($user) {
-            $this->setUser($user);
         }
 
         $this->definition = $this->getDefaultInputDefinition();
@@ -133,28 +123,28 @@ class Console
     }
 
     /**
+     * 设置执行用户
+     * @param $user
+     */
+    public static function setUser(string $user): void
+    {
+        if (extension_loaded('posix')) {
+            $user = posix_getpwnam($user);
+
+            if (!empty($user)) {
+                posix_setgid($user['gid']);
+                posix_setuid($user['uid']);
+            }
+        }
+    }
+
+    /**
      * 启动
      */
     protected function start(): void
     {
         foreach (static::$startCallbacks as $callback) {
             $callback($this);
-        }
-    }
-
-    /**
-     * 设置执行用户
-     * @param $user
-     */
-    protected function setUser(string $user): void
-    {
-        if (extension_loaded('posix')) {
-            $user = posix_getpwnam($user);
-
-            if (!empty($user)) {
-                posix_setuid($user['uid']);
-                posix_setgid($user['gid']);
-            }
         }
     }
 
@@ -474,7 +464,7 @@ class Console
         $expr          = preg_replace_callback('{([^:]+|)}', function ($matches) {
             return preg_quote($matches[1]) . '[^:]*';
         }, $namespace);
-        $namespaces = preg_grep('{^' . $expr . '}', $allNamespaces);
+        $namespaces    = preg_grep('{^' . $expr . '}', $allNamespaces);
 
         if (empty($namespaces)) {
             $message = sprintf('There are no commands defined in the "%s" namespace.', $namespace);

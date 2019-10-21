@@ -12,284 +12,82 @@ declare (strict_types = 1);
 
 namespace think;
 
-use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
-use think\cache\CacheItem;
+use Psr\SimpleCache\CacheInterface;
 use think\cache\Driver;
 use think\cache\TagSet;
 use think\exception\InvalidArgumentException;
+use think\helper\Arr;
 
 /**
  * 缓存管理类
+ * @mixin Driver
+ * @mixin \think\cache\driver\File
  */
-class Cache implements CacheItemPoolInterface
+class Cache extends Manager implements CacheInterface
 {
-    /**
-     * 缓存队列
-     * @var array
-     */
-    protected $data = [];
+
+    protected $namespace = '\\think\\cache\\driver\\';
 
     /**
-     * 延期保存的缓存队列
-     * @var array
+     * 默认驱动
+     * @return string|null
      */
-    protected $deferred = [];
-
-    /**
-     * 缓存实例
-     * @var array
-     */
-    protected $instance = [];
-
-    /**
-     * 配置参数
-     * @var array
-     */
-    protected $config = [];
-
-    /**
-     * 操作句柄
-     * @var object
-     */
-    protected $handler;
-
-    public function __construct(array $config = [])
+    public function getDefaultDriver()
     {
-        $this->config = $config;
-    }
-
-    public static function __make(Config $config)
-    {
-        return new static($config->get('cache'));
+        return $this->getConfig('default');
     }
 
     /**
-     * 连接缓存
+     * 获取缓存配置
      * @access public
-     * @param  array $options  配置数组
-     * @param  bool  $force 强制重新连接
-     * @return Driver
-     */
-    public function connect(array $options = [], bool $force = false): Driver
-    {
-        $name = md5(serialize($options));
-
-        if ($force || !isset($this->instance[$name])) {
-            $type = !empty($options['type']) ? $options['type'] : 'File';
-
-            $this->instance[$name] = App::factory($type, '\\think\\cache\\driver\\', $options);
-        }
-
-        return $this->instance[$name];
-    }
-
-    /**
-     * 自动初始化缓存
-     * @access public
-     * @param  array $options 配置数组
-     * @param  bool  $force   强制更新
-     * @return Driver
-     */
-    public function init(array $options = [], bool $force = false): Driver
-    {
-        if (is_null($this->handler) || $force) {
-            $options = !empty($options) ? $options : $this->config;
-
-            if (isset($options['type']) && 'complex' == $options['type']) {
-                $default = $options['default'];
-                $options = $options[$default['type']] ?? $default;
-            }
-
-            $this->handler = $this->connect($options);
-        }
-
-        return $this->handler;
-    }
-
-    /**
-     * 设置配置
-     * @access public
-     * @param  array $config 配置参数
-     * @return void
-     */
-    public function config(array $config): void
-    {
-        $this->config = array_merge($this->config, $config);
-    }
-
-    /**
-     * 切换缓存类型 需要配置 cache.type 为 complex
-     * @access public
-     * @param  string $name  缓存标识
-     * @param  bool   $force 强制更新
-     * @return Driver
-     */
-    public function store(string $name = '', bool $force = false): Driver
-    {
-        if ('' !== $name && 'complex' == $this->config['type']) {
-            return $this->connect($this->config[$name], $force);
-        }
-
-        return $this->init([], $force);
-    }
-
-    /**
-     * 读取缓存
-     * @access public
-     * @param  string $key 缓存变量名
-     * @param  mixed  $default 默认值
+     * @param null|string $name    名称
+     * @param mixed       $default 默认值
      * @return mixed
      */
-    public function get(string $key, $default = false)
+    public function getConfig(string $name = null, $default = null)
     {
-        return $this->init()->get($key, $default);
-    }
-
-    /**
-     * 写入缓存
-     * @access public
-     * @param  string        $name 缓存变量名
-     * @param  mixed         $value  存储数据
-     * @param  int|\DateTime $expire  有效时间 0为永久
-     * @return bool
-     */
-    public function set(string $name, $value, $expire = null): bool
-    {
-        return $this->init()->set($name, $value, $expire);
-    }
-
-    /**
-     * 追加缓存
-     * @access public
-     * @param  string $name 缓存变量名
-     * @param  mixed  $value  存储数据
-     * @return void
-     */
-    public function push(string $name, $value): void
-    {
-        $this->init()->push($name, $value);
-    }
-
-    /**
-     * 读取并删除缓存
-     * @access public
-     * @param  string $name 缓存变量名
-     * @return mixed
-     */
-    public function pull(string $name)
-    {
-        return $this->init()->pull($name);
-    }
-
-    /**
-     * 如果不存在则写入缓存
-     * @access public
-     * @param  string $name 缓存变量名
-     * @param  mixed  $value  存储数据
-     * @param  int    $expire  有效时间 0为永久
-     * @return mixed
-     */
-    public function remember(string $name, $value, $expire = null)
-    {
-        return $this->init()->remember($name, $value, $expire);
-    }
-
-    /**
-     * 删除缓存
-     * @access public
-     * @param  string $name 缓存变量名
-     * @return bool
-     */
-    public function delete(string $key): bool
-    {
-        return $this->init()->delete($key);
-    }
-
-    /**
-     * 判断缓存是否存在
-     * @access public
-     * @param  string $name 缓存变量名
-     * @return bool
-     */
-    public function has(string $key): bool
-    {
-        return $this->init()->has($key);
-    }
-
-    /**
-     * 缓存标签
-     * @access public
-     * @param  string|array $name 标签名
-     * @return TagSet
-     */
-    public function tag($name): TagSet
-    {
-        return $this->init()->tag($name);
-    }
-
-    /**
-     * 返回句柄对象，可执行其它高级方法
-     *
-     * @access public
-     * @return object
-     */
-    public function handler()
-    {
-        return $this->init()->handler();
-    }
-
-    /**
-     * 返回「键」对应的一个缓存项。
-     * @access public
-     * @param  string $key 缓存标识
-     * @return CacheItemInterface
-     * @throws InvalidArgumentException
-     */
-    public function getItem($key): CacheItem
-    {
-        if (isset($this->data[$key])) {
-            return $this->data[$key];
+        if (!is_null($name)) {
+            return $this->app->config->get('cache.' . $name, $default);
         }
 
-        $cacheItem = new CacheItem($key);
-
-        if ($this->has($key)) {
-            $cacheItem->set($this->get($key));
-        }
-
-        $this->data[$key] = $cacheItem;
-
-        return $cacheItem;
+        return $this->app->config->get('cache');
     }
 
     /**
-     * 返回一个可供遍历的缓存项集合。
-     * @access public
-     * @param  array $keys
-     * @return array|\Traversable
-     * @throws InvalidArgumentException
+     * 获取驱动配置
+     * @param string $store
+     * @param string $name
+     * @param null   $default
+     * @return array
      */
-    public function getItems(array $keys = []): array
+    public function getStoreConfig(string $store, string $name = null, $default = null)
     {
-        $result = [];
-        foreach ($keys as $key) {
-            $result[] = $this->getItem($key);
+        if ($config = $this->getConfig("stores.{$store}")) {
+            return Arr::get($config, $name, $default);
         }
 
-        return $result;
+        throw new \InvalidArgumentException("Store [$store] not found.");
+    }
+
+    protected function resolveType(string $name)
+    {
+        return $this->getStoreConfig($name, 'type', 'file');
+    }
+
+    protected function resolveConfig(string $name)
+    {
+        return $this->getStoreConfig($name);
     }
 
     /**
-     * 检查缓存系统中是否有「键」对应的缓存项。
+     * 连接或者切换缓存
      * @access public
-     * @param  string $key
-     * @return bool
-     * @throws InvalidArgumentException
+     * @param string $name 连接配置名
+     * @return Driver
      */
-    public function hasItem($key): bool
+    public function store(string $name = null)
     {
-        return $this->has($key);
+        return $this->driver($name);
     }
 
     /**
@@ -299,92 +97,101 @@ class Cache implements CacheItemPoolInterface
      */
     public function clear(): bool
     {
-        return $this->init()->clear();
+        return $this->store()->clear();
     }
 
     /**
-     * 从缓冲池里移除某个缓存项
+     * 读取缓存
      * @access public
-     * @param  string $key
+     * @param string $key     缓存变量名
+     * @param mixed  $default 默认值
+     * @return mixed
+     */
+    public function get($key, $default = null)
+    {
+        return $this->store()->get($key, $default);
+    }
+
+    /**
+     * 写入缓存
+     * @access public
+     * @param string        $key   缓存变量名
+     * @param mixed         $value 存储数据
+     * @param int|\DateTime $ttl   有效时间 0为永久
+     * @return bool
+     */
+    public function set($key, $value, $ttl = null): bool
+    {
+        return $this->store()->set($key, $value, $ttl);
+    }
+
+    /**
+     * 删除缓存
+     * @access public
+     * @param string $key 缓存变量名
+     * @return bool
+     */
+    public function delete($key): bool
+    {
+        return $this->store()->delete($key);
+    }
+
+    /**
+     * 读取缓存
+     * @access public
+     * @param iterable $keys    缓存变量名
+     * @param mixed    $default 默认值
+     * @return iterable
+     * @throws InvalidArgumentException
+     */
+    public function getMultiple($keys, $default = null): iterable
+    {
+        return $this->store()->getMultiple($keys, $default);
+    }
+
+    /**
+     * 写入缓存
+     * @access public
+     * @param iterable               $values 缓存数据
+     * @param null|int|\DateInterval $ttl    有效时间 0为永久
+     * @return bool
+     */
+    public function setMultiple($values, $ttl = null): bool
+    {
+        return $this->store()->setMultiple($values, $ttl);
+    }
+
+    /**
+     * 删除缓存
+     * @access public
+     * @param iterable $keys 缓存变量名
      * @return bool
      * @throws InvalidArgumentException
      */
-    public function deleteItem($key): bool
+    public function deleteMultiple($keys): bool
     {
-        return $this->delete($key);
+        return $this->store()->deleteMultiple($keys);
     }
 
     /**
-     * 从缓冲池里移除多个缓存项
+     * 判断缓存是否存在
      * @access public
-     * @param  array $keys
+     * @param string $key 缓存变量名
      * @return bool
-     * @throws InvalidArgumentException
      */
-    public function deleteItems(array $keys): bool
+    public function has($key): bool
     {
-        foreach ($keys as $key) {
-            $this->delete($key);
-        }
-
-        return true;
+        return $this->store()->has($key);
     }
 
     /**
-     * 立刻为「CacheItemInterface」对象做数据持久化。
+     * 缓存标签
      * @access public
-     * @param  CacheItemInterface $item
-     * @return bool
+     * @param string|array $name 标签名
+     * @return TagSet
      */
-    public function save(CacheItemInterface $item): bool
+    public function tag($name): TagSet
     {
-        if ($item->getKey()) {
-            return $this->set($item->getKey(), $item->get(), $item->getExpire());
-        }
-
-        return false;
+        return $this->store()->tag($name);
     }
-
-    /**
-     * 稍后为「CacheItemInterface」对象做数据持久化。
-     * @access public
-     * @param  CacheItemInterface $item
-     * @return bool
-     */
-    public function saveDeferred(CacheItemInterface $item): bool
-    {
-        $this->deferred[$item->getKey()] = $item;
-        return true;
-    }
-
-    /**
-     * 提交所有的正在队列里等待的请求到数据持久层，配合 `saveDeferred()` 使用
-     * @access public
-     * @return bool
-     */
-    public function commit(): bool
-    {
-        foreach ($this->deferred as $key => $item) {
-            $result = $this->save($item);
-            unset($this->deferred[$key]);
-
-            if (false === $result) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public function __call($method, $args)
-    {
-        return call_user_func_array([$this->init(), $method], $args);
-    }
-
-    public function __destruct()
-    {
-        if (!empty($this->deferred)) {
-            $this->commit();
-        }
-    }
-
 }

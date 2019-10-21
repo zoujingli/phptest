@@ -12,6 +12,8 @@ declare (strict_types = 1);
 
 namespace think;
 
+use Exception;
+use Psr\SimpleCache\CacheInterface;
 use think\template\exception\TemplateNotFoundException;
 
 /**
@@ -33,7 +35,6 @@ class Template
      */
     protected $config = [
         'view_path'          => '', // 模板路径
-        'view_base'          => '',
         'view_suffix'        => 'html', // 默认模板文件后缀
         'view_depr'          => DIRECTORY_SEPARATOR,
         'cache_path'         => '',
@@ -69,6 +70,12 @@ class Template
     private $literal = [];
 
     /**
+     * 扩展解析规则
+     * @var array
+     */
+    private $extend = [];
+
+    /**
      * 模板包含信息
      * @var array
      */
@@ -79,6 +86,12 @@ class Template
      * @var object
      */
     protected $storage;
+
+    /**
+     * 查询缓存对象
+     * @var CacheInterface
+     */
+    protected $cache;
 
     /**
      * 架构函数
@@ -107,8 +120,7 @@ class Template
     /**
      * 模板变量赋值
      * @access public
-     * @param  mixed $name
-     * @param  mixed $value
+     * @param  array $vars 模板变量
      * @return $this
      */
     public function assign(array $vars = [])
@@ -126,6 +138,17 @@ class Template
     public function __set($name, $value)
     {
         $this->config[$name] = $value;
+    }
+
+    /**
+     * 设置缓存对象
+     * @access public
+     * @param  CacheInterface $cache 缓存对象
+     * @return void
+     */
+    public function setCache(CacheInterface $cache): void
+    {
+        $this->cache = $cache;
     }
 
     /**
@@ -178,16 +201,35 @@ class Template
     }
 
     /**
+     * 扩展模板解析规则
+     * @access public
+     * @param  string   $rule 解析规则
+     * @param  callable $callback 解析规则
+     * @return void
+     */
+    public function extend(string $rule, callable $callback = null): void
+    {
+        $this->extend[$rule] = $callback;
+    }
+
+    /**
      * 渲染模板文件
      * @access public
-     * @param  string    $template 模板文件
-     * @param  array     $vars 模板变量
+     * @param  string $template 模板文件
+     * @param  array  $vars 模板变量
      * @return void
      */
     public function fetch(string $template, array $vars = []): void
     {
-        if ($vars) {
-            $this->data = array_merge($this->data, $vars);
+
+        $data = $vars ? array_merge($this->data, $vars) : $this->data;
+
+        if (!empty($this->config['cache_id']) && $this->config['display_cache'] && $this->cache) {
+            // 读取渲染缓存
+            if ($this->cache->has($this->config['cache_id'])) {
+                echo $this->cache->get($this->config['cache_id']);
+                return;
+            }
         }
 
         $template = $this->parseTemplateFile($template);
@@ -206,13 +248,34 @@ class Template
             ob_implicit_flush(0);
 
             // 读取编译存储
-            $this->storage->read($cacheFile, $this->data);
+            $this->storage->read($cacheFile, $data);
 
             // 获取并清空缓存
             $content = ob_get_clean();
 
+            if (!empty($this->config['cache_id']) && $this->config['display_cache'] && $this->cache) {
+                // 缓存页面输出
+                $this->cache->set($this->config['cache_id'], $content, $this->config['cache_time']);
+            }
+
             echo $content;
         }
+    }
+
+    /**
+     * 检查编译缓存是否存在
+     * @access public
+     * @param  string $cacheId 缓存的id
+     * @return boolean
+     */
+    public function isCache(string $cacheId): bool
+    {
+        if ($cacheId && $this->cache && $this->config['display_cache']) {
+            // 缓存页面输出
+            return $this->cache->has($cacheId);
+        }
+
+        return false;
     }
 
     /**
@@ -224,9 +287,7 @@ class Template
      */
     public function display(string $content, array $vars = []): void
     {
-        if ($vars) {
-            $this->data = array_merge($this->data, $vars);
-        }
+        $data = $vars ? array_merge($this->data, $vars) : $this->data;
 
         $cacheFile = $this->config['cache_path'] . $this->config['cache_prefix'] . md5($content) . '.' . ltrim($this->config['cache_suffix'], '.');
 
@@ -236,7 +297,7 @@ class Template
         }
 
         // 读取编译存储
-        $this->storage->read($cacheFile, $this->data);
+        $this->storage->read($cacheFile, $data);
     }
 
     /**
@@ -309,8 +370,8 @@ class Template
     /**
      * 编译模板文件内容
      * @access private
-     * @param  string    $content 模板内容
-     * @param  string    $cacheFile 缓存文件名
+     * @param  string $content 模板内容
+     * @param  string $cacheFile 缓存文件名
      * @return void
      */
     private function compiler(string &$content, string $cacheFile): void
@@ -434,7 +495,7 @@ class Template
      * @access private
      * @param  string $content 要解析的模板内容
      * @return void
-     * @throws \think\Exception
+     * @throws Exception
      */
     private function parsePhp(string &$content): void
     {
@@ -920,22 +981,12 @@ class Template
                         $vars  = explode('.', $match[0]);
                         $first = array_shift($vars);
 
-                        if ('$Think' == $first) {
+                        if (isset($this->extend[$first])) {
+                            $callback = $this->extend[$first];
+                            $parseStr = $callback($vars);
+                        } elseif ('$Think' == $first) {
                             // 所有以Think.打头的以特殊变量对待 无需模板赋值就可以输出
                             $parseStr = $this->parseThinkVar($vars);
-                        } elseif ('$Request' == $first) {
-                            // 获取Request请求对象参数
-                            $method = array_shift($vars);
-                            if (!empty($vars)) {
-                                $params = implode('.', $vars);
-                                if ('true' != $params) {
-                                    $params = '\'' . $params . '\'';
-                                }
-                            } else {
-                                $params = '';
-                            }
-
-                            $parseStr = 'app(\'request\')->' . $method . '(' . $params . ')';
                         } else {
                             switch ($this->config['tpl_var_identify']) {
                                 case 'array': // 识别为数组
@@ -965,8 +1016,8 @@ class Template
      * 对模板中使用了函数的变量进行解析
      * 格式 {$varname|function1|function2=arg1,arg2}
      * @access public
-     * @param  string    $varStr     变量字符串
-     * @param  bool      $autoescape 自动转义
+     * @param  string $varStr     变量字符串
+     * @param  bool   $autoescape 自动转义
      * @return string
      */
     public function parseVarFunction(string &$varStr, bool $autoescape = true): string
@@ -1161,9 +1212,6 @@ class Template
     private function parseTemplateFile(string $template): string
     {
         if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
-            if (strpos($template, '@')) {
-                list($app, $template) = explode('@', $template);
-            }
 
             if (0 !== strpos($template, '/')) {
                 $template = str_replace(['/', ':'], $this->config['view_depr'], $template);
@@ -1171,14 +1219,7 @@ class Template
                 $template = str_replace(['/', ':'], $this->config['view_depr'], substr($template, 1));
             }
 
-            if ($this->config['view_base']) {
-                $app  = isset($app) ? $app : '';
-                $path = $this->config['view_base'] . ($app ? $app . DIRECTORY_SEPARATOR : '');
-            } else {
-                $path = $this->config['view_path'];
-            }
-
-            $template = $path . $template . '.' . ltrim($this->config['view_suffix'], '.');
+            $template = $this->config['view_path'] . $template . '.' . ltrim($this->config['view_suffix'], '.');
         }
 
         if (is_file($template)) {

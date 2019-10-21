@@ -14,6 +14,9 @@ namespace think\route;
 
 use Closure;
 use think\Container;
+use think\middleware\AllowCrossDomain;
+use think\middleware\CheckRequestCache;
+use think\middleware\FormTokenCheck;
 use think\Request;
 use think\Response;
 use think\Route;
@@ -33,6 +36,12 @@ abstract class Rule
      * @var string
      */
     protected $name;
+
+    /**
+     * 所在域名
+     * @var string
+     */
+    protected $domain;
 
     /**
      * 路由对象
@@ -86,7 +95,7 @@ abstract class Rule
      * 需要和分组合并的路由参数
      * @var array
      */
-    protected $mergeOptions = ['after', 'model', 'append', 'middleware'];
+    protected $mergeOptions = ['model', 'append', 'middleware'];
 
     abstract public function check(Request $request, string $url, bool $completeMatch = false);
 
@@ -210,7 +219,7 @@ abstract class Rule
      */
     public function getDomain(): string
     {
-        return $this->parent->getDomain();
+        return $this->domain ?: $this->parent->getDomain();
     }
 
     /**
@@ -306,6 +315,7 @@ abstract class Rule
      */
     public function domain(string $domain)
     {
+        $this->domain = $domain;
         return $this->setOption('domain', $domain);
     }
 
@@ -402,7 +412,7 @@ abstract class Rule
      */
     public function allowCrossDomain(array $header = [])
     {
-        return $this->middleware('\think\middleware\AllowCrossDomain', $header);
+        return $this->middleware(AllowCrossDomain::class, $header);
     }
 
     /**
@@ -413,7 +423,7 @@ abstract class Rule
      */
     public function token(string $token = '__token__')
     {
-        return $this->middleware('\think\middleware\FormTokenCheck', $token);
+        return $this->middleware(FormTokenCheck::class, $token);
     }
 
     /**
@@ -424,7 +434,7 @@ abstract class Rule
      */
     public function cache($cache)
     {
-        return $this->middleware('\think\middleware\CheckRequestCache', $cache);
+        return $this->middleware(CheckRequestCache::class, $cache);
     }
 
     /**
@@ -650,7 +660,7 @@ abstract class Rule
             $result = new ResponseDispatch($request, $this, $route);
         } elseif (isset($option['view']) && false !== $option['view']) {
             $result = new ViewDispatch($request, $this, $route, is_array($option['view']) ? $option['view'] : $this->vars);
-        } elseif (!empty($option['redirect']) || 0 === strpos($route, '/') || strpos($route, '://')) {
+        } elseif (!empty($option['redirect'])) {
             // 路由到重定向地址
             $result = new RedirectDispatch($request, $this, $route, $this->vars, $option['status'] ?? 301);
         } elseif (false !== strpos($route, '\\')) {

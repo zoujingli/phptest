@@ -12,14 +12,20 @@ declare (strict_types = 1);
 
 namespace think\cache;
 
+use Closure;
+use DateInterval;
+use DateTime;
+use DateTimeInterface;
+use Exception;
 use Psr\SimpleCache\CacheInterface;
-use think\Container;
+use think\contract\CacheHandlerInterface;
 use think\exception\InvalidArgumentException;
+use throwable;
 
 /**
  * 缓存基础类
  */
-abstract class Driver implements CacheInterface
+abstract class Driver implements CacheInterface, CacheHandlerInterface
 {
     /**
      * 驱动句柄
@@ -54,13 +60,17 @@ abstract class Driver implements CacheInterface
     /**
      * 获取有效期
      * @access protected
-     * @param  integer|\DateTimeInterface $expire 有效期
+     * @param integer|DateTimeInterface|DateInterval $expire 有效期
      * @return int
      */
     protected function getExpireTime($expire): int
     {
-        if ($expire instanceof \DateTimeInterface) {
+        if ($expire instanceof DateTimeInterface) {
             $expire = $expire->getTimestamp() - time();
+        } elseif ($expire instanceof DateInterval) {
+            $expire = DateTime::createFromFormat('U', (string) time())
+                ->add($expire)
+                ->format('U') - time();
         }
 
         return (int) $expire;
@@ -69,7 +79,7 @@ abstract class Driver implements CacheInterface
     /**
      * 获取实际的缓存标识
      * @access public
-     * @param  string $name 缓存名
+     * @param string $name 缓存名
      * @return string
      */
     public function getCacheKey(string $name): string
@@ -80,7 +90,7 @@ abstract class Driver implements CacheInterface
     /**
      * 读取缓存并删除
      * @access public
-     * @param  string $name 缓存变量名
+     * @param string $name 缓存变量名
      * @return mixed
      */
     public function pull(string $name)
@@ -96,8 +106,8 @@ abstract class Driver implements CacheInterface
     /**
      * 追加（数组）缓存
      * @access public
-     * @param  string $name 缓存变量名
-     * @param  mixed  $value  存储数据
+     * @param string $name  缓存变量名
+     * @param mixed  $value 存储数据
      * @return void
      */
     public function push(string $name, $value): void
@@ -122,9 +132,9 @@ abstract class Driver implements CacheInterface
     /**
      * 如果不存在则写入缓存
      * @access public
-     * @param  string $name 缓存变量名
-     * @param  mixed  $value  存储数据
-     * @param  int    $expire  有效时间 0为永久
+     * @param string $name   缓存变量名
+     * @param mixed  $value  存储数据
+     * @param int    $expire 有效时间 0为永久
      * @return mixed
      */
     public function remember(string $name, $value, $expire = null)
@@ -144,9 +154,9 @@ abstract class Driver implements CacheInterface
             // 锁定
             $this->set($name . '_lock', true);
 
-            if ($value instanceof \Closure) {
+            if ($value instanceof Closure) {
                 // 获取缓存数据
-                $value = Container::getInstance()->invokeFunction($value);
+                $value = $value();
             }
 
             // 缓存数据
@@ -154,7 +164,7 @@ abstract class Driver implements CacheInterface
 
             // 解锁
             $this->delete($name . '_lock');
-        } catch (\Exception | \throwable $e) {
+        } catch (Exception | throwable $e) {
             $this->delete($name . '_lock');
             throw $e;
         }
@@ -165,10 +175,10 @@ abstract class Driver implements CacheInterface
     /**
      * 缓存标签
      * @access public
-     * @param  string|array $name 标签名
-     * @return $this
+     * @param string|array $name 标签名
+     * @return TagSet
      */
-    public function tag($name)
+    public function tag($name): TagSet
     {
         $name = (array) $name;
         $key  = implode('-', $name);
@@ -186,19 +196,18 @@ abstract class Driver implements CacheInterface
     /**
      * 获取标签包含的缓存标识
      * @access public
-     * @param  string $tag 标签标识
+     * @param string $tag 标签标识
      * @return array
      */
     public function getTagItems(string $tag): array
     {
-        $name = $this->getTagKey($tag);
-        return $this->get($name, []);
+        return $this->get($tag, []);
     }
 
     /**
      * 获取实际标签名
      * @access public
-     * @param  string $tag 标签名
+     * @param string $tag 标签名
      * @return string
      */
     public function getTagKey(string $tag): string
@@ -209,12 +218,16 @@ abstract class Driver implements CacheInterface
     /**
      * 序列化数据
      * @access protected
-     * @param  mixed $data 缓存数据
+     * @param mixed $data 缓存数据
      * @return string
      */
     protected function serialize($data): string
     {
-        $serialize = $this->options['serialize'][0] ?? '\think\App::serialize';
+        if (is_numeric($data)) {
+            return (string) $data;
+        }
+
+        $serialize = $this->options['serialize'][0] ?? "\Opis\Closure\serialize";
 
         return $serialize($data);
     }
@@ -222,12 +235,16 @@ abstract class Driver implements CacheInterface
     /**
      * 反序列化数据
      * @access protected
-     * @param  string $data 缓存数据
+     * @param string $data 缓存数据
      * @return mixed
      */
     protected function unserialize(string $data)
     {
-        $unserialize = $this->options['serialize'][1] ?? '\think\App::unserialize';
+        if (is_numeric($data)) {
+            return $data;
+        }
+
+        $unserialize = $this->options['serialize'][1] ?? "\Opis\Closure\unserialize";
 
         return $unserialize($data);
     }
@@ -266,8 +283,8 @@ abstract class Driver implements CacheInterface
     /**
      * 读取缓存
      * @access public
-     * @param  iterable $keys 缓存变量名
-     * @param  mixed    $default 默认值
+     * @param iterable $keys    缓存变量名
+     * @param mixed    $default 默认值
      * @return iterable
      * @throws InvalidArgumentException
      */
@@ -285,8 +302,8 @@ abstract class Driver implements CacheInterface
     /**
      * 写入缓存
      * @access public
-     * @param  iterable               $values 缓存数据
-     * @param  null|int|\DateInterval $ttl    有效时间 0为永久
+     * @param iterable               $values 缓存数据
+     * @param null|int|\DateInterval $ttl    有效时间 0为永久
      * @return bool
      */
     public function setMultiple($values, $ttl = null): bool

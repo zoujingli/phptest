@@ -8,6 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: yunwuxin <448901948@qq.com>
 // +----------------------------------------------------------------------
+declare (strict_types = 1);
 
 namespace think\exception;
 
@@ -48,7 +49,7 @@ class Handle
      * Report or log an exception.
      *
      * @access public
-     * @param  Throwable $exception
+     * @param Throwable $exception
      * @return void
      */
     public function report(Throwable $exception): void
@@ -101,7 +102,9 @@ class Handle
     public function render($request, Throwable $e): Response
     {
         $this->isJson = $request->isJson();
-        if ($e instanceof HttpException) {
+        if ($e instanceof HttpResponseException) {
+            return $e->getResponse();
+        } elseif ($e instanceof HttpException) {
             return $this->renderHttpException($e);
         } else {
             return $this->convertExceptionToResponse($e);
@@ -110,8 +113,8 @@ class Handle
 
     /**
      * @access public
-     * @param  Output    $output
-     * @param  Throwable $e
+     * @param Output    $output
+     * @param Throwable $e
      */
     public function renderForConsole(Output $output, Throwable $e): void
     {
@@ -124,7 +127,7 @@ class Handle
 
     /**
      * @access protected
-     * @param  HttpException $e
+     * @param HttpException $e
      * @return Response
      */
     protected function renderHttpException(HttpException $e): Response
@@ -158,13 +161,13 @@ class Handle
                 'source'  => $this->getSourceCode($exception),
                 'datas'   => $this->getExtendData($exception),
                 'tables'  => [
-                    'GET Data'              => $_GET,
-                    'POST Data'             => $_POST,
-                    'Files'                 => $_FILES,
-                    'Cookies'               => $_COOKIE,
-                    'Session'               => $_SESSION ?? [],
-                    'Server/Request Data'   => $_SERVER,
-                    'Environment Variables' => $_ENV,
+                    'GET Data'              => $this->app->request->get(),
+                    'POST Data'             => $this->app->request->post(),
+                    'Files'                 => $this->app->request->file(),
+                    'Cookies'               => $this->app->request->cookie(),
+                    'Session'               => $this->app->session->all(),
+                    'Server/Request Data'   => $this->app->request->server(),
+                    'Environment Variables' => $this->app->request->env(),
                     'ThinkPHP Constants'    => $this->getConst(),
                 ],
             ];
@@ -186,30 +189,15 @@ class Handle
 
     /**
      * @access protected
-     * @param  Throwable $exception
+     * @param Throwable $exception
      * @return Response
      */
     protected function convertExceptionToResponse(Throwable $exception): Response
     {
-        $data = $this->convertExceptionToArray($exception);
-
         if (!$this->isJson) {
-            //保留一层
-            while (ob_get_level() > 1) {
-                ob_end_clean();
-            }
-
-            $data['echo'] = ob_get_clean();
-
-            ob_start();
-            extract($data);
-            include $this->app->config->get('app.exception_tmpl') ?: __DIR__ . '/../../tpl/think_exception.tpl';
-
-            // 获取并清空缓存
-            $data     = ob_get_clean();
-            $response = new Response($data);
+            $response = new Response($this->renderExceptionContent($exception));
         } else {
-            $response = new Json($data);
+            $response = new Json($this->convertExceptionToArray($exception));
         }
 
         if ($exception instanceof HttpException) {
@@ -220,11 +208,21 @@ class Handle
         return $response->code($statusCode ?? 500);
     }
 
+    protected function renderExceptionContent(Throwable $exception): string
+    {
+        ob_start();
+        $data = $this->convertExceptionToArray($exception);
+        extract($data);
+        include $this->app->config->get('app.exception_tmpl') ?: __DIR__ . '/../../tpl/think_exception.tpl';
+
+        return ob_get_clean();
+    }
+
     /**
      * 获取错误编码
      * ErrorException则使用错误级别作为错误编码
      * @access protected
-     * @param  Throwable $exception
+     * @param Throwable $exception
      * @return integer                错误编码
      */
     protected function getCode(Throwable $exception)
@@ -242,7 +240,7 @@ class Handle
      * 获取错误信息
      * ErrorException则使用错误级别作为错误编码
      * @access protected
-     * @param  Throwable $exception
+     * @param Throwable $exception
      * @return string                错误信息
      */
     protected function getMessage(Throwable $exception): string
@@ -272,7 +270,7 @@ class Handle
      * 获取出错文件内容
      * 获取错误的前9行和后9行
      * @access protected
-     * @param  Throwable $exception
+     * @param Throwable $exception
      * @return array                 错误文件内容
      */
     protected function getSourceCode(Throwable $exception): array
@@ -298,7 +296,7 @@ class Handle
      * 获取异常扩展信息
      * 用于非调试模式html返回类型显示
      * @access protected
-     * @param  Throwable $exception
+     * @param Throwable $exception
      * @return array                 异常类定义的扩展数据
      */
     protected function getExtendData(Throwable $exception): array
@@ -314,10 +312,10 @@ class Handle
 
     /**
      * 获取常量列表
-     * @access private
+     * @access protected
      * @return array 常量列表
      */
-    private static function getConst(): array
+    protected function getConst(): array
     {
         $const = get_defined_constants(true);
 

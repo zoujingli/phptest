@@ -59,12 +59,6 @@ abstract class Dispatch
      */
     protected $code;
 
-    /**
-     * 是否进行大小写转换
-     * @var bool
-     */
-    protected $convert;
-
     public function __construct(Request $request, Rule $rule, $dispatch, array $param = [], int $code = null)
     {
         $this->request  = $request;
@@ -72,21 +66,11 @@ abstract class Dispatch
         $this->dispatch = $dispatch;
         $this->param    = $param;
         $this->code     = $code;
-
-        if (isset($param['convert'])) {
-            $this->convert = $param['convert'];
-        }
     }
 
     public function init(App $app)
     {
         $this->app = $app;
-
-        // 记录当前请求的路由规则
-        $this->request->setRule($this->rule);
-
-        // 记录路由变量
-        $this->request->setRoute($this->param);
 
         // 执行路由后置操作
         $this->doRouteAfter();
@@ -99,15 +83,17 @@ abstract class Dispatch
      */
     public function run(): Response
     {
-        $option = $this->rule->getOption();
+        if ($this->rule instanceof RuleItem && $this->request->method() == 'OPTIONS' && $this->rule->isAutoOptions()) {
+            $rules = $this->rule->getRouter()->getRule($this->rule->getRule());
+            $allow = [];
+            foreach ($rules as $item) {
+                $allow[] = strtoupper($item->getMethod());
+            }
 
-        // 数据自动验证
-        if (isset($option['validate'])) {
-            $this->autoValidate($option['validate']);
+            return Response::create('', '', 204)->header(['Allow' => implode(', ', $allow)]);
         }
 
         $data = $this->exec();
-
         return $this->autoResponse($data);
     }
 
@@ -137,22 +123,32 @@ abstract class Dispatch
      */
     protected function doRouteAfter(): void
     {
-        // 记录匹配的路由信息
         $option = $this->rule->getOption();
 
         // 添加中间件
         if (!empty($option['middleware'])) {
-            $this->app->middleware->import($option['middleware']);
+            $this->app->middleware->import($option['middleware'], 'route');
+        }
+
+        if (!empty($option['append'])) {
+            $this->param = array_merge($this->param, $option['append']);
         }
 
         // 绑定模型数据
         if (!empty($option['model'])) {
-            $this->createBindModel($option['model'], $this->request->route());
+            $this->createBindModel($option['model'], $this->param);
         }
 
-        if (!empty($option['append'])) {
-            $this->request->setRoute($option['append']);
+        // 数据自动验证
+        if (isset($option['validate'])) {
+            $this->autoValidate($option['validate']);
         }
+
+        // 记录当前请求的路由规则
+        $this->request->setRule($this->rule);
+
+        // 记录路由变量
+        $this->request->setRoute($this->param);
     }
 
     /**
@@ -218,7 +214,6 @@ abstract class Dispatch
             $v->rule($validate);
         } else {
             // 调用验证器
-            /** @var Validate $class */
             $class = false !== strpos($validate, '\\') ? $validate : $this->app->parseClass('validate', $validate);
 
             $v = new $class();
@@ -228,14 +223,11 @@ abstract class Dispatch
             }
         }
 
-        $v->message($message)->batch($batch)->failException(true)->check($this->request->param());
-    }
-
-    public function convert(bool $convert)
-    {
-        $this->convert = $convert;
-
-        return $this;
+        /** @var Validate $v */
+        $v->message($message)
+            ->batch($batch)
+            ->failException(true)
+            ->check($this->request->param());
     }
 
     public function getDispatch()
@@ -252,7 +244,7 @@ abstract class Dispatch
 
     public function __sleep()
     {
-        return ['rule', 'dispatch', 'convert', 'param', 'code', 'controller', 'actionName'];
+        return ['rule', 'dispatch', 'param', 'code', 'controller', 'actionName'];
     }
 
     public function __wakeup()

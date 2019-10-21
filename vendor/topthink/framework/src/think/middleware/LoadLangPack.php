@@ -16,22 +16,21 @@ use Closure;
 use think\App;
 use think\Lang;
 use think\Request;
+use think\Response;
 
 /**
  * 多语言加载
  */
 class LoadLangPack
 {
-    /** @var Lang */
-    protected $lang;
-
-    /** @var App */
     protected $app;
 
-    public function __construct(Lang $lang, App $app)
+    protected $lang;
+
+    public function __construct(App $app, Lang $lang)
     {
-        $this->lang = $lang;
         $this->app  = $app;
+        $this->lang = $lang;
     }
 
     /**
@@ -39,12 +38,12 @@ class LoadLangPack
      * @access public
      * @param Request $request
      * @param Closure $next
-     * @return void
+     * @return Response
      */
     public function handle($request, Closure $next)
     {
         // 自动侦测当前语言
-        $langset = $this->lang->detect();
+        $langset = $this->lang->detect($request);
 
         if ($this->lang->defaultLangSet() != $langset) {
             // 加载系统语言包

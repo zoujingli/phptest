@@ -1,7 +1,5 @@
 /.idea
 /.vscode
 /vendor
-/runtime
 *.log
 .env
-thinkphp
