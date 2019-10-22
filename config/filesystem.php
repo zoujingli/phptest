@@ -14,7 +14,7 @@
 // +----------------------------------------------------------------------
 
 return [
-    'default' => env('filesystem.driver', 'local'),
+    'default' => 'public',
     'disks'   => [
         'local'  => [
             'type' => 'local',
