@@ -13,11 +13,9 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-use think\facade\Env;
-
 return [
     // 默认缓存驱动
-    'default' => Env::get('cache.driver', 'file'),
+    'default' => 'file',
     // 缓存连接方式配置
     'stores'  => [
         'file' => [
@@ -34,6 +32,5 @@ return [
             // 序列化机制 例如 ['serialize', 'unserialize']
             'serialize'  => [],
         ],
-        // 更多的缓存连接
     ],
 ];
