@@ -15,7 +15,9 @@
 
 namespace app\controller;
 
-class Index
+use think\admin\Controller;
+
+class Index extends Controller
 {
     public function index()
     {

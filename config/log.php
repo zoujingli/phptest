@@ -24,7 +24,6 @@ return [
     'close'        => false,
     // 全局日志处理 支持闭包
     'processor'    => null,
-
     // 日志通道列表
     'channels'     => [
         'file' => [
@@ -33,7 +32,7 @@ return [
             // 日志保存目录
             'path'           => '',
             // 单文件日志写入
-            'single'         => false,
+            'single'         => true,
             // 独立日志级别
             'apart_level'    => [],
             // 最大日志文件数量
@@ -49,7 +48,5 @@ return [
             // 是否实时写入
             'realtime_write' => false,
         ],
-        // 其它日志通道配置
     ],
-
 ];
