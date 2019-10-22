@@ -3,7 +3,7 @@
   "name": "zoujingli/thinkadmin",
   "license": "MIT",
   "homepage": "http://demo.thinkadmin.top",
-  "description": "the new thinkphp framework",
+  "description": "Application rapid development framework",
   "keywords": [
     "ThinkAdmin",
     "ThinkLibrary",
@@ -20,12 +20,9 @@
     "php": ">=7.1.0",
     "topthink/think-view": "^1.0",
     "topthink/framework": "6.0.*-dev",
-    "zoujingli/think-library": "6.0.*-dev",
     "topthink/think-trace": "dev-master",
-    "topthink/think-multi-app": "^1.0"
-  },
-  "config": {
-    "preferred-install": "dist"
+    "topthink/think-multi-app": "^1.0",
+    "zoujingli/think-library": "6.0.*-dev"
   },
   "autoload": {
     "psr-4": {
@@ -37,6 +34,9 @@
       "@php think service:discover",
       "@php think vendor:publish"
     ]
+  },
+  "config": {
+    "preferred-install": "dist"
   },
   "repositories": {
     "packagist": {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "210a362067023954c2101988859831f4",
+    "content-hash": "e6d45922b84a3f4e5a3e391dcae8f97a",
     "packages": [
         {
             "name": "league/flysystem",
@@ -847,8 +847,8 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "topthink/framework": 20,
-        "zoujingli/think-library": 20,
-        "topthink/think-trace": 20
+        "topthink/think-trace": 20,
+        "zoujingli/think-library": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
