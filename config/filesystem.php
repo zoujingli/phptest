@@ -26,6 +26,5 @@ return [
             'url'        => '/storage',
             'visibility' => 'public',
         ],
-        // 更多的磁盘配置信息
     ],
 ];
