@@ -436,12 +436,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/top-think/framework.git",
-                "reference": "f777dbdf4f526c13221b29f1167e690b885ee13b"
+                "reference": "0b3a963db4440bb7d78f2f19c2cf26097cf242a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/top-think/framework/zipball/f777dbdf4f526c13221b29f1167e690b885ee13b",
-                "reference": "f777dbdf4f526c13221b29f1167e690b885ee13b",
+                "url": "https://api.github.com/repos/top-think/framework/zipball/0b3a963db4440bb7d78f2f19c2cf26097cf242a3",
+                "reference": "0b3a963db4440bb7d78f2f19c2cf26097cf242a3",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -496,7 +496,7 @@
                 "orm",
                 "thinkphp"
             ],
-            "time": "2019-10-22T00:53:12+00:00"
+            "time": "2019-10-22T14:03:29+00:00"
         },
         {
             "name": "topthink/think-helper",
@@ -789,12 +789,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zoujingli/ThinkLibrary.git",
-                "reference": "a66dd5334415522f01e9453f97058db538042c29"
+                "reference": "b5454fdf3ec6b51e7dc8b43701c7b0896b3d8cbc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/a66dd5334415522f01e9453f97058db538042c29",
-                "reference": "a66dd5334415522f01e9453f97058db538042c29",
+                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/b5454fdf3ec6b51e7dc8b43701c7b0896b3d8cbc",
+                "reference": "b5454fdf3ec6b51e7dc8b43701c7b0896b3d8cbc",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -839,7 +839,7 @@
             ],
             "description": "ThinkPHP v6.0 Development Library",
             "homepage": "http://framework.thinkadmin.top",
-            "time": "2019-10-22T03:00:27+00:00"
+            "time": "2019-10-22T07:11:19+00:00"
         }
     ],
     "packages-dev": [],
