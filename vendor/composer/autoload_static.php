@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit4b9bcbe6ec2453a50d162588e8c85819
+class ComposerStaticInit3d7abacea82c4c78c2422f6a93f8a1b7
 {
     public static $files = array (
         '9b552a3cc426e3287cc811caefa3cf53' => __DIR__ . '/..' . '/topthink/think-helper/src/helper.php',
@@ -24,6 +24,10 @@ class ComposerStaticInit4b9bcbe6ec2453a50d162588e8c85819
         'a' => 
         array (
             'app\\' => 4,
+        ),
+        '\\' => 
+        array (
+            '\\' => 1,
         ),
         'P' => 
         array (
@@ -70,6 +74,10 @@ class ComposerStaticInit4b9bcbe6ec2453a50d162588e8c85819
         'app\\' => 
         array (
             0 => __DIR__ . '/../..' . '/app',
+        ),
+        '\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/extend',
         ),
         'Psr\\SimpleCache\\' => 
         array (
@@ -190,7 +198,15 @@ class ComposerStaticInit4b9bcbe6ec2453a50d162588e8c85819
         'Psr\\SimpleCache\\CacheException' => __DIR__ . '/..' . '/psr/simple-cache/src/CacheException.php',
         'Psr\\SimpleCache\\CacheInterface' => __DIR__ . '/..' . '/psr/simple-cache/src/CacheInterface.php',
         'Psr\\SimpleCache\\InvalidArgumentException' => __DIR__ . '/..' . '/psr/simple-cache/src/InvalidArgumentException.php',
-        'app\\controller\\Index' => __DIR__ . '/../..' . '/app/controller/index/Index.php',
+        'app\\admin\\controller\\Auth' => __DIR__ . '/../..' . '/app/admin/controller/Auth.php',
+        'app\\admin\\controller\\Config' => __DIR__ . '/../..' . '/app/admin/controller/Config.php',
+        'app\\admin\\controller\\Index' => __DIR__ . '/../..' . '/app/admin/controller/Index.php',
+        'app\\admin\\controller\\Login' => __DIR__ . '/../..' . '/app/admin/controller/Login.php',
+        'app\\admin\\controller\\Menu' => __DIR__ . '/../..' . '/app/admin/controller/Menu.php',
+        'app\\admin\\controller\\Oplog' => __DIR__ . '/../..' . '/app/admin/controller/Oplog.php',
+        'app\\admin\\controller\\Queue' => __DIR__ . '/../..' . '/app/admin/controller/Queue.php',
+        'app\\admin\\controller\\User' => __DIR__ . '/../..' . '/app/admin/controller/User.php',
+        'app\\index\\controller\\Index' => __DIR__ . '/../..' . '/app/index/controller/Index.php',
         'think\\App' => __DIR__ . '/..' . '/topthink/framework/src/think/App.php',
         'think\\Cache' => __DIR__ . '/..' . '/topthink/framework/src/think/Cache.php',
         'think\\Collection' => __DIR__ . '/..' . '/topthink/think-helper/src/Collection.php',
@@ -456,9 +472,9 @@ class ComposerStaticInit4b9bcbe6ec2453a50d162588e8c85819
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit4b9bcbe6ec2453a50d162588e8c85819::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit4b9bcbe6ec2453a50d162588e8c85819::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit4b9bcbe6ec2453a50d162588e8c85819::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit3d7abacea82c4c78c2422f6a93f8a1b7::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit3d7abacea82c4c78c2422f6a93f8a1b7::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit3d7abacea82c4c78c2422f6a93f8a1b7::$classMap;
 
         }, null, ClassLoader::class);
     }
