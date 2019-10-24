@@ -1794,7 +1794,7 @@ class Request
      */
     public function contentType(): string
     {
-        $contentType = $this->server('CONTENT_TYPE');
+        $contentType = $this->header('Content-Type');
 
         if ($contentType) {
             if (strpos($contentType, ';')) {
@@ -2057,6 +2057,10 @@ class Request
     public function withInput(string $input)
     {
         $this->input = $input;
+        if (!empty($input)) {
+            $this->post = $this->getInputData($input);
+            $this->put  = $this->getInputData($input);
+        }
         return $this;
     }
 

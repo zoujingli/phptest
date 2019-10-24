@@ -444,12 +444,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/framework.git",
-            "reference": "79c555aab0313d1a33ddcdb3c395f2c47f37f597"
+            "reference": "98e408f5cc4d1b72f92841ac3f9c22af83507808"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/framework/zipball/79c555aab0313d1a33ddcdb3c395f2c47f37f597",
-            "reference": "79c555aab0313d1a33ddcdb3c395f2c47f37f597",
+            "url": "https://api.github.com/repos/top-think/framework/zipball/98e408f5cc4d1b72f92841ac3f9c22af83507808",
+            "reference": "98e408f5cc4d1b72f92841ac3f9c22af83507808",
             "shasum": "",
             "mirrors": [
                 {
@@ -476,7 +476,7 @@
             "mockery/mockery": "^1.2",
             "phpunit/phpunit": "^7.0"
         },
-        "time": "2019-10-23T23:28:43+00:00",
+        "time": "2019-10-24T04:52:53+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -811,12 +811,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/zoujingli/ThinkLibrary.git",
-            "reference": "b5454fdf3ec6b51e7dc8b43701c7b0896b3d8cbc"
+            "reference": "6072747f01b9c80be8339ac1d9105a13b17e5298"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/b5454fdf3ec6b51e7dc8b43701c7b0896b3d8cbc",
-            "reference": "b5454fdf3ec6b51e7dc8b43701c7b0896b3d8cbc",
+            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/6072747f01b9c80be8339ac1d9105a13b17e5298",
+            "reference": "6072747f01b9c80be8339ac1d9105a13b17e5298",
             "shasum": "",
             "mirrors": [
                 {
@@ -833,7 +833,7 @@
             "topthink/framework": "6.0.x-dev",
             "topthink/think-trace": "dev-master"
         },
-        "time": "2019-10-22T07:11:19+00:00",
+        "time": "2019-10-24T01:44:09+00:00",
         "type": "library",
         "extra": {
             "think": {
