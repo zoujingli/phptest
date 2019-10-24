@@ -52,7 +52,7 @@ class CaptchaService
             $this->code .= $this->charset[mt_rand(0, $length)];
         }
         // 缓存验证码字符串
-        Cache::tag('captcha')->set($this->uniqid, $this->code, 360);
+        Cache::set($this->uniqid, $this->code, 360);
         // 设置字体文件路径
         $this->font = __DIR__ . '/font/icon.ttf';
     }
@@ -136,8 +136,8 @@ class CaptchaService
     public static function check($code, $uniqid = null)
     {
         $_uni = is_string($uniqid) ? $uniqid : input('uniqid', '-');
-        $_val = Cache::tag('captcha')->get($_uni);
-        Cache::tag('captcha')->rm($_uni);
+        $_val = Cache::get($_uni);
+        Cache::rm($_uni);
         return is_string($_val) && strtolower($_val) === strtolower($code);
     }
 }

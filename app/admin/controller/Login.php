@@ -41,12 +41,12 @@ class Login extends Controller
             } else {
                 $this->title = '系统登录';
                 $this->domain = $this->request->host(true);
-                if (!($this->loginskey = session('loginskey'))) session('loginskey', $this->loginskey = uniqid());
+                if (!($this->loginskey = session('loginskey'))) session('loginskey', $this->loginskey = uniqid() . rand(1000, 9999));
                 $this->devmode = in_array($this->domain, ['127.0.0.1', 'localhost']) || is_numeric(stripos($this->domain, 'thinkadmin.top'));
                 $this->captcha = new CaptchaService();
                 $this->fetch();
             }
-        } else {
+        } elseif ($this->request->isPost()) {
             $data = ['username' => input('username'), 'password' => input('password')];
             if (empty($data['username'])) $this->error('登录账号不能为空!');
             if (empty($data['password'])) $this->error('登录密码不能为空!');
@@ -54,7 +54,8 @@ class Login extends Controller
                 $this->error('图形验证码验证失败，请重新输入!');
             }
             // 用户信息验证
-            $user = Db::name('SystemUser')->where(['is_deleted' => '0', 'username' => $data['username']])->order('id desc')->find();
+            $map = ['username' => $data['username'], 'is_deleted' => '0'];
+            $user = Db::name('SystemUser')->where($map)->order('id desc')->find();
             if (empty($user)) {
                 $this->error('登录账号或密码错误，请重新输入!');
             }
