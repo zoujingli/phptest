@@ -444,12 +444,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/framework.git",
-            "reference": "0b3a963db4440bb7d78f2f19c2cf26097cf242a3"
+            "reference": "79c555aab0313d1a33ddcdb3c395f2c47f37f597"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/framework/zipball/0b3a963db4440bb7d78f2f19c2cf26097cf242a3",
-            "reference": "0b3a963db4440bb7d78f2f19c2cf26097cf242a3",
+            "url": "https://api.github.com/repos/top-think/framework/zipball/79c555aab0313d1a33ddcdb3c395f2c47f37f597",
+            "reference": "79c555aab0313d1a33ddcdb3c395f2c47f37f597",
             "shasum": "",
             "mirrors": [
                 {
@@ -476,7 +476,7 @@
             "mockery/mockery": "^1.2",
             "phpunit/phpunit": "^7.0"
         },
-        "time": "2019-10-22T14:03:29+00:00",
+        "time": "2019-10-23T23:28:43+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -556,17 +556,17 @@
     },
     {
         "name": "topthink/think-multi-app",
-        "version": "v1.0.9",
-        "version_normalized": "1.0.9.0",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/think-multi-app.git",
-            "reference": "6ca23bf1e261f6c1a257e4023925ca641b23fd15"
+            "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/6ca23bf1e261f6c1a257e4023925ca641b23fd15",
-            "reference": "6ca23bf1e261f6c1a257e4023925ca641b23fd15",
+            "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/dec89d453ee7138e69211dd21a897d470d4a4e83",
+            "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83",
             "shasum": "",
             "mirrors": [
                 {
@@ -579,7 +579,7 @@
             "php": ">=7.1.0",
             "topthink/framework": "^6.0.0"
         },
-        "time": "2019-10-21T13:20:13+00:00",
+        "time": "2019-10-23T09:52:39+00:00",
         "type": "library",
         "extra": {
             "think": {
@@ -608,17 +608,17 @@
     },
     {
         "name": "topthink/think-orm",
-        "version": "v2.0.26",
-        "version_normalized": "2.0.26.0",
+        "version": "v2.0.27",
+        "version_normalized": "2.0.27.0",
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/think-orm.git",
-            "reference": "8ef883759fc94512bf5c62468c8dc0d8dc176afe"
+            "reference": "02affaaccade2cdd8bbb2d2f5d15e46113e6eb50"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/think-orm/zipball/8ef883759fc94512bf5c62468c8dc0d8dc176afe",
-            "reference": "8ef883759fc94512bf5c62468c8dc0d8dc176afe",
+            "url": "https://api.github.com/repos/top-think/think-orm/zipball/02affaaccade2cdd8bbb2d2f5d15e46113e6eb50",
+            "reference": "02affaaccade2cdd8bbb2d2f5d15e46113e6eb50",
             "shasum": "",
             "mirrors": [
                 {
@@ -634,7 +634,7 @@
             "psr/simple-cache": "^1.0",
             "topthink/think-helper": "^3.1"
         },
-        "time": "2019-10-11T01:34:19+00:00",
+        "time": "2019-10-23T02:16:50+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
