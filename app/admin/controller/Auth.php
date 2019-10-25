@@ -26,7 +26,7 @@ use think\Db;
 class Auth extends Controller
 {
     /**
-     * 默认数据模型
+     * 绑定数据表
      * @var string
      */
     public $table = 'SystemAuth';

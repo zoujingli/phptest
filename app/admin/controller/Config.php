@@ -31,7 +31,7 @@ class Config extends Controller
     protected $table = 'SystemConfig';
 
     /**
-     * 系统参数配置
+     * 绑定数据表
      * @auth true
      * @menu true
      */

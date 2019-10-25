@@ -15,10 +15,10 @@
 
 namespace app\admin\controller;
 
-use app\admin\service\CaptchaService;
 use app\admin\service\NodeService;
 use think\admin\Controller;
-use think\Db;
+use think\admin\extend\CaptchaExtend;
+use think\facade\Db;
 
 /**
  * 用户登录管理
@@ -43,14 +43,14 @@ class Login extends Controller
                 $this->domain = $this->request->host(true);
                 if (!($this->loginskey = session('loginskey'))) session('loginskey', $this->loginskey = uniqid() . rand(1000, 9999));
                 $this->devmode = in_array($this->domain, ['127.0.0.1', 'localhost']) || is_numeric(stripos($this->domain, 'thinkadmin.top'));
-                $this->captcha = new CaptchaService();
+                $this->captcha = CaptchaExtend::instance();
                 $this->fetch();
             }
         } elseif ($this->request->isPost()) {
             $data = ['username' => input('username'), 'password' => input('password')];
             if (empty($data['username'])) $this->error('登录账号不能为空!');
             if (empty($data['password'])) $this->error('登录密码不能为空!');
-            if (!CaptchaService::check(input('verify'), input('uniqid'))) {
+            if (!CaptchaExtend::check(input('verify'), input('uniqid'))) {
                 $this->error('图形验证码验证失败，请重新输入!');
             }
             // 用户信息验证

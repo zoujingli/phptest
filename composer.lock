@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "20b05d72274ec54dc188eca6575b4ae7",
+    "content-hash": "e9e75911c8246616bf55aa17cf76f653",
     "packages": [
         {
             "name": "league/flysystem",
@@ -436,12 +436,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/top-think/framework.git",
-                "reference": "98e408f5cc4d1b72f92841ac3f9c22af83507808"
+                "reference": "1f2ca810b2c8c63d81ac4c5cbfaa25a913310152"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/top-think/framework/zipball/98e408f5cc4d1b72f92841ac3f9c22af83507808",
-                "reference": "98e408f5cc4d1b72f92841ac3f9c22af83507808",
+                "url": "https://api.github.com/repos/top-think/framework/zipball/1f2ca810b2c8c63d81ac4c5cbfaa25a913310152",
+                "reference": "1f2ca810b2c8c63d81ac4c5cbfaa25a913310152",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -496,7 +496,7 @@
                 "orm",
                 "thinkphp"
             ],
-            "time": "2019-10-24T04:52:53+00:00"
+            "time": "2019-10-24T13:24:05+00:00"
         },
         {
             "name": "topthink/think-helper",
@@ -789,12 +789,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zoujingli/ThinkLibrary.git",
-                "reference": "6072747f01b9c80be8339ac1d9105a13b17e5298"
+                "reference": "8125b3f0b5bd13514439a47d94e98146464ae6a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/6072747f01b9c80be8339ac1d9105a13b17e5298",
-                "reference": "6072747f01b9c80be8339ac1d9105a13b17e5298",
+                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/8125b3f0b5bd13514439a47d94e98146464ae6a5",
+                "reference": "8125b3f0b5bd13514439a47d94e98146464ae6a5",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -805,11 +805,10 @@
             },
             "require": {
                 "ext-curl": "*",
+                "ext-gd": "*",
                 "ext-iconv": "*",
                 "ext-json": "*",
-                "php": ">=7.1.0",
-                "topthink/framework": "6.0.x-dev",
-                "topthink/think-trace": "dev-master"
+                "php": ">=7.1.0"
             },
             "type": "library",
             "extra": {
@@ -839,7 +838,7 @@
             ],
             "description": "ThinkPHP v6.0 Development Library",
             "homepage": "http://framework.thinkadmin.top",
-            "time": "2019-10-24T01:44:09+00:00"
+            "time": "2019-10-25T06:38:19+00:00"
         }
     ],
     "packages-dev": [],
@@ -854,7 +853,8 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.1.0"
+        "php": ">=7.1.0",
+        "ext-gd": "*"
     },
     "platform-dev": []
 }
