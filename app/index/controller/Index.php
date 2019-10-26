@@ -8,14 +8,7 @@ class Index extends Controller
 {
     public function index()
     {
-//        $list = NodeExtend::getMethods();
-//        dump($list);
-//        echo app()->request();
-        //dump(app()->request);
-        echo '\\';
-        echo app()->request->controller();
-        echo '\\';
-        echo app()->request->action();
+        $this->redirect('admin/login');
     }
 
 }

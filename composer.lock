@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b9f447c456e7a9e41a0fea7de0835ded",
+    "content-hash": "90517086f1c8c259ba16905ae65fbcf7",
     "packages": [
         {
             "name": "league/flysystem",
@@ -432,16 +432,16 @@
         },
         {
             "name": "topthink/framework",
-            "version": "6.0.x-dev",
+            "version": "v6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/top-think/framework.git",
-                "reference": "0c67b3e7544a49f2a1ae9263efa00d7779462673"
+                "reference": "79c555aab0313d1a33ddcdb3c395f2c47f37f597"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/top-think/framework/zipball/0c67b3e7544a49f2a1ae9263efa00d7779462673",
-                "reference": "0c67b3e7544a49f2a1ae9263efa00d7779462673",
+                "url": "https://api.github.com/repos/top-think/framework/zipball/79c555aab0313d1a33ddcdb3c395f2c47f37f597",
+                "reference": "79c555aab0313d1a33ddcdb3c395f2c47f37f597",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -496,7 +496,7 @@
                 "orm",
                 "thinkphp"
             ],
-            "time": "2019-10-25T11:10:21+00:00"
+            "time": "2019-10-23T23:28:43+00:00"
         },
         {
             "name": "topthink/think-helper",
@@ -545,16 +545,16 @@
         },
         {
             "name": "topthink/think-multi-app",
-            "version": "dev-master",
+            "version": "v1.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/top-think/think-multi-app.git",
-                "reference": "5857cd0b7b1d5227fd60cc6461ec0ec98a2290e7"
+                "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/5857cd0b7b1d5227fd60cc6461ec0ec98a2290e7",
-                "reference": "5857cd0b7b1d5227fd60cc6461ec0ec98a2290e7",
+                "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/dec89d453ee7138e69211dd21a897d470d4a4e83",
+                "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -591,7 +591,7 @@
                 }
             ],
             "description": "thinkphp6 multi app support",
-            "time": "2019-10-25T08:13:49+00:00"
+            "time": "2019-10-23T09:52:39+00:00"
         },
         {
             "name": "topthink/think-orm",
@@ -686,59 +686,6 @@
             ],
             "description": "the php template engine",
             "time": "2019-09-20T15:31:04+00:00"
-        },
-        {
-            "name": "topthink/think-trace",
-            "version": "v1.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/top-think/think-trace.git",
-                "reference": "4589d06a07945d57478cc2236f4b23d51ff919cc"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/top-think/think-trace/zipball/4589d06a07945d57478cc2236f4b23d51ff919cc",
-                "reference": "4589d06a07945d57478cc2236f4b23d51ff919cc",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
-            },
-            "require": {
-                "php": ">=7.1.0",
-                "topthink/framework": "^6.0.0"
-            },
-            "type": "library",
-            "extra": {
-                "think": {
-                    "services": [
-                        "think\\trace\\Service"
-                    ],
-                    "config": {
-                        "trace": "src/config.php"
-                    }
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "think\\trace\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "liu21st",
-                    "email": "liu21st@gmail.com"
-                }
-            ],
-            "description": "thinkphp debug trace",
-            "time": "2019-10-17T02:14:09+00:00"
         },
         {
             "name": "topthink/think-view",
@@ -845,8 +792,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "topthink/framework": 20,
-        "topthink/think-multi-app": 20,
         "zoujingli/think-library": 20
     },
     "prefer-stable": false,
