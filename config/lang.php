@@ -20,13 +20,13 @@ return [
     'allow_lang_list' => [],
     // 多语言自动侦测变量名
     'detect_var'      => 'lang',
-    // 是否使用Cookie记录
+    // 是否使用 Cookie 记录
     'use_cookie'      => true,
-    // 多语言cookie变量
+    // 多语言 Cookie 变量
     'cookie_var'      => 'think_lang',
     // 扩展语言包
     'extend_list'     => [],
-    // Accept-Language转义为对应语言包名称
+    // 转义为对应语言包名称
     'accept_language' => [
         'zh-hans-cn' => 'zh-cn',
     ],
