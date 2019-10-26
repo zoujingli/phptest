@@ -4,11 +4,14 @@
 namespace app\admin\controller\test;
 
 
-class MyApp
+use think\admin\Controller;
+use think\admin\extend\NodeExtend;
+
+class MyApp extends Controller
 {
     public function index()
     {
-        return __METHOD__;
+        echo NodeExtend::current();
     }
 
 }
