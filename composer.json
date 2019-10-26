@@ -21,9 +21,9 @@
     "ext-gd": "*",
     "topthink/think-view": "^1.0",
     "topthink/framework": "6.0.*-dev",
-    "topthink/think-trace": "dev-master",
     "topthink/think-multi-app": "dev-master",
-    "zoujingli/think-library": "6.0.*-dev"
+    "zoujingli/think-library": "6.0.*-dev",
+    "topthink/think-trace": "^1.2"
   },
   "autoload": {
     "psr-4": {

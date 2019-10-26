@@ -328,17 +328,17 @@
     },
     {
         "name": "psr/log",
-        "version": "1.1.0",
-        "version_normalized": "1.1.0.0",
+        "version": "1.1.1",
+        "version_normalized": "1.1.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/php-fig/log.git",
-            "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd"
+            "reference": "bf73deb2b3b896a9d9c75f3f0d88185d2faa27e2"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/php-fig/log/zipball/6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
-            "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
+            "url": "https://api.github.com/repos/php-fig/log/zipball/bf73deb2b3b896a9d9c75f3f0d88185d2faa27e2",
+            "reference": "bf73deb2b3b896a9d9c75f3f0d88185d2faa27e2",
             "shasum": "",
             "mirrors": [
                 {
@@ -350,11 +350,11 @@
         "require": {
             "php": ">=5.3.0"
         },
-        "time": "2018-11-20T15:27:04+00:00",
+        "time": "2019-10-25T08:06:51+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "1.0.x-dev"
+                "dev-master": "1.1.x-dev"
             }
         },
         "installation-source": "dist",
@@ -444,12 +444,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/framework.git",
-            "reference": "1f2ca810b2c8c63d81ac4c5cbfaa25a913310152"
+            "reference": "0c67b3e7544a49f2a1ae9263efa00d7779462673"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/framework/zipball/1f2ca810b2c8c63d81ac4c5cbfaa25a913310152",
-            "reference": "1f2ca810b2c8c63d81ac4c5cbfaa25a913310152",
+            "url": "https://api.github.com/repos/top-think/framework/zipball/0c67b3e7544a49f2a1ae9263efa00d7779462673",
+            "reference": "0c67b3e7544a49f2a1ae9263efa00d7779462673",
             "shasum": "",
             "mirrors": [
                 {
@@ -476,7 +476,7 @@
             "mockery/mockery": "^1.2",
             "phpunit/phpunit": "^7.0"
         },
-        "time": "2019-10-24T13:24:05+00:00",
+        "time": "2019-10-25T11:10:21+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -561,12 +561,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/think-multi-app.git",
-            "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83"
+            "reference": "5857cd0b7b1d5227fd60cc6461ec0ec98a2290e7"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/dec89d453ee7138e69211dd21a897d470d4a4e83",
-            "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83",
+            "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/5857cd0b7b1d5227fd60cc6461ec0ec98a2290e7",
+            "reference": "5857cd0b7b1d5227fd60cc6461ec0ec98a2290e7",
             "shasum": "",
             "mirrors": [
                 {
@@ -579,7 +579,7 @@
             "php": ">=7.1.0",
             "topthink/framework": "^6.0.0"
         },
-        "time": "2019-10-23T09:52:39+00:00",
+        "time": "2019-10-25T08:13:49+00:00",
         "type": "library",
         "extra": {
             "think": {
@@ -661,17 +661,17 @@
     },
     {
         "name": "topthink/think-template",
-        "version": "v2.0.6",
-        "version_normalized": "2.0.6.0",
+        "version": "v2.0.7",
+        "version_normalized": "2.0.7.0",
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/think-template.git",
-            "reference": "1db0078db13397e7271826f895f8d17279ad9e1e"
+            "reference": "e98bdbb4a4c94b442f17dfceba81e0134d4fbd19"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/think-template/zipball/1db0078db13397e7271826f895f8d17279ad9e1e",
-            "reference": "1db0078db13397e7271826f895f8d17279ad9e1e",
+            "url": "https://api.github.com/repos/top-think/think-template/zipball/e98bdbb4a4c94b442f17dfceba81e0134d4fbd19",
+            "reference": "e98bdbb4a4c94b442f17dfceba81e0134d4fbd19",
             "shasum": "",
             "mirrors": [
                 {
@@ -684,7 +684,7 @@
             "php": ">=7.1.0",
             "psr/simple-cache": "^1.0"
         },
-        "time": "2019-09-04T13:43:03+00:00",
+        "time": "2019-09-20T15:31:04+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -706,8 +706,8 @@
     },
     {
         "name": "topthink/think-trace",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "v1.2",
+        "version_normalized": "1.2.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/think-trace.git",
@@ -811,12 +811,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/zoujingli/ThinkLibrary.git",
-            "reference": "8125b3f0b5bd13514439a47d94e98146464ae6a5"
+            "reference": "39c44754ced0313fb9c68a14a49cda94d3ab3d48"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/8125b3f0b5bd13514439a47d94e98146464ae6a5",
-            "reference": "8125b3f0b5bd13514439a47d94e98146464ae6a5",
+            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/39c44754ced0313fb9c68a14a49cda94d3ab3d48",
+            "reference": "39c44754ced0313fb9c68a14a49cda94d3ab3d48",
             "shasum": "",
             "mirrors": [
                 {
@@ -832,7 +832,7 @@
             "ext-json": "*",
             "php": ">=7.1.0"
         },
-        "time": "2019-10-25T06:38:19+00:00",
+        "time": "2019-10-25T12:44:40+00:00",
         "type": "library",
         "extra": {
             "think": {

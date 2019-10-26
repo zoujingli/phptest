@@ -32,5 +32,6 @@ return [
             // 序列化机制 例如 ['serialize', 'unserialize']
             'serialize'  => [],
         ],
+        // 更多的缓存连接
     ],
 ];

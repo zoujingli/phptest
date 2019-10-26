@@ -1,8 +1,6 @@
 <?php
 
-
 namespace app\index\controller;
-
 
 use think\admin\Controller;
 
@@ -10,7 +8,10 @@ class Index extends Controller
 {
     public function index()
     {
-        echo app()->getNamespace();
+//        $list = NodeExtend::getMethods();
+//        dump($list);
+//        echo app()->request();
+        //dump(app()->request);
         echo '\\';
         echo app()->request->controller();
         echo '\\';
