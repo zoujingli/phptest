@@ -25,7 +25,7 @@ use think\admin\Controller;
 class Config extends Controller
 {
     /**
-     * 默认数据模型
+     * 绑定数据表
      * @var string
      */
     protected $table = 'SystemConfig';

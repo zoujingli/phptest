@@ -40,9 +40,14 @@ class Login extends Controller
                 $this->redirect('@admin');
             } else {
                 $this->title = '系统登录';
+                $this->loginskey = $this->app->session->get('loginskey');
+                if (empty($this->loginskey)) {
+                    $this->loginskey = uniqid() . rand(1000, 9999);
+                    $this->app->session->set('loginskey', $this->loginskey);
+                }
                 $this->domain = $this->request->host(true);
-                if (!($this->loginskey = session('loginskey'))) session('loginskey', $this->loginskey = uniqid() . rand(1000, 9999));
-                $this->devmode = in_array($this->domain, ['127.0.0.1', 'localhost']) || is_numeric(stripos($this->domain, 'thinkadmin.top'));
+                $this->devmode = in_array($this->domain, ['127.0.0.1', 'localhost']);
+                $this->devmode = $this->devmode ?: is_numeric(stripos($this->domain, 'thinkadmin.top'));
                 $this->captcha = CaptchaExtend::instance();
                 $this->fetch();
             }
@@ -56,6 +61,7 @@ class Login extends Controller
             // 用户信息验证
             $map = ['username' => $data['username'], 'is_deleted' => '0'];
             $user = Db::name('SystemUser')->where($map)->order('id desc')->find();
+            dump($user);
             if (empty($user)) {
                 $this->error('登录账号或密码错误，请重新输入!');
             }
@@ -70,7 +76,7 @@ class Login extends Controller
                 'login_ip'  => $this->request->ip(),
                 'login_num' => Db::raw('login_num+1'),
             ]);
-            session('admin_user', $user);
+            $this->app->session->set('admin_user', $user);
             // NodeService::applyUserAuth(true);
             // sysoplog('系统管理', '用户登录系统成功');
             $this->success('登录成功', url('@admin'));
@@ -82,8 +88,8 @@ class Login extends Controller
      */
     public function out()
     {
-        \think\facade\Session::clear();
-        \think\facade\Session::destroy();
+        $this->app->session->clear();
+        $this->app->session->destroy();
         $this->success('退出登录成功!', url('@admin/login'));
     }
 
