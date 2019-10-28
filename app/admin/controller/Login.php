@@ -15,10 +15,9 @@
 
 namespace app\admin\controller;
 
-use app\admin\service\NodeService;
+use app\admin\service\AuthService;
 use think\admin\Controller;
 use think\admin\extend\CaptchaExtend;
-use think\facade\Db;
 
 /**
  * 用户登录管理
@@ -36,8 +35,8 @@ class Login extends Controller
     public function index()
     {
         if ($this->request->isGet()) {
-            if (NodeService::islogin()) {
-                $this->redirect('@admin');
+            if (AuthService::isLogin()) {
+                $this->redirect(url('@admin')->suffix(false)->build());
             } else {
                 $this->title = '系统登录';
                 $this->domain = $this->request->host(true);
@@ -55,7 +54,7 @@ class Login extends Controller
             }
             // 用户信息验证
             $map = ['username' => $data['username'], 'is_deleted' => '0'];
-            $user = Db::name('SystemUser')->where($map)->order('id desc')->find();
+            $user = $this->app->db->name('SystemUser')->where($map)->order('id desc')->find();
             if (empty($user)) {
                 $this->error('登录账号或密码错误，请重新输入!');
             }
@@ -65,15 +64,13 @@ class Login extends Controller
             if (empty($user['status'])) {
                 $this->error('账号已经被禁用，请联系管理员!');
             }
-            Db::name('SystemUser')->where(['id' => $user['id']])->update([
-                'login_at'  => Db::raw('now()'),
+            $this->app->db->name('SystemUser')->where(['id' => $user['id']])->update([
                 'login_ip'  => $this->request->ip(),
-                'login_num' => Db::raw('login_num+1'),
+                'login_at'  => $this->app->db->raw('now()'),
+                'login_num' => $this->app->db->raw('login_num+1'),
             ]);
-            $this->app->session->set('admin_user', $user);
-            // NodeService::applyUserAuth(true);
-            // sysoplog('系统管理', '用户登录系统成功');
-            $this->success('登录成功', url('@admin/index')->build());
+            $this->app->session->set('user', $user);
+            $this->success('登录成功', url('@admin')->suffix(false)->build());
         }
     }
 

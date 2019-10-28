@@ -40,8 +40,8 @@
                 <input class="list-check-box" value='{$vo.id}' type='checkbox'>
             </td>
             <td class='text-left nowrap'>
-                任务名称：{$vo.title}<br>
-                <span class="color-desc">任务指令：{$vo.preload}</span>
+                任务名称：{$vo.title|default=''}<br>
+                <span class="color-desc">任务指令：{$vo.command|default=''}</span>
             </td>
             <td class='text-left nowrap'>
                 创建时间：{$vo.create_at|format_datetime} / {$vo.time|format_datetime}<br>

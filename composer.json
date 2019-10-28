@@ -26,8 +26,7 @@
   },
   "autoload": {
     "psr-4": {
-      "app\\": "app",
-      "\\": "extend"
+      "app\\": "app"
     }
   },
   "scripts": {
@@ -35,9 +34,6 @@
       "@php think service:discover",
       "@php think vendor:publish"
     ]
-  },
-  "config": {
-    "preferred-install": "dist"
   },
   "repositories": {
     "packagist": {

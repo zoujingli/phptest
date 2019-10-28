@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f
+class ComposerStaticInit9fb18c098b34400f42f138dd892b1d48
 {
     public static $files = array (
         '9b552a3cc426e3287cc811caefa3cf53' => __DIR__ . '/..' . '/topthink/think-helper/src/helper.php',
@@ -23,10 +23,6 @@ class ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f
         'a' => 
         array (
             'app\\' => 4,
-        ),
-        '\\' => 
-        array (
-            '\\' => 1,
         ),
         'P' => 
         array (
@@ -69,10 +65,6 @@ class ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f
         'app\\' => 
         array (
             0 => __DIR__ . '/../..' . '/app',
-        ),
-        '\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/extend',
         ),
         'Psr\\SimpleCache\\' => 
         array (
@@ -201,11 +193,10 @@ class ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f
         'app\\admin\\controller\\Oplog' => __DIR__ . '/../..' . '/app/admin/controller/Oplog.php',
         'app\\admin\\controller\\Queue' => __DIR__ . '/../..' . '/app/admin/controller/Queue.php',
         'app\\admin\\controller\\User' => __DIR__ . '/../..' . '/app/admin/controller/User.php',
+        'app\\admin\\service\\AuthService' => __DIR__ . '/../..' . '/app/admin/service/AuthService.php',
         'app\\admin\\service\\NodeService' => __DIR__ . '/../..' . '/app/admin/service/NodeService.php',
         'app\\admin\\service\\OplogService' => __DIR__ . '/../..' . '/app/admin/service/OplogService.php',
         'app\\index\\controller\\Index' => __DIR__ . '/../..' . '/app/index/controller/Index.php',
-        'app\\index\\controller\\MyApp' => __DIR__ . '/../..' . '/app/index/controller/MyApp.php',
-        'app\\index\\controller\\test\\MyTest' => __DIR__ . '/../..' . '/app/index/controller/test/MyTest.php',
         'think\\App' => __DIR__ . '/..' . '/topthink/framework/src/think/App.php',
         'think\\Cache' => __DIR__ . '/..' . '/topthink/framework/src/think/Cache.php',
         'think\\Collection' => __DIR__ . '/..' . '/topthink/think-helper/src/Collection.php',
@@ -247,7 +238,6 @@ class ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f
         'think\\admin\\extend\\DataExtend' => __DIR__ . '/..' . '/zoujingli/think-library/src/extend/DataExtend.php',
         'think\\admin\\extend\\ExpressExtend' => __DIR__ . '/..' . '/zoujingli/think-library/src/extend/ExpressExtend.php',
         'think\\admin\\extend\\HttpExtend' => __DIR__ . '/..' . '/zoujingli/think-library/src/extend/HttpExtend.php',
-        'think\\admin\\extend\\NodeExtend' => __DIR__ . '/..' . '/zoujingli/think-library/src/extend/NodeExtend.php',
         'think\\admin\\extend\\ProcessExtend' => __DIR__ . '/..' . '/zoujingli/think-library/src/extend/ProcessExtend.php',
         'think\\admin\\helper\\CsrfHelper' => __DIR__ . '/..' . '/zoujingli/think-library/src/helper/CsrfHelper.php',
         'think\\admin\\helper\\DeleteHelper' => __DIR__ . '/..' . '/zoujingli/think-library/src/helper/DeleteHelper.php',
@@ -472,9 +462,9 @@ class ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit0aecf94027ebd8bee52ea55b4fda893f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit9fb18c098b34400f42f138dd892b1d48::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit9fb18c098b34400f42f138dd892b1d48::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit9fb18c098b34400f42f138dd892b1d48::$classMap;
 
         }, null, ClassLoader::class);
     }

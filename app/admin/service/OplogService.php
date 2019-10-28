@@ -36,7 +36,7 @@ class OplogService
         return Db::name('SystemOplog')->insert([
             'node'     => NodeExtend::current(), 'action' => $action, 'content' => $content,
             'geoip'    => PHP_SAPI === 'cli' ? '127.0.0.1' : app()->request->ip(),
-            'username' => PHP_SAPI === 'cli' ? 'cli' : (string)session('admin_user.username'),
+            'username' => PHP_SAPI === 'cli' ? 'cli' : (string)session('user.username'),
         ]);
     }
 
