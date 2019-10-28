@@ -34,18 +34,18 @@ class Login extends Controller
      */
     public function index()
     {
-        if ($this->request->isGet()) {
+        if ($this->app->request->isGet()) {
             if (AuthService::isLogin()) {
                 $this->redirect(url('@admin')->suffix(false)->build());
             } else {
                 $this->title = '系统登录';
-                $this->domain = $this->request->host(true);
+                $this->domain = $this->app->request->host(true);
                 $this->devmode = in_array($this->domain, ['127.0.0.1', 'localhost']);
                 $this->devmode = $this->devmode ?: is_numeric(stripos($this->domain, 'thinkadmin.top'));
                 $this->captcha = CaptchaExtend::instance();
                 $this->fetch();
             }
-        } elseif ($this->request->isPost()) {
+        } elseif ($this->app->request->isPost()) {
             $data = ['username' => input('username'), 'password' => input('password')];
             if (empty($data['username'])) $this->error('登录账号不能为空!');
             if (empty($data['password'])) $this->error('登录密码不能为空!');
@@ -65,7 +65,7 @@ class Login extends Controller
                 $this->error('账号已经被禁用，请联系管理员!');
             }
             $this->app->db->name('SystemUser')->where(['id' => $user['id']])->update([
-                'login_ip'  => $this->request->ip(),
+                'login_ip'  => $this->app->request->ip(),
                 'login_at'  => $this->app->db->raw('now()'),
                 'login_num' => $this->app->db->raw('login_num+1'),
             ]);
