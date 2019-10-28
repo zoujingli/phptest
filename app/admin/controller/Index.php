@@ -21,7 +21,9 @@ class Index extends Controller
 {
     public function index()
     {
-        return __METHOD__;
+        $this->title = '系统管理后台';
+        $this->menus = [];
+        $this->fetch();
     }
 
 }
