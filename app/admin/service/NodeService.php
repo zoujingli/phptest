@@ -15,6 +15,8 @@
 
 namespace app\admin\service;
 
+use think\admin\extend\TokenExtend;
+
 /**
  * 应用节点扫描器扩展
  * Class NodeExtend
@@ -32,22 +34,12 @@ class NodeService
      */
     public static function checkAuth($node = '')
     {
-        if (app()->session->get('user') === 'admin') {
+        if (app()->session->get('user.username') === 'admin') {
             return true;
         }
-        if (empty($node)) {
-            $node = self::getCurrent();
-        }
-        $attrs = explode('/', $node);
-        if (count($attrs) === 1) {
-            $node = self::getCurrent('controller') . "/{$node}";
-        } else {
-            $attrs[1] = self::classTolower($attrs[1]);
-            $node = join('/', $attrs);
-        }
-        $nodes = self::getMethods();
-        if (empty($nodes[$node]['isauth'])) return true;
-        return in_array($node, app()->session->get('user.nodes', []));
+        $real = TokenExtend::fullnode($node);
+        if (empty(self::getMethods()[$real]['isauth'])) return true;
+        return in_array($real, app()->session->get('user.nodes', []));
     }
 
     /**
@@ -74,7 +66,7 @@ class NodeService
                 foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($method->getName(), $ignores)) continue;
                     list($prefix, $suffix) = explode('\\controller\\', $refection->getName());
-                    $space = strtr("{$prefix}/" . self::classTolower($suffix) . "/{$method->getName()}", '\\', '/');
+                    $space = strtr("{$prefix}/" . TokenExtend::nameTolower($suffix) . "/{$method->getName()}", '\\', '/');
                     $comment = strtr($method->getDocComment(), "\n", ' ');
                     $data[substr($space, stripos($space, '/') + 1)][$method->getName()] = [
                         'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
@@ -87,37 +79,6 @@ class NodeService
         }
         app()->cache->set('system_auth_node', $data);
         return $data;
-    }
-
-    /**
-     * 获取当前节点名称
-     * @param string $type 获取类型
-     * @return string
-     */
-    public static function getCurrent($type = '')
-    {
-        $app = app();
-        $classname = self::classTolower($app->request->controller());
-        if ($type === 'controller') {
-            $namespace = "{$app->getNamespace()}\\{$classname}";
-        } else {
-            $namespace = "{$app->getNamespace()}\\{$classname}\\{$app->request->action()}";
-        }
-        return strtr(substr($namespace, stripos($namespace, '\\') + 1), '\\', '/');
-    }
-
-    /**
-     * 驼峰转下划线规则
-     * @param string $name
-     * @return string
-     */
-    public static function classTolower($name)
-    {
-        $dots = [];
-        foreach (explode('.', $name) as $dot) {
-            $dots[] = trim(preg_replace("/[A-Z]/", "_\\0", $dot), "_");
-        }
-        return strtolower(join('.', $dots));
     }
 
     /**

@@ -16,6 +16,7 @@
 namespace app\admin\service;
 
 use think\admin\extend\NodeExtend;
+use think\admin\extend\TokenExtend;
 use think\Db;
 
 /**
@@ -33,8 +34,9 @@ class OplogService
      */
     public static function write($action = '行为', $content = "内容描述")
     {
-        return Db::name('SystemOplog')->insert([
-            'node'     => NodeExtend::current(), 'action' => $action, 'content' => $content,
+        return app()->db->name('SystemOplog')->insert([
+            'node'     => TokenExtend::getCurrent(),
+            'action'   => $action, 'content' => $content,
             'geoip'    => PHP_SAPI === 'cli' ? '127.0.0.1' : app()->request->ip(),
             'username' => PHP_SAPI === 'cli' ? 'cli' : (string)session('user.username'),
         ]);
@@ -47,6 +49,6 @@ class OplogService
      */
     public static function clear()
     {
-        return Db::name('SystemOplog')->where('1=1')->delete() !== false;
+        return app()->db->name('SystemOplog')->where('1=1')->delete() !== false;
     }
 }

@@ -7,42 +7,42 @@
         <div class="layui-form-item layui-inline">
             <label class="layui-form-label">操作账号</label>
             <div class="layui-input-inline">
-                <input name="username" value="{$Think.get.username|default=''}" placeholder="请输入操作账号" class="layui-input">
+                <input name="username" value="{:input('get.username')}" placeholder="请输入操作账号" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item layui-inline">
             <label class="layui-form-label">操作节点</label>
             <div class="layui-input-inline">
-                <input name="node" value="{$Think.get.node|default=''}" placeholder="请输入操作节点" class="layui-input">
+                <input name="node" value="{:input('get.node')}" placeholder="请输入操作节点" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item layui-inline">
             <label class="layui-form-label">操作行为</label>
             <div class="layui-input-inline">
-                <input name="action" value="{$Think.get.action|default=''}" placeholder="请输入操作行为" class="layui-input">
+                <input name="action" value="{:input('get.action')}" placeholder="请输入操作行为" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item layui-inline">
             <label class="layui-form-label">操作描述</label>
             <div class="layui-input-inline">
-                <input name="content" value="{$Think.get.content|default=''}" placeholder="请输入操作内容" class="layui-input">
+                <input name="content" value="{:input('get.content')}" placeholder="请输入操作内容" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item layui-inline">
             <label class="layui-form-label">位置地址</label>
             <div class="layui-input-inline">
-                <input name="geoip" value="{$Think.get.geoip|default=''}" placeholder="请输入位置地址" class="layui-input">
+                <input name="geoip" value="{:input('get.geoip')}" placeholder="请输入位置地址" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item layui-inline">
             <label class="layui-form-label">操作时间</label>
             <div class="layui-input-inline">
-                <input data-date-range name="create_at" value="{$Think.get.create_at|default=''}" placeholder="请选择操作时间" class="layui-input">
+                <input data-date-range name="create_at" value="{:input('get.create_at')}" placeholder="请选择操作时间" class="layui-input">
             </div>
         </div>
 

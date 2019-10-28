@@ -148,6 +148,7 @@ return array(
     'think\\admin\\extend\\ExpressExtend' => $vendorDir . '/zoujingli/think-library/src/extend/ExpressExtend.php',
     'think\\admin\\extend\\HttpExtend' => $vendorDir . '/zoujingli/think-library/src/extend/HttpExtend.php',
     'think\\admin\\extend\\ProcessExtend' => $vendorDir . '/zoujingli/think-library/src/extend/ProcessExtend.php',
+    'think\\admin\\extend\\TokenExtend' => $vendorDir . '/zoujingli/think-library/src/extend/TokenExtend.php',
     'think\\admin\\helper\\CsrfHelper' => $vendorDir . '/zoujingli/think-library/src/helper/CsrfHelper.php',
     'think\\admin\\helper\\DeleteHelper' => $vendorDir . '/zoujingli/think-library/src/helper/DeleteHelper.php',
     'think\\admin\\helper\\FormHelper' => $vendorDir . '/zoujingli/think-library/src/helper/FormHelper.php',
