@@ -68,7 +68,7 @@ class NodeService
                     list($prefix, $suffix) = explode('\\controller\\', $refection->getName());
                     $space = strtr("{$prefix}/" . TokenExtend::nameTolower($suffix) . "/{$method->getName()}", '\\', '/');
                     $comment = strtr($method->getDocComment(), "\n", ' ');
-                    $data[substr($space, stripos($space, '/') + 1)][$method->getName()] = [
+                    $data[substr($space, stripos($space, '/') + 1)] = [
                         'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
                         'isauth' => intval(preg_match('/@auth\s*true/i', $comment)),
                         'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),

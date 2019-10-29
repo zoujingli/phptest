@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "90517086f1c8c259ba16905ae65fbcf7",
+    "content-hash": "c319f2e71cbe7fcaf9624de2d95b119b",
     "packages": [
         {
             "name": "league/flysystem",
@@ -545,16 +545,16 @@
         },
         {
             "name": "topthink/think-multi-app",
-            "version": "v1.0.10",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/top-think/think-multi-app.git",
-                "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83"
+                "reference": "215f4a6bb88e53ad41b448c61957336eb55ce6f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/dec89d453ee7138e69211dd21a897d470d4a4e83",
-                "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83",
+                "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/215f4a6bb88e53ad41b448c61957336eb55ce6f9",
+                "reference": "215f4a6bb88e53ad41b448c61957336eb55ce6f9",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -591,7 +591,7 @@
                 }
             ],
             "description": "thinkphp6 multi app support",
-            "time": "2019-10-23T09:52:39+00:00"
+            "time": "2019-10-29T06:34:59+00:00"
         },
         {
             "name": "topthink/think-orm",
@@ -736,12 +736,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zoujingli/ThinkLibrary.git",
-                "reference": "5f4654f7e8ef341d8a0bf48756d3db824d3a05da"
+                "reference": "1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/5f4654f7e8ef341d8a0bf48756d3db824d3a05da",
-                "reference": "5f4654f7e8ef341d8a0bf48756d3db824d3a05da",
+                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc",
+                "reference": "1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -785,13 +785,14 @@
             ],
             "description": "ThinkPHP v6.0 Development Library",
             "homepage": "http://framework.thinkadmin.top",
-            "time": "2019-10-29T05:24:55+00:00"
+            "time": "2019-10-29T07:32:40+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "topthink/think-multi-app": 20,
         "zoujingli/think-library": 20
     },
     "prefer-stable": false,

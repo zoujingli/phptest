@@ -15,11 +15,9 @@
 
 namespace app\admin\controller;
 
-
 use app\admin\service\AuthService;
 use think\admin\Controller;
 use think\admin\extend\DataExtend;
-use think\Db;
 
 class Menu extends Controller
 {
@@ -53,9 +51,9 @@ class Menu extends Controller
             if ($vo['url'] !== '#') {
                 $vo['url'] = url($vo['url']) . (empty($vo['params']) ? '' : "?{$vo['params']}");
             }
-            $vo['ids'] = join(',', Data::getArrSubIds($data, $vo['id']));
+            $vo['ids'] = join(',', DataExtend::getArrSubIds($data, $vo['id']));
         }
-        $data = Data::arr2table($data);
+        $data = DataExtend::arr2table($data);
     }
 
     /**
@@ -95,7 +93,7 @@ class Menu extends Controller
     protected function _form_filter(&$vo)
     {
         if ($this->request->isGet()) {
-            $menus = Db::name($this->table)->where(['status' => '1'])->order('sort desc,id asc')->select()->toArray();
+            $menus = $this->app->db->name($this->table)->where(['status' => '1'])->order('sort desc,id asc')->select()->toArray();
             $menus[] = ['title' => '顶级菜单', 'id' => '0', 'pid' => '-1'];
             foreach ($this->menus = DataExtend::arr2table($menus) as $key => &$menu) {
                 if (substr_count($menu['path'], '-') > 3) unset($this->menus[$key]); # 移除三级以下的菜单

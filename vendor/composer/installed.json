@@ -556,17 +556,17 @@
     },
     {
         "name": "topthink/think-multi-app",
-        "version": "v1.0.10",
-        "version_normalized": "1.0.10.0",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/think-multi-app.git",
-            "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83"
+            "reference": "215f4a6bb88e53ad41b448c61957336eb55ce6f9"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/dec89d453ee7138e69211dd21a897d470d4a4e83",
-            "reference": "dec89d453ee7138e69211dd21a897d470d4a4e83",
+            "url": "https://api.github.com/repos/top-think/think-multi-app/zipball/215f4a6bb88e53ad41b448c61957336eb55ce6f9",
+            "reference": "215f4a6bb88e53ad41b448c61957336eb55ce6f9",
             "shasum": "",
             "mirrors": [
                 {
@@ -579,7 +579,7 @@
             "php": ">=7.1.0",
             "topthink/framework": "^6.0.0"
         },
-        "time": "2019-10-23T09:52:39+00:00",
+        "time": "2019-10-29T06:34:59+00:00",
         "type": "library",
         "extra": {
             "think": {
@@ -756,12 +756,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/zoujingli/ThinkLibrary.git",
-            "reference": "5f4654f7e8ef341d8a0bf48756d3db824d3a05da"
+            "reference": "1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/5f4654f7e8ef341d8a0bf48756d3db824d3a05da",
-            "reference": "5f4654f7e8ef341d8a0bf48756d3db824d3a05da",
+            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc",
+            "reference": "1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc",
             "shasum": "",
             "mirrors": [
                 {
@@ -777,7 +777,7 @@
             "ext-json": "*",
             "topthink/framework": "^6.0"
         },
-        "time": "2019-10-29T05:24:55+00:00",
+        "time": "2019-10-29T07:32:40+00:00",
         "type": "library",
         "extra": {
             "think": {
