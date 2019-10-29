@@ -50,7 +50,7 @@ class Config extends Controller
      */
     public function config()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         if ($this->request->isGet()) {
             $this->title = '系统参数配置';
             $this->fetch();
@@ -70,7 +70,7 @@ class Config extends Controller
      */
     public function storage()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         if ($this->request->isGet()) {
             $this->type = input('type', 'local');
             $this->fetch("storage-{$this->type}");

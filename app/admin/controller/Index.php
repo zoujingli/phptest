@@ -40,7 +40,7 @@ class Index extends Controller
         AuthService::applyUserAuth(true);
         $this->menus = AuthService::getMenuTree();
         if (empty($this->menus) && !AuthService::isLogin()) {
-            $this->redirect(url('@admin/login')->suffix(false)->build());
+            $this->redirect(url('@admin/login'));
         } else {
             $this->fetch();
         }
@@ -68,7 +68,7 @@ class Index extends Controller
         if (!AuthService::isLogin()) {
             $this->error('需要登录才能操作哦！');
         }
-        $this->_csrf();
+        $this->_applyFormToken()();
         if (intval($this->app->session->get('user.id')) === intval($id)) {
             $this->_form('SystemUser', 'admin@user/form', 'id', [], ['id' => $id]);
         } else {
@@ -88,7 +88,7 @@ class Index extends Controller
         if (!AuthService::isLogin()) {
             $this->error('需要登录才能操作哦！');
         }
-        $this->_csrf();
+        $this->_applyFormToken()();
         if (intval($this->app->session->get('user.id')) !== intval($id)) {
             $this->error('只能修改当前用户的密码！');
         }

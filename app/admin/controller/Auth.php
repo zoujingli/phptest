@@ -55,7 +55,7 @@ class Auth extends Controller
      */
     public function add()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_form($this->table, 'form');
     }
 
@@ -68,7 +68,7 @@ class Auth extends Controller
      */
     public function edit()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_form($this->table, 'form');
     }
 
@@ -79,7 +79,7 @@ class Auth extends Controller
      */
     public function state()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_save($this->table, ['status' => input('status')]);
     }
 
@@ -90,7 +90,7 @@ class Auth extends Controller
      */
     public function remove()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_delete($this->table);
     }
 

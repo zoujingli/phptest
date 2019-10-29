@@ -53,7 +53,7 @@ class User extends Controller
      */
     public function add()
     {
-        $this->_csrf();
+        $this->_applyFormToken();
         $this->_form($this->table, 'form');
     }
 
@@ -66,7 +66,7 @@ class User extends Controller
      */
     public function edit()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_form($this->table, 'form');
     }
 
@@ -79,7 +79,7 @@ class User extends Controller
      */
     public function pass()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         if ($this->request->isGet()) {
             $this->verify = false;
             $this->_form($this->table, 'pass');
@@ -131,7 +131,7 @@ class User extends Controller
         if (in_array('10000', explode(',', $this->request->post('id')))) {
             $this->error('系统超级账号禁止操作！');
         }
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_save($this->table, ['status' => '0']);
     }
 
@@ -142,7 +142,7 @@ class User extends Controller
      */
     public function resume()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_save($this->table, ['status' => '1']);
     }
 
@@ -156,7 +156,7 @@ class User extends Controller
         if (in_array('10000', explode(',', $this->request->post('id')))) {
             $this->error('系统超级账号禁止删除！');
         }
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_delete($this->table);
     }
 }

@@ -84,7 +84,7 @@ class Oplog extends Controller
      */
     public function remove()
     {
-        $this->_csrf();
+        $this->_applyFormToken()();
         $this->_delete($this->table);
     }
 }
