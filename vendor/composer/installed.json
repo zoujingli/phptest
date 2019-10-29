@@ -750,18 +750,67 @@
         "description": "thinkphp template driver"
     },
     {
+        "name": "zoujingli/ip2region",
+        "version": "v1.0.6",
+        "version_normalized": "1.0.6.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/zoujingli/ip2region.git",
+            "reference": "054b6580f4e1f441ca700939fbddd6c0b8488f7a"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/zoujingli/ip2region/zipball/054b6580f4e1f441ca700939fbddd6c0b8488f7a",
+            "reference": "054b6580f4e1f441ca700939fbddd6c0b8488f7a",
+            "shasum": "",
+            "mirrors": [
+                {
+                    "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                    "preferred": true
+                }
+            ]
+        },
+        "require": {
+            "php": ">=5.3"
+        },
+        "time": "2019-05-18T06:44:34+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "Ip2Region.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Anyon",
+                "email": "zoujingli@qq.com",
+                "homepage": "http://ctolog.com"
+            }
+        ],
+        "description": "Ip2Region for PHP",
+        "homepage": "https://github.com/zoujingli/Ip2Region",
+        "keywords": [
+            "Ip2Region"
+        ]
+    },
+    {
         "name": "zoujingli/think-library",
         "version": "v6.0.x-dev",
         "version_normalized": "6.0.9999999.9999999-dev",
         "source": {
             "type": "git",
             "url": "https://github.com/zoujingli/ThinkLibrary.git",
-            "reference": "1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc"
+            "reference": "27a0d90789a3e2b29930e9c8b0ae87b89cef21a6"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc",
-            "reference": "1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc",
+            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/27a0d90789a3e2b29930e9c8b0ae87b89cef21a6",
+            "reference": "27a0d90789a3e2b29930e9c8b0ae87b89cef21a6",
             "shasum": "",
             "mirrors": [
                 {
@@ -777,7 +826,7 @@
             "ext-json": "*",
             "topthink/framework": "^6.0"
         },
-        "time": "2019-10-29T07:32:40+00:00",
+        "time": "2019-10-29T08:35:04+00:00",
         "type": "library",
         "extra": {
             "think": {

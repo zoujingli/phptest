@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c319f2e71cbe7fcaf9624de2d95b119b",
+    "content-hash": "862b2eff76af7485412840b63077987f",
     "packages": [
         {
             "name": "league/flysystem",
@@ -731,17 +731,64 @@
             "time": "2019-10-07T12:23:10+00:00"
         },
         {
+            "name": "zoujingli/ip2region",
+            "version": "v1.0.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zoujingli/ip2region.git",
+                "reference": "054b6580f4e1f441ca700939fbddd6c0b8488f7a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zoujingli/ip2region/zipball/054b6580f4e1f441ca700939fbddd6c0b8488f7a",
+                "reference": "054b6580f4e1f441ca700939fbddd6c0b8488f7a",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "Ip2Region.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Anyon",
+                    "email": "zoujingli@qq.com",
+                    "homepage": "http://ctolog.com"
+                }
+            ],
+            "description": "Ip2Region for PHP",
+            "homepage": "https://github.com/zoujingli/Ip2Region",
+            "keywords": [
+                "Ip2Region"
+            ],
+            "time": "2019-05-18T06:44:34+00:00"
+        },
+        {
             "name": "zoujingli/think-library",
             "version": "v6.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zoujingli/ThinkLibrary.git",
-                "reference": "1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc"
+                "reference": "27a0d90789a3e2b29930e9c8b0ae87b89cef21a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc",
-                "reference": "1c4fd2978b4154a88317e5c25ffd5f0ea33e18cc",
+                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/27a0d90789a3e2b29930e9c8b0ae87b89cef21a6",
+                "reference": "27a0d90789a3e2b29930e9c8b0ae87b89cef21a6",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -785,7 +832,7 @@
             ],
             "description": "ThinkPHP v6.0 Development Library",
             "homepage": "http://framework.thinkadmin.top",
-            "time": "2019-10-29T07:32:40+00:00"
+            "time": "2019-10-29T08:35:04+00:00"
         }
     ],
     "packages-dev": [],
