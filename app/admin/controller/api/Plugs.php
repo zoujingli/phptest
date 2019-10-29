@@ -16,10 +16,8 @@
 namespace app\admin\controller\api;
 
 use app\admin\service\AuthService;
-use app\admin\service\NodeService;
 use think\admin\Controller;
 use think\admin\Storage;
-use think\admin\storage\QiniuStorage;
 
 /**
  * 后台插件管理
@@ -105,7 +103,7 @@ class Plugs extends Controller
     {
         if ($this->getUploadType() === 'qiniu') {
             $file = Storage::instance('qiniu');
-            return ['url' => $file->upload(true), 'token' => $file->getuploadTOken(), 'uptype' => $this->getUploadType()];
+            return ['url' => $file->upload(true), 'token' => $file->buildUploadToken(), 'uptype' => $this->getUploadType()];
         } else {
             return ['url' => '?s=admin/api.plugs/upload', 'token' => uniqid('local_upload_'), 'uptype' => $this->getUploadType()];
         }
