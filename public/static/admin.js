@@ -181,10 +181,10 @@ $(function () {
         // 异步加载的数据
         this.load = function (url, data, method, callback, loading, tips, time, headers) {
             var index = loading !== false ? $.msg.loading(tips) : 0;
-            if (typeof data === 'object' && typeof data['_csrf_'] === 'string') {
+            if (typeof data === 'object' && typeof data['_token_'] === 'string') {
                 headers = headers || {};
-                headers['User-Token-Csrf'] = data['_csrf_'];
-                delete data['_csrf_'];
+                headers['User-Form-Token'] = data['_token_'];
+                delete data['_token_'];
             }
             $.ajax({
                 data: data || {}, type: method || 'GET', url: $.menu.parseUri(url), beforeSend: function (xhr) {
@@ -631,7 +631,7 @@ $(function () {
             if (rules[i].length < 2) return $.msg.tips('异常的数据操作规则，请修改规则！');
             data[rules[i].split('#')[0]] = rules[i].split('#')[1];
         }
-        data['_csrf_'] = $this.attr('data-token') || $this.attr('data-csrf') || '--';
+        data['_token_'] = $this.attr('data-token') || $this.attr('data-csrf') || '--';
         var load = loading !== 'false', tips = typeof loading === 'string' ? loading : undefined;
         if (!$this.attr('data-confirm')) $.form.load(action, data, method, false, load, tips, time);
         else $.msg.confirm($this.attr('data-confirm'), function () {
@@ -654,7 +654,7 @@ $(function () {
             $this.css('border', (ret && ret.code) ? '1px solid #e6e6e6' : '1px solid red');
             return false;
         };
-        data['_csrf_'] = $this.attr('data-token') || $this.attr('data-csrf') || '--';
+        data['_token_'] = $this.attr('data-token') || $this.attr('data-csrf') || '--';
         if (!confirm) return $.form.load(action, data, method, that.callback, load, tips, time);
         $.msg.confirm(confirm, function () {
             $.form.load(action, data, method, that.callback, load, tips, time);
