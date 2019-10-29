@@ -13,7 +13,7 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 return [
-    // 模板引擎类型使用Think
+    // 模板引擎类型使用 Think
     'type'               => 'Think',
     // 默认模板渲染规则 1 解析为小写+下划线 2 全部转换小写 3 保持操作方法
     'auto_rule'          => 1,
@@ -23,6 +23,8 @@ return [
     'view_suffix'        => 'html',
     // 模板文件名分隔符
     'view_depr'          => DIRECTORY_SEPARATOR,
+    // 模板缓存配置
+    'tpl_cache'          => false,
     // 模板引擎普通标签开始标记
     'tpl_begin'          => '{',
     // 模板引擎普通标签结束标记
