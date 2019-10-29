@@ -67,13 +67,13 @@ class Queue extends Controller
     }
 
     /**
-     * (WIN)创建任务监听进程
+     * (WIN)停止任务监听进程
      * @auth true
      */
-    public function processStart()
+    public function stop()
     {
         try {
-            $this->success(nl2br($this->app->console->call('xtask:start')->fetch()));
+            $this->success(nl2br($this->app->console->call('xtask:stop')->fetch()));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $e) {
@@ -82,13 +82,13 @@ class Queue extends Controller
     }
 
     /**
-     * (WIN)停止任务监听进程
+     * (WIN)创建任务监听进程
      * @auth true
      */
-    public function processStop()
+    public function start()
     {
         try {
-            $this->success(nl2br($this->app->console->call('xtask:stop')->fetch()));
+            $this->success(nl2br($this->app->console->call('xtask:start')->fetch()));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $e) {
