@@ -12,7 +12,6 @@
 // | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
-
 return [
     // 模板引擎类型使用Think
     'type'               => 'Think',

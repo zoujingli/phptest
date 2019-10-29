@@ -102,6 +102,8 @@ return array(
     'app\\admin\\controller\\Oplog' => $baseDir . '/app/admin/controller/Oplog.php',
     'app\\admin\\controller\\Queue' => $baseDir . '/app/admin/controller/Queue.php',
     'app\\admin\\controller\\User' => $baseDir . '/app/admin/controller/User.php',
+    'app\\admin\\controller\\api\\Plugs' => $baseDir . '/app/admin/controller/api/Plugs.php',
+    'app\\admin\\controller\\api\\Update' => $baseDir . '/app/admin/controller/api/Update.php',
     'app\\admin\\service\\AuthService' => $baseDir . '/app/admin/service/AuthService.php',
     'app\\admin\\service\\NodeService' => $baseDir . '/app/admin/service/NodeService.php',
     'app\\admin\\service\\OplogService' => $baseDir . '/app/admin/service/OplogService.php',
