@@ -1,10 +1,11 @@
 <?php
 
-use app\admin\service\NodeService;
+
+use app\admin\service\AuthService;
 
 function auth($node)
 {
-    return NodeService::checkAuth($node);
+    return AuthService::checkAuth($node);
 }
 
 

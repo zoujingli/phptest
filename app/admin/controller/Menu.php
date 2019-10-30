@@ -65,7 +65,7 @@ class Menu extends Controller
      */
     public function add()
     {
-        $this->_applyFormToken()();
+        $this->_applyFormToken();
         $this->_form($this->table, 'form');
     }
 
@@ -78,7 +78,7 @@ class Menu extends Controller
      */
     public function edit()
     {
-        $this->_applyFormToken()();
+        $this->_applyFormToken();
         $this->_form($this->table, 'form');
     }
 
@@ -117,7 +117,7 @@ class Menu extends Controller
      */
     public function resume()
     {
-        $this->_applyFormToken()();
+        $this->_applyFormToken();
         $this->_save($this->table, ['status' => '1']);
     }
 
@@ -128,7 +128,7 @@ class Menu extends Controller
      */
     public function forbid()
     {
-        $this->_applyFormToken()();
+        $this->_applyFormToken();
         $this->_save($this->table, ['status' => '0']);
     }
 
@@ -139,7 +139,7 @@ class Menu extends Controller
      */
     public function remove()
     {
-        $this->_applyFormToken()();
+        $this->_applyFormToken();
         $this->_delete($this->table);
     }
 }

@@ -16,6 +16,7 @@
 namespace app\admin\service;
 
 use think\admin\extend\DataExtend;
+use think\admin\extend\NodeExtend;
 use think\facade\Db;
 
 /**
@@ -32,6 +33,23 @@ class AuthService
     public static function isLogin()
     {
         return app()->session->get('user.id') ? true : false;
+    }
+
+    /**
+     * 检查指定节点授权
+     * --- 需要读取缓存或扫描所有节点
+     * @param string $node
+     * @return boolean
+     * @throws \ReflectionException
+     */
+    public static function checkAuth($node = '')
+    {
+        if (app()->session->get('user.username') === 'admin') {
+            return true;
+        }
+        $real = NodeExtend::fullnode($node);
+        if (empty(NodeExtend::getMethods()[$real]['isauth'])) return true;
+        return in_array($real, app()->session->get('user.nodes', []));
     }
 
     /**
@@ -68,7 +86,7 @@ class AuthService
     {
         static $nodes = [];
         if (count($nodes) > 0) return $nodes;
-        foreach (NodeService::getMethods() as $node => $method) if ($method['ismenu']) {
+        foreach (NodeExtend::getMethods() as $node => $method) if ($method['ismenu']) {
             $nodes[] = ['node' => $node, 'title' => $method['title']];
         }
         return $nodes;
@@ -85,7 +103,7 @@ class AuthService
     public static function getMenuTree()
     {
         $list = Db::name('SystemMenu')->where(['status' => '1'])->order('sort desc,id asc')->select()->toArray();
-        return self::buildMenuData(DataExtend::arr2tree($list), NodeService::getMethods());
+        return self::buildMenuData(DataExtend::arr2tree($list), NodeExtend::getMethods());
     }
 
     /**
@@ -113,7 +131,7 @@ class AuthService
             } else {
                 $node = join('/', array_slice(explode('/', preg_replace('/[\W]/', '/', $menu['url'])), 0, 3));
                 $menu['url'] = url($menu['url']) . (empty($menu['params']) ? '' : "?{$menu['params']}");
-                if (!NodeService::checkAuth($node)) {
+                if (!self::checkAuth($node)) {
                     unset($menus[$key]);
                 }
             }
