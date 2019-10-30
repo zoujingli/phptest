@@ -70,7 +70,7 @@ class Login extends Controller
                 'login_num' => $this->app->db->raw('login_num+1'),
             ]);
             $this->app->session->set('user', $user);
-            $this->success('登录成功', url('@admin'));
+            $this->success('登录成功', url('@admin')->build());
         }
     }
 
@@ -81,7 +81,7 @@ class Login extends Controller
     {
         $this->app->session->clear();
         $this->app->session->destroy();
-        $this->success('退出登录成功!', url('@admin/login'));
+        $this->success('退出登录成功!', url('@admin/login')->build());
     }
 
 }
