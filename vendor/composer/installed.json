@@ -751,17 +751,17 @@
     },
     {
         "name": "zoujingli/ip2region",
-        "version": "v1.0.6",
-        "version_normalized": "1.0.6.0",
+        "version": "v1.0.7",
+        "version_normalized": "1.0.7.0",
         "source": {
             "type": "git",
             "url": "https://github.com/zoujingli/ip2region.git",
-            "reference": "054b6580f4e1f441ca700939fbddd6c0b8488f7a"
+            "reference": "f898a7d90cfacd54433de4028190c336164f2ae4"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zoujingli/ip2region/zipball/054b6580f4e1f441ca700939fbddd6c0b8488f7a",
-            "reference": "054b6580f4e1f441ca700939fbddd6c0b8488f7a",
+            "url": "https://api.github.com/repos/zoujingli/ip2region/zipball/f898a7d90cfacd54433de4028190c336164f2ae4",
+            "reference": "f898a7d90cfacd54433de4028190c336164f2ae4",
             "shasum": "",
             "mirrors": [
                 {
@@ -773,7 +773,7 @@
         "require": {
             "php": ">=5.3"
         },
-        "time": "2019-05-18T06:44:34+00:00",
+        "time": "2019-10-29T09:03:57+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -805,12 +805,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/zoujingli/ThinkLibrary.git",
-            "reference": "27a0d90789a3e2b29930e9c8b0ae87b89cef21a6"
+            "reference": "704f658b7fbb652a0ab2c291b4f79a5437269816"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/27a0d90789a3e2b29930e9c8b0ae87b89cef21a6",
-            "reference": "27a0d90789a3e2b29930e9c8b0ae87b89cef21a6",
+            "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/704f658b7fbb652a0ab2c291b4f79a5437269816",
+            "reference": "704f658b7fbb652a0ab2c291b4f79a5437269816",
             "shasum": "",
             "mirrors": [
                 {
@@ -826,7 +826,7 @@
             "ext-json": "*",
             "topthink/framework": "^6.0"
         },
-        "time": "2019-10-29T08:35:04+00:00",
+        "time": "2019-10-30T02:01:02+00:00",
         "type": "library",
         "extra": {
             "think": {
