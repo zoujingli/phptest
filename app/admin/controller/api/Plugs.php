@@ -73,16 +73,16 @@ class Plugs extends Controller
         if (!($file = $this->getUploadFile()) || empty($file)) {
             return json(['uploaded' => false, 'error' => ['message' => '文件上传异常，文件可能过大或未上传']]);
         }
-        if (!in_array($file->getExtension(), explode(',', sysconf('storage.allow_exts')))) {
+        $this->extension = $file->getOriginalExtension();
+        if (!in_array($this->extension, explode(',', sysconf('storage.allow_exts')))) {
             return json(['uploaded' => false, 'error' => ['message' => '文件上传类型受限，请在后台配置']]);
         }
-        if (in_array($file->getExtension(), ['php', 'sh'])) {
+        if (in_array($this->extension, ['php', 'sh'])) {
             return json(['uploaded' => false, 'error' => ['message' => '可执行文件禁止上传到本地服务器']]);
         }
         $this->safe = boolval(input('safe'));
         $this->uptype = $this->getUploadType();
-        $this->extend = pathinfo($file->getFilename(), PATHINFO_EXTENSION);
-        $name = Storage::name($file->getPathname(), $this->extend, '', 'md5_file');
+        $name = Storage::name($file->getPathname(), $this->extension, '', 'md5_file');
         $info = Storage::instance($this->uptype)->set($name, file_get_contents($file->getRealPath()), $this->safe);
         if (is_array($info) && isset($info['url'])) {
             return json(['uploaded' => true, 'filename' => $name, 'url' => $this->safe ? $name : $info['url']]);
@@ -103,7 +103,7 @@ class Plugs extends Controller
     {
         if ($this->getUploadType() === 'qiniu') {
             $file = Storage::instance('qiniu');
-            return ['url' => $file->upload(true), 'token' => $file->buildUploadToken(), 'uptype' => $this->getUploadType()];
+            return ['url' => $file->upload(), 'token' => $file->buildUploadToken(), 'uptype' => $this->getUploadType()];
         } else {
             return ['url' => '?s=admin/api.plugs/upload', 'token' => uniqid('local_upload_'), 'uptype' => $this->getUploadType()];
         }
