@@ -44,7 +44,7 @@ class Queue extends Controller
     {
         if ($this->app->session->get('user.username') === 'admin') {
             try {
-                $this->cmd = ProcessExtend::think('xtask:start');
+                $this->command = ProcessExtend::think('xtask:start');
                 $this->message = $this->app->console->call('xtask:state')->fetch();
             } catch (\Exception $exception) {
                 $this->message = $exception->getMessage();
@@ -67,21 +67,6 @@ class Queue extends Controller
     }
 
     /**
-     * (WIN)停止任务监听进程
-     * @auth true
-     */
-    public function stop()
-    {
-        try {
-            $this->success(nl2br($this->app->console->call('xtask:stop')->fetch()));
-        } catch (HttpResponseException $exception) {
-            throw $exception;
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
-        }
-    }
-
-    /**
      * (WIN)创建任务监听进程
      * @auth true
      */
@@ -97,6 +82,22 @@ class Queue extends Controller
     }
 
     /**
+     * (WIN)停止任务监听进程
+     * @auth true
+     */
+    public function stop()
+    {
+        try {
+            $this->success(nl2br($this->app->console->call('xtask:stop')->fetch()));
+        } catch (HttpResponseException $exception) {
+            throw $exception;
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+        }
+    }
+
+
+    /**
      * 删除系统任务
      * @auth true
      * @throws \think\db\exception\DbException
@@ -105,6 +106,5 @@ class Queue extends Controller
     {
         $this->_delete($this->table);
     }
-
 
 }

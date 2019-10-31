@@ -2,13 +2,18 @@
 <fieldset class="margin-bottom-10">
     <legend>进程守护</legend>
     <div class="layui-code border-0 margin-top-0">
-        <p class="color-desc margin-top-10">当前消息队列守护进程运行状态</p>
-        {$message|raw|default='--'}
-        <p class="color-desc margin-top-10">配置定时任务来检查并启动进程（建议每分钟执行）</p>
-        {$cmd|default='--'}
+        <h4 class="color-desc margin-top-10">运行环境需要开放执行函数</h4>
+        <span class="layui-badge layui-bg-blue">pclose</span>
+        <span class="layui-badge layui-bg-blue">popen</span>
+        <span class="layui-badge layui-bg-blue">shell_exe</span>
+        <h4 class="color-desc margin-top-10">当前消息队列守护进程运行状态</h4>
+        <span class="layui-badge layui-bg-blue">{$message|raw|default='--'}</span>
+        <h4 class="color-desc margin-top-10">配置定时任务来检查并启动进程（建议每分钟执行）</h4>
+        <span class="layui-badge layui-bg-blue">{$command|default='--'}</span>
     </div>
 </fieldset>
 {/if}
+
 <fieldset>
     <legend>条件搜索</legend>
     <form class="layui-form layui-form-pane form-search" action="{:request()->url()}" onsubmit="return false" method="get" autocomplete="off">
@@ -29,11 +34,11 @@
             <div class="layui-input-inline">
                 <select name="status" class="layui-select">
                     {foreach [''=>'-- 全部状态 --','1'=>'待处理','2'=>'处理中','3'=>'处理完成','4'=>'处理失败'] as $k=>$v}
-                    <!--{if input('get.status') eq $k}-->
+                    {if input('get.status') eq $k}
                     <option selected value="{$k}">{$v}</option>
-                    <!--{else}-->
+                    {else}
                     <option value="{$k}">{$v}</option>
-                    <!--{/if}-->
+                    {/if}
                     {/foreach}
                 </select>
             </div>
