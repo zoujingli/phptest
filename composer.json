@@ -22,9 +22,9 @@
     "ext-json": "*",
     "topthink/framework": "^6.0",
     "topthink/think-view": "^1.0",
-    "topthink/think-multi-app": "dev-master",
-    "zoujingli/think-library": "6.0.*-dev",
-    "zoujingli/ip2region": "^1.0"
+    "topthink/think-multi-app": "^1.0",
+    "zoujingli/ip2region": "^1.0",
+    "zoujingli/think-library": "6.0.*-dev"
   },
   "autoload": {
     "psr-4": {

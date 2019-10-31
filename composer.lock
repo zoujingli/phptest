@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e61594e89e9c5305c8f3d1091cd0dccd",
+    "content-hash": "387856954688245acf7e8623d243fb5d",
     "packages": [
         {
             "name": "league/flysystem",
@@ -545,7 +545,7 @@
         },
         {
             "name": "topthink/think-multi-app",
-            "version": "dev-master",
+            "version": "v1.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/top-think/think-multi-app.git",
@@ -783,12 +783,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zoujingli/ThinkLibrary.git",
-                "reference": "b96986063accd3ccbfc4ad753269692ae73a62dd"
+                "reference": "8cb4915428884af24ebd1cb28c0ec2eb2aa37786"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/b96986063accd3ccbfc4ad753269692ae73a62dd",
-                "reference": "b96986063accd3ccbfc4ad753269692ae73a62dd",
+                "url": "https://api.github.com/repos/zoujingli/ThinkLibrary/zipball/8cb4915428884af24ebd1cb28c0ec2eb2aa37786",
+                "reference": "8cb4915428884af24ebd1cb28c0ec2eb2aa37786",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -832,14 +832,13 @@
             ],
             "description": "ThinkPHP v6.0 Development Library",
             "homepage": "http://framework.thinkadmin.top",
-            "time": "2019-10-31T08:09:08+00:00"
+            "time": "2019-10-31T08:33:04+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "topthink/think-multi-app": 20,
         "zoujingli/think-library": 20
     },
     "prefer-stable": false,
