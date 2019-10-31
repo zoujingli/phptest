@@ -47,7 +47,7 @@ class Plugs extends Controller
     public function check()
     {
         $diff1 = explode(',', strtolower(input('exts', '')));
-        $diff2 = explode(',', strtolower(sysconf('storage_local_exts')));
+        $diff2 = explode(',', strtolower(sysconf('storage.allow_exts')));
         $exts = array_intersect($diff1, $diff2);
         $this->success('获取文件上传参数', [
             'exts' => join('|', $exts),
@@ -73,7 +73,7 @@ class Plugs extends Controller
         if (!($file = $this->getUploadFile()) || empty($file)) {
             return json(['uploaded' => false, 'error' => ['message' => '文件上传异常，文件可能过大或未上传']]);
         }
-        if (!in_array($file->getExtension(), explode(',', sysconf('storage_local_exts')))) {
+        if (!in_array($file->getExtension(), explode(',', sysconf('storage.allow_exts')))) {
             return json(['uploaded' => false, 'error' => ['message' => '文件上传类型受限，请在后台配置']]);
         }
         if (in_array($file->getExtension(), ['php', 'sh'])) {
@@ -120,7 +120,7 @@ class Plugs extends Controller
     {
         $this->uptype = input('uptype');
         if (!in_array($this->uptype, ['local', 'oss', 'qiniu'])) {
-            $this->uptype = sysconf('storage_type');
+            $this->uptype = sysconf('storage.type');
         }
         return $this->uptype;
     }

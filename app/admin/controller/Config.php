@@ -76,11 +76,11 @@ class Config extends Controller
             $this->fetch("storage-{$this->type}");
         }
         $post = $this->request->post();
-        if (isset($post['storage_type']) && isset($post['storage_local_exts'])) {
-            $exts = array_unique(explode(',', strtolower($post['storage_local_exts'])));
+        if (!empty($post['storage']['allow_exts'])) {
+            $exts = array_unique(explode(',', strtolower($post['storage']['allow_exts'])));
             sort($exts);
             if (in_array('php', $exts)) $this->error('禁止上传可执行文件到本地服务器！');
-            $post['storage_local_exts'] = join(',', $exts);
+            $post['storage']['allow_exts'] = join(',', $exts);
         }
         foreach ($post as $key => $value) sysconf($key, $value);
         $this->success('文件存储配置成功！');
