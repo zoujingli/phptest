@@ -16,7 +16,6 @@
 namespace app\admin\controller;
 
 use think\admin\Controller;
-use think\Db;
 
 /**
  * 系统权限管理
@@ -103,7 +102,7 @@ class Auth extends Controller
     {
         if ($result) {
             $map = ['auth' => $this->request->post('id')];
-            Db::name('SystemAuthNode')->where($map)->delete();
+            $this->app->db->name('SystemAuthNode')->where($map)->delete();
             $this->success("权限删除成功！", '');
         } else {
             $this->error("权限删除失败，请稍候再试！");

@@ -1,6 +1,6 @@
-/.idea
-/.vscode
-/vendor
-*.log
 .env
-/runtime
+.idea
+*.log
+.vscode
+vendor
+runtime

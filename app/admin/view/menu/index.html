@@ -60,10 +60,10 @@
                 <a data-dbclick class="layui-btn layui-btn-xs" data-title="编辑菜单" data-modal='{:url("edit")}?id={$vo.id}'>编 辑</a>
                 {/if}
 
-                {if $vo.status eq 1 and auth("forbid")}
-                <a class="layui-btn layui-btn-warm layui-btn-xs" data-confirm="确定要禁用菜单吗？" data-action="{:url('forbid')}" data-value="id#{$vo.ids};status#0" data-csrf="{:systoken('forbid')}">禁 用</a>
-                {elseif auth("resume")}
-                <a class="layui-btn layui-btn-warm layui-btn-xs" data-action="{:url('resume')}" data-value="id#{$vo.ids};status#1" data-csrf="{:systoken('resume')}">启 用</a>
+                {if $vo.status eq 1 and auth("state")}
+                <a class="layui-btn layui-btn-warm layui-btn-xs" data-confirm="确定要禁用菜单吗？" data-action="{:url('state')}" data-value="id#{$vo.ids};status#0" data-csrf="{:systoken('state')}">禁 用</a>
+                {elseif auth("state")}
+                <a class="layui-btn layui-btn-warm layui-btn-xs" data-action="{:url('state')}" data-value="id#{$vo.ids};status#1" data-csrf="{:systoken('state')}">启 用</a>
                 {/if}
 
                 {if auth("remove")}

@@ -58,7 +58,7 @@ class Login extends Controller
             if (empty($user)) {
                 $this->error('登录账号或密码错误，请重新输入!');
             }
-            if (md5($user['password'] . $user['username']) <> $data['password']) {
+            if (md5("{$user['password']}{$user['username']}") !== $data['password']) {
                 $this->error('登录账号或密码错误，请重新输入!');
             }
             if (empty($user['status'])) {
@@ -70,8 +70,21 @@ class Login extends Controller
                 'login_num' => $this->app->db->raw('login_num+1'),
             ]);
             $this->app->session->set('user', $user);
+            sysoplog('用户登录', "用户登录系统后台成功");
             $this->success('登录成功', url('@admin')->build());
         }
+    }
+
+    /**
+     * 生成验证码
+     */
+    public function captcha()
+    {
+        $image = CaptchaExtend::instance();
+        $this->success('生成验证码成功', [
+            'image'  => $image->getData(),
+            'uniqid' => $image->getUniqid(),
+        ]);
     }
 
     /**

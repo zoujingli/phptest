@@ -30,7 +30,7 @@
                     <i class="layui-icon layui-icon-picture-fine"></i>
                     <input class="layui-input" required pattern="^\S{4,}$" name="verify" value="{$captcha->getCode()}" maxlength="4" autocomplete="off" placeholder="验证码" title="请输入验证码">
                 </label>
-                <img data-refresh-captcha alt="img" src="{$captcha->getData()}">
+                <img data-captcha alt="img" src="{$captcha->getData()}">
                 <input type="hidden" name="uniqid" value="{$captcha->getUniqid()}">
             </li>
             <li class="text-center padding-top-20">
@@ -53,5 +53,6 @@
 {/block}
 
 {block name='script'}
+<script src="__ROOT__/static/login.js"></script>
 <script src="__ROOT__/static/plugs/supersized/supersized.3.2.7.min.js"></script>
 {/block}

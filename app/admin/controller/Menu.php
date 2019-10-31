@@ -16,6 +16,7 @@
 namespace app\admin\controller;
 
 use app\admin\service\AuthService;
+use app\admin\service\MenuService;
 use think\admin\Controller;
 use think\admin\extend\DataExtend;
 
@@ -106,30 +107,19 @@ class Menu extends Controller
                 $vo['pid'] = $this->request->get('pid', '0');
             }
             // 读取系统功能节点
-            $this->nodes = AuthService::getMenuList();
+            $this->nodes = MenuService::getList();
         }
     }
 
     /**
-     * 启用系统菜单
+     * 修改系统菜单状态
      * @auth true
      * @throws \think\db\exception\DbException
      */
-    public function resume()
+    public function state()
     {
         $this->_applyFormToken();
-        $this->_save($this->table, ['status' => '1']);
-    }
-
-    /**
-     * 禁用系统菜单
-     * @auth true
-     * @throws \think\db\exception\DbException
-     */
-    public function forbid()
-    {
-        $this->_applyFormToken();
-        $this->_save($this->table, ['status' => '0']);
+        $this->_save($this->table, ['status' => intval(input('status'))]);
     }
 
     /**

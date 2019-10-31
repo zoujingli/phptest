@@ -103,7 +103,7 @@ class User extends Controller
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function _form_filter(&$data)
+    protected function _form_filter(&$data)
     {
         if ($this->request->isPost()) {
             // 刷新系统授权
@@ -112,12 +112,12 @@ class User extends Controller
             $data['authorize'] = (isset($data['authorize']) && is_array($data['authorize'])) ? join(',', $data['authorize']) : '';
             // 用户账号重复检查
             if (isset($data['id'])) unset($data['username']);
-            elseif (Db::name($this->table)->where(['username' => $data['username'], 'is_deleted' => '0'])->count() > 0) {
+            elseif ($this->app->db->name($this->table)->where(['username' => $data['username'], 'is_deleted' => '0'])->count() > 0) {
                 $this->error("账号{$data['username']}已经存在，请使用其它账号！");
             }
         } else {
             $data['authorize'] = explode(',', isset($data['authorize']) ? $data['authorize'] : '');
-            $this->authorizes = Db::name('SystemAuth')->where(['status' => '1'])->order('sort desc,id desc')->select();
+            $this->authorizes = $this->app->db->name('SystemAuth')->where(['status' => '1'])->order('sort desc,id desc')->select();
         }
     }
 

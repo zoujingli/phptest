@@ -19,6 +19,7 @@
   "require": {
     "php": ">=7.1.0",
     "ext-gd": "*",
+    "ext-json": "*",
     "topthink/framework": "^6.0",
     "topthink/think-view": "^1.0",
     "topthink/think-multi-app": "dev-master",

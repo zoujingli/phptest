@@ -10,5 +10,4 @@ class Index extends Controller
     {
         $this->redirect(url('@admin/login'));
     }
-
 }

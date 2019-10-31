@@ -15,9 +15,7 @@
 
 namespace app\admin\service;
 
-use think\admin\extend\DataExtend;
 use think\admin\extend\NodeExtend;
-use think\facade\Db;
 
 /**
  * 系统授权服务
@@ -42,14 +40,14 @@ class AuthService
      * @return boolean
      * @throws \ReflectionException
      */
-    public static function checkAuth($node = '')
+    public static function check($node = '')
     {
-        if (app()->session->get('user.username') === 'admin') {
-            return true;
+        if (app()->session->get('user.username') === 'admin') return true;
+        list($real, $nodes) = [NodeExtend::fullnode($node), NodeExtend::getMethods()];
+        if (!empty($nodes[$real]['isauth'])) {
+            return in_array($real, app()->session->get('user.nodes', []));
         }
-        $real = NodeExtend::fullnode($node);
-        if (empty(NodeExtend::getMethods()[$real]['isauth'])) return true;
-        return in_array($real, app()->session->get('user.nodes', []));
+        return !(!empty($nodes[$real]['islogin']) && !self::isLogin());
     }
 
     /**
@@ -77,65 +75,4 @@ class AuthService
         }
     }
 
-    /**
-     * 获取可选菜单节点
-     * @return array
-     * @throws \ReflectionException
-     */
-    public static function getMenuList()
-    {
-        static $nodes = [];
-        if (count($nodes) > 0) return $nodes;
-        foreach (NodeExtend::getMethods() as $node => $method) if ($method['ismenu']) {
-            $nodes[] = ['node' => $node, 'title' => $method['title']];
-        }
-        return $nodes;
-    }
-
-    /**
-     * 获取系统菜单树数据
-     * @return array
-     * @throws \ReflectionException
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    public static function getMenuTree()
-    {
-        $list = Db::name('SystemMenu')->where(['status' => '1'])->order('sort desc,id asc')->select()->toArray();
-        return self::buildMenuData(DataExtend::arr2tree($list), NodeExtend::getMethods());
-    }
-
-    /**
-     * 后台主菜单权限过滤
-     * @param array $menus 当前菜单列表
-     * @param array $nodes 系统权限节点
-     * @return array
-     * @throws \ReflectionException
-     */
-    private static function buildMenuData($menus, $nodes)
-    {
-        foreach ($menus as $key => &$menu) {
-            if (empty($menu['ismenu'])) {
-                continue;
-            }
-            if (!empty($menu['sub'])) {
-                $menu['sub'] = self::buildMenuData($menu['sub'], $nodes);
-            }
-            if (!empty($menu['sub'])) {
-                $menu['url'] = '#';
-            } elseif (preg_match('/^https?\:/i', $menu['url'])) {
-                continue;
-            } elseif ($menu['url'] === '#') {
-                unset($menus[$key]);
-            } else {
-                $node = join('/', array_slice(explode('/', preg_replace('/[\W]/', '/', $menu['url'])), 0, 3));
-                $menu['url'] = url($menu['url']) . (empty($menu['params']) ? '' : "?{$menu['params']}");
-                if (!self::checkAuth($node)) {
-                    unset($menus[$key]);
-                }
-            }
-        }
-        return $menus;
-    }
 }

@@ -16,6 +16,7 @@
 namespace app\admin\controller;
 
 use app\admin\service\AuthService;
+use app\admin\service\MenuService;
 use think\admin\Controller;
 use think\admin\extend\DataExtend;
 
@@ -38,7 +39,7 @@ class Index extends Controller
     {
         $this->title = '系统管理后台';
         AuthService::applyUserAuth(true);
-        $this->menus = AuthService::getMenuTree();
+        $this->menus = MenuService::getTree();
         if (empty($this->menus) && !AuthService::isLogin()) {
             $this->redirect(url('@admin/login'));
         } else {
