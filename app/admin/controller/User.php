@@ -18,8 +18,12 @@ namespace app\admin\controller;
 use app\admin\service\AuthService;
 use think\admin\Controller;
 use think\admin\extend\DataExtend;
-use think\Db;
 
+/**
+ * 系统用户管理
+ * Class User
+ * @package app\admin\controller
+ */
 class User extends Controller
 {
 
@@ -107,7 +111,7 @@ class User extends Controller
     {
         if ($this->request->isPost()) {
             // 刷新系统授权
-            AuthService::applyUserAuth();
+            AuthService::apply();
             // 用户权限处理
             $data['authorize'] = (isset($data['authorize']) && is_array($data['authorize'])) ? join(',', $data['authorize']) : '';
             // 用户账号重复检查
@@ -122,28 +126,17 @@ class User extends Controller
     }
 
     /**
-     * 禁用系统用户
+     * 修改系统用户状态
      * @auth true
      * @throws \think\db\exception\DbException
      */
-    public function forbid()
+    public function state()
     {
         if (in_array('10000', explode(',', $this->request->post('id')))) {
             $this->error('系统超级账号禁止操作！');
         }
         $this->_applyFormToken();
-        $this->_save($this->table, ['status' => '0']);
-    }
-
-    /**
-     * 启用系统用户
-     * @auth true
-     * @throws \think\db\exception\DbException
-     */
-    public function resume()
-    {
-        $this->_applyFormToken();
-        $this->_save($this->table, ['status' => '1']);
+        $this->_save($this->table, ['status' => intval(input('status'))]);
     }
 
     /**

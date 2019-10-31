@@ -15,11 +15,15 @@
 
 namespace app\admin\controller;
 
-use app\admin\service\AuthService;
 use app\admin\service\MenuService;
 use think\admin\Controller;
 use think\admin\extend\DataExtend;
 
+/**
+ * 系统菜单管理
+ * Class Menu
+ * @package app\admin\controller
+ */
 class Menu extends Controller
 {
     /**

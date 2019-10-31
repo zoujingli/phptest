@@ -15,10 +15,8 @@
 
 namespace app\admin\service;
 
-use library\tools\Node;
 use think\admin\extend\DataExtend;
 use think\admin\extend\NodeExtend;
-use think\Db;
 
 /**
  * 系统菜单服务
@@ -72,7 +70,7 @@ class MenuService
             }
             if (!empty($menu['sub'])) $menu['url'] = '#';
             elseif ($menu['url'] === '#') unset($menus[$key]);
-            elseif (preg_match('/^https?\:/i', $menu['url'])) continue;
+            elseif (preg_match('|^https?://|i', $menu['url'])) continue;
             else {
                 $node = join('/', array_slice(explode('/', preg_replace('/[\W]/', '/', $menu['url'])), 0, 3));
                 $menu['url'] = url($menu['url']) . (empty($menu['params']) ? '' : "?{$menu['params']}");

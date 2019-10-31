@@ -42,8 +42,8 @@
             });
             return childrens;
         };
-        this.getData = function (that) {
-            var index = $.msg.loading();
+        this.getData = function (that, index) {
+            index = $.msg.loading();
             $.form.load('{:url()}', {id: '{$vo.id}', action: 'get'}, 'post', function (ret) {
                 that.data = that.renderChildren(ret.data, 1);
                 return $.msg.close(index), that.showTree(), false;

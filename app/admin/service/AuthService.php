@@ -15,6 +15,8 @@
 
 namespace app\admin\service;
 
+use library\tools\Data;
+use think\admin\extend\DataExtend;
 use think\admin\extend\NodeExtend;
 
 /**
@@ -51,13 +53,40 @@ class AuthService
     }
 
     /**
+     * 获取授权节点列表
+     * @param array $checkeds
+     * @return array
+     * @throws \ReflectionException
+     */
+    public static function getTree($checkeds = [])
+    {
+        list($nodes, $pnodes, $methods) = [[], [], array_reverse(NodeExtend::getMethods())];
+        foreach ($methods as $node => $method) {
+            $count = substr_count($node, '/');
+            $pnode = substr($node, 0, strripos($node, '/'));
+            if ($count === 2 && !empty($method['isauth'])) {
+                in_array($pnode, $pnodes) or array_push($pnodes, $pnode);
+                $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checkeds)];
+            } elseif ($count === 1 && in_array($pnode, $pnodes)) {
+                $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checkeds)];
+            }
+        }
+        foreach (array_keys($nodes) as $key) foreach ($methods as $node => $method) if (stripos($key, "{$node}/") !== false) {
+            $pnode = substr($node, 0, strripos($node, '/'));
+            $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checkeds)];
+            $nodes[$pnode] = ['node' => $pnode, 'title' => ucfirst($pnode), 'pnode' => '', 'checked' => in_array($pnode, $checkeds)];
+        }
+        return DataExtend::arr2tree(array_reverse($nodes), 'node', 'pnode', '_sub_');
+    }
+
+    /**
      * 初始化用户权限
      * @param boolean $force 是否重置系统权限
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function applyUserAuth($force = false)
+    public static function apply($force = false)
     {
         $app = app();
         if ($force) $app->cache->delete('system_auth_node');
